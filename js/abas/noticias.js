@@ -4,7 +4,7 @@ import { useApp } from '../estado.js';
 import { PADROES } from '../galeria.js';
 import { dataCurta, naoLidas, paginar, urlImagem } from '../logica.js';
 import { aplicarTema, temaDaPrevia } from '../temas.js';
-import { Adesivo, Paginacao, Toggle } from '../ui/basicos.js';
+import { Adesivo, Paginacao, Toggle, usePorPagina } from '../ui/basicos.js';
 import { ImagensEmbed } from '../ui/imagens-embed.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 import { Previa } from '../ui/previa.js';
@@ -20,7 +20,8 @@ export function AbaNoticias() {
   const lista = estado.noticias ?? [];
   const novas = new Set(naoLidas(lista, ui.lido).map((n) => n.versao));
   const filtradas = lista.filter((n) => filtro === 'tudo' || n.tag === filtro);
-  const p = paginar(filtradas, pagina, 3);
+  const [por, setPor] = usePorPagina('noticias', 6);
+  const p = paginar(filtradas, pagina, por);
   const n = cfg.noticias;
   const muda = (patch) => mudar((x) => Object.assign(x.noticias, patch));
   const s = estado.servidor;
@@ -71,7 +72,7 @@ export function AbaNoticias() {
             </article>`,
           )}
           ${p.vazio && html`<p class="dica" style="text-align:center;padding:20px">Nada por aqui. Nem fofoca.</p>`}
-          <${Paginacao} p=${p} ir=${setPagina} />
+          <${Paginacao} p=${p} ir=${setPagina} por=${{ valor: por, opcoes: [3, 6, 12], mudar: setPor }} />
         </div>
       </div>
 

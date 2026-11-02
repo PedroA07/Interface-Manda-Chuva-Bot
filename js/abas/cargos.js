@@ -42,7 +42,7 @@ const Setas = ({ lista, k, mexer }) => {
 };
 
 function TelaHierarquia() {
-  const { cfg, estado, ui, setUi, mudar, aviso } = useApp();
+  const { cfg, estado, ui, setUi, mudar, aviso, tratar, recarregar } = useApp();
   const s = estado.servidor;
   if (!estado.bot.online || !s) {
     return html`<div class="cartao sombra"><b>${estado.bot.online ? 'Escolha o servidor lá em cima.' : 'Bot dormindo.'}</b><span class="sub">A hierarquia vem direto do Discord: precisa do bot online e de um servidor escolhido.</span></div>`;
@@ -81,6 +81,7 @@ function TelaHierarquia() {
       linhas.push(html`<div class=${`hier-linha hier-sep${marcado ? ' sel' : ''}`} ...${clicavel(selecionar)}>
         <span class="hier-traco"></span><span class="hier-sep-nome">${x.nome || ' '}</span><span class="hier-traco"></span>
         ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} />`}
+        ${x.travado && html`<span class="hier-travado" title="O bot não consegue mexer em cargos acima dele">🔒 ACIMA DO BOT</span>`}
       </div>`);
     } else if (x.k === 'cores') {
       linhas.push(html`<div class=${`hier-linha hier-bloco${marcado ? ' sel' : ''}`} ...${clicavel(selecionar)}>
@@ -104,15 +105,44 @@ function TelaHierarquia() {
         <span class="hier-membros">${qtd(x.membros)}</span>
         <span class="hier-setas">
           ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} />`}
-          ${x.travado && !x.bot && html`<span class="hier-travado" title="O bot não consegue mexer em cargos acima dele">ACIMA DO BOT</span>`}
+          ${x.travado && !x.bot && html`<span class="hier-travado" title="O bot não consegue mexer em cargos acima dele">🔒 ACIMA DO BOT</span>`}
         </span>
       </div>`);
       if (x.bot) linhas.push(html`<div class="hier-linha-bot"><span></span><span class="rabisco" style="font-size:13px">daqui pra baixo o bot manda</span><span></span></div>`);
     }
   });
 
+  // Cargos acima do cargo do bot: o Discord não deixa bot nenhum mexer (nem com Administrador)
+  const travados = b >= 0 ? lista.filter((x) => x.travado && !x.bot) : [];
+  const nomeBot = lista[b]?.nome ?? 'do bot';
+  const atualizar = async () => {
+    if (cfg.hierarquia) {
+      if (!confirm('Atualizar a lista descarta as mudanças da hierarquia que ainda não foram salvas. Continuar?')) return;
+      mudar((c) => delete c.hierarquia);
+    }
+    try {
+      await recarregar();
+      aviso('Lista atualizada com o que está no Discord agora.', 'atualizado');
+    } catch (e) {
+      tratar(e);
+    }
+  };
+
   return html`<div class="colunas">
     <div style="flex:999 1 520px;min-width:0;display:grid;gap:14px">
+      ${travados.length > 0 &&
+      html`<div class="hier-trava-faixa">
+        <div style="flex:1 1 300px;display:grid;gap:6px">
+          <b style="font-weight:800">🔒 ${travados.length} ${travados.length === 1 ? 'cargo está' : 'cargos estão'} acima do cargo do bot</b>
+          <span style="font-size:14px;text-wrap:pretty">${travados.map((x) => (x.k === 'sep' ? `━━ ${x.nome} ━━` : `@${x.nome}`)).join(', ')}: o Discord não deixa nenhum bot mexer em cargo acima do cargo dele, nem com Administrador. Por isso esses não mudam de lugar nem dá pra editar daqui.</span>
+          <ol class="hier-passos">
+            <li>No Discord, abra <b>Configurações do servidor → Cargos</b>.</li>
+            <li>Arraste o cargo <b>@${nomeBot}</b> pro <b>topo</b> da lista e salve. Só o dono do servidor (ou alguém com cargo acima dele) consegue.</li>
+            <li>Volte aqui e clique em <b>Atualizar</b>: tudo fica liberado.</li>
+          </ol>
+        </div>
+        <button type="button" class="btn escuro" onClick=${atualizar}>Atualizar</button>
+      </div>`}
       ${!h.temPermissao && html`<div class="aviso-faixa" style="margin:0"><b>O bot está sem "Gerenciar cargos".</b><span>Dá pra ver a lista, mas ele não consegue mudar nada até ganhar essa permissão.</span></div>`}
       ${conf.length > 0 &&
       html`<div class="hier-conflito">
@@ -160,21 +190,21 @@ function Editor({ x, k, lista, mexer, permsDoBot, membros }) {
       <p style="margin:0;text-wrap:pretty">Tudo que estiver abaixo dele, o Manda Chuva consegue dar e tirar. Pra subir ou descer ele, use as configurações do servidor no Discord.</p>
     </div>`;
   }
-  if (x.travado) {
-    return html`<div class="cartao sombra">
-      <h2 class="h2">ACIMA DO BOT</h2>
-      <p style="margin:0;text-wrap:pretty"><b>${x.k === 'sep' ? `━━ ${x.nome} ━━` : x.nome}</b> está acima do cargo do bot, então ele não consegue mexer. Pra editar, use as configurações do servidor no Discord (ou suba o cargo do bot pra cima dele).</p>
-    </div>`;
-  }
+  // Acima do cargo do bot: mostra tudo, mas bloqueado (o Discord não deixa o bot mudar)
+  const trava = !!x.travado;
+  const nota = trava && html`<p class="hier-trava-nota">🔒 Está acima do cargo do bot: dá pra ver, não pra mudar. Pra liberar, arraste o cargo do bot pro topo em Configurações do servidor → Cargos e clique em Atualizar.</p>`;
   if (x.k === 'sep') {
     return html`<div class="cartao sombra">
       <h2 class="h2">SEPARADOR</h2>
+      ${nota}
       <div class="hier-sep-previa"><span class="hier-traco"></span><span class="hier-sep-nome" style="font-size:14px">${x.nome || ' '}</span><span class="hier-traco"></span></div>
-      <label class="rotulo">Nome do grupo
-        <input class="campo" value=${x.nome} maxlength="94" onInput=${(e) => muda({ nome: e.target.value.toUpperCase() })} />
-      </label>
-      <p style="margin:0;font-size:13px;color:var(--cinza);text-wrap:pretty">É um cargo vazio que só organiza a lista. No Discord ele aparece como “━━ ${x.nome} ━━”.</p>
-      <button type="button" class="btn-perigo" style="justify-self:end" onClick=${apagar}>Apagar separador</button>
+      <fieldset class="hier-campos" disabled=${trava}>
+        <label class="rotulo">Nome do grupo
+          <input class="campo" value=${x.nome} maxlength="94" onInput=${(e) => muda({ nome: e.target.value.toUpperCase() })} />
+        </label>
+        <p style="margin:0;font-size:13px;color:var(--cinza);text-wrap:pretty">É um cargo vazio que só organiza a lista. No Discord ele aparece como “━━ ${x.nome} ━━”.</p>
+        <button type="button" class="btn-perigo" style="justify-self:end" onClick=${apagar}>Apagar separador</button>
+      </fieldset>
     </div>`;
   }
   if (x.gerenciado) {
@@ -193,6 +223,8 @@ function Editor({ x, k, lista, mexer, permsDoBot, membros }) {
       </div>
     </div>
     <div style="display:grid;gap:16px;padding:18px">
+      ${nota}
+      <fieldset class="hier-campos" disabled=${trava}>
       <label class="rotulo">Nome
         <input class="campo" value=${x.nome} maxlength="100" onInput=${(e) => muda({ nome: e.target.value })} />
       </label>
@@ -223,9 +255,10 @@ function Editor({ x, k, lista, mexer, permsDoBot, membros }) {
           })}
         </div>
       </div>
+      </fieldset>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
         ${/^\d{17,20}$/.test(x.id) && html`<button type="button" class="btn mostarda" onClick=${() => setUi({ cargosView: 'membros', mbCargo: x.id, mbBusca: '', mbPagina: 1 })}>Ver membros</button>`}
-        <button type="button" class="btn-perigo" style="margin-left:auto" onClick=${apagar}>Apagar cargo</button>
+        <button type="button" class="btn-perigo" style="margin-left:auto" disabled=${trava} onClick=${apagar}>Apagar cargo</button>
       </div>
     </div>
   </div>`;

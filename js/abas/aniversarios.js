@@ -5,7 +5,7 @@ import { listaNiver, textoDoNiver } from '../aniversarios.js';
 import { useApp } from '../estado.js';
 import { paginar, urlImagem } from '../logica.js';
 import { hojeDe } from '../temas.js';
-import { Paginacao, Toggle } from '../ui/basicos.js';
+import { Paginacao, Toggle, usePorPagina } from '../ui/basicos.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 import { Previa } from '../ui/previa.js';
 import { SeletorBanner } from '../ui/seletor-banner.js';
@@ -131,6 +131,7 @@ export function ListaAniversarios() {
   const [mes, setMes] = useState('');
   const [ordem, setOrdem] = useState('prox');
   const [pagina, setPagina] = useState(1);
+  const [por, setPor] = usePorPagina('aniversarios', 25);
   const hoje = hojeDe(estado);
   const todos = listaNiver(estado.aniversarios ?? [], hoje);
   const q = busca.trim().toLowerCase();
@@ -138,7 +139,7 @@ export function ListaAniversarios() {
   const chave = (p) => +p.d.slice(3) * 100 + +p.d.slice(0, 2);
   if (ordem === 'nome') lista = [...lista].sort((a, b) => a.nome.localeCompare(b.nome));
   else if (ordem === 'data') lista = [...lista].sort((a, b) => chave(a) - chave(b));
-  const p = paginar(lista, pagina, 8);
+  const p = paginar(lista, pagina, por);
   const filtro = (fn) => (v) => (fn(v), setPagina(1));
 
   async function adicionar() {
@@ -200,6 +201,6 @@ export function ListaAniversarios() {
         )}
         ${p.vazio && html`<div style="padding:28px;text-align:center;color:var(--cinza)">Ninguém encontrado. Nem o bolo.</div>`}
       </div>
-      <${Paginacao} p=${p} ir=${setPagina} />
+      <${Paginacao} p=${p} ir=${setPagina} por=${{ valor: por, opcoes: [10, 25, 50, 100], mudar: setPor }} />
     </div>`;
 }
