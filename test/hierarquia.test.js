@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { conflitos, consertar, etiquetas, inserir, mover, tirar } from '../js/hierarquia.js';
+import { conflitos, consertar, etiquetas, inserir, mover, moverPara, tirar } from '../js/hierarquia.js';
 
 const ID = (n) => `10000000000000000${n}`;
 const LISTA = [
@@ -46,4 +46,12 @@ test('etiquetas do protótipo', () => {
   assert.deepEqual(etiquetas({ perms: ['banir'], hoist: true }), ['MOD', 'À PARTE']);
   assert.deepEqual(etiquetas({ perms: [], gerenciado: 'impulso' }), ['IMPULSO']);
   assert.deepEqual(etiquetas(LISTA[4]), ['INTEGRAÇÃO']);
+});
+
+test('arrastar: leva o item pra posição solta, só abaixo do bot', () => {
+  assert.deepEqual(nomes(moverPara(LISTA, 7, 3)), ['STAFF', 'Dono', 'Manda Chuva', 'Calouro', 'VIP', 'Outro bot', 'CORES', 'BLOCO']);
+  assert.deepEqual(nomes(moverPara(LISTA, 3, 7)), ['STAFF', 'Dono', 'Manda Chuva', 'Outro bot', 'CORES', 'BLOCO', 'Calouro', 'VIP']);
+  assert.equal(moverPara(LISTA, 3, 3), null);
+  assert.equal(moverPara(LISTA, 5, 2), null);
+  assert.equal(moverPara(LISTA, 1, 5), null);
 });

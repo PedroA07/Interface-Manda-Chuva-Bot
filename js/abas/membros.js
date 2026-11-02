@@ -100,7 +100,7 @@ export function TelaMembros() {
           </div>
           <div class="membro-acoes">
             ${m.avisos > 0 && html`<span class="membro-selo">${m.avisos} ${m.avisos === 1 ? 'aviso' : 'avisos'}</span>`}
-            ${m.silenciadoAte && html`<button type="button" class="membro-selo azul" title="Tirar o silêncio" onClick=${() => fazer({ acao: 'dessilenciar', userId: m.id }, MEME.dessilenciar)}>🔇 ${ateQuando(m.silenciadoAte)} ×</button>`}
+            ${m.silenciadoAte && html`<button type="button" class="membro-selo azul" title="Tirar o silêncio" onClick=${() => fazer({ acao: 'dessilenciar', userId: m.id }, MEME.dessilenciar)}>🔇 ${m.semPrazo ? 'sem prazo' : ateQuando(m.silenciadoAte)} ×</button>`}
             <button type="button" class="btn pequeno" disabled=${m.bot} onClick=${() => setAcao({ tipo: 'avisar', m })}>Avisar</button>
             <button type="button" class="btn pequeno" disabled=${!m.podeSilenciar} title=${m.podeSilenciar ? '' : 'Admin, dono ou acima do bot: não dá'} onClick=${() => setAcao({ tipo: 'silenciar', m })}>Silenciar</button>
             <button type="button" class="btn-perigo pequeno" disabled=${!m.podeExpulsar} title=${m.podeExpulsar ? '' : 'Admin, dono ou acima do bot: não dá'} onClick=${() => setAcao({ tipo: 'expulsar', m })}>Expulsar</button>
@@ -137,6 +137,7 @@ function FichaAcao({ acao, regras, fechar, fazer }) {
       <h2 class="h2">${titulo} @${m.nome}</h2>
       <p style="margin:0;font-size:14px;text-wrap:pretty">${explica}</p>
       ${tipo === 'silenciar' && html`<div class="rotulo">Por quanto tempo<${Segmentado} classe="pequeno" opcoes=${SILENCIOS} valor=${duracao} onChange=${setDuracao} /></div>`}
+      ${tipo === 'silenciar' && duracao === 'sem' && html`<p style="margin:0;font-size:13px;color:var(--cinza);text-wrap:pretty">Fica em silêncio até alguém tirar (no painel ou no Discord). O Discord só deixa 28 dias de cada vez: o bot renova sozinho, e se a pessoa sair e voltar, volta silenciada.</p>`}
       <label class="rotulo">Motivo (opcional)
         <input class="campo" maxlength="300" placeholder=${tipo === 'avisar' ? 'tipo: flood no #geral' : 'vai pro registro de auditoria'} value=${motivo} onInput=${(e) => setMotivo(e.target.value)} />
       </label>

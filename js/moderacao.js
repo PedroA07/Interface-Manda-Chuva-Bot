@@ -3,7 +3,7 @@
 /** Cor da etiqueta de cada tipo de ocorrência (README do design) */
 export const COR_TIPO = { AVISO: '#f3d48a', SILÊNCIO: '#b6c8ee', EXPULSÃO: '#f5b5a8', BAN: '#c4363c', 'AUTO-MOD': '#d9c2ec' };
 
-export const SILENCIOS = [['10min', '10 min'], ['1h', '1 hora'], ['1d', '1 dia'], ['7d', '7 dias'], ['28d', '28 dias']];
+export const SILENCIOS = [['10min', '10 min'], ['1h', '1 hora'], ['1d', '1 dia'], ['7d', '7 dias'], ['28d', '28 dias'], ['sem', 'sem prazo']];
 
 const MIN = 60_000, H = 60 * MIN, DIA = 24 * H;
 const plural = (n, um, varios) => `há ${n} ${n === 1 ? um : varios}`;
