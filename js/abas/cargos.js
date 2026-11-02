@@ -1,8 +1,8 @@
 // Aba Cargos: a reitoria. Sub-abas Hierarquia (ordem, separadores, criar/editar/apagar cargos, consertar as cores;
 // rascunho até o Salvar), Membros (ações que valem na hora) e Moderação (avisos e livro de ocorrências).
-import { html } from '../../vendor/preact-htm.js';
+import { html, useState } from '../../vendor/preact-htm.js';
 import { useApp } from '../estado.js';
-import { chave, COR_ETIQUETA, conflitos, consertar, etiquetas, indiceDoBot, inserir, listaDe, mover, movivel, PERMS, tirar } from '../hierarquia.js';
+import { chave, COR_ETIQUETA, conflitos, consertar, etiquetas, indiceDoBot, inserir, listaDe, mover, moverPara, movivel, PERMS, tirar } from '../hierarquia.js';
 import { fundoDaCor } from '../logica.js';
 import { Amostras, CampoCor, Toggle } from '../ui/basicos.js';
 import { TelaMembros } from './membros.js';
@@ -30,12 +30,13 @@ export function AbaCargos() {
   </div>`;
 }
 
-const Setas = ({ lista, k, mexer }) => {
+const Setas = ({ lista, k, mexer, iniciar }) => {
   const ir = (d) => (e) => {
     e.stopPropagation();
     mexer((h) => (h.lista = mover(h.lista, k, d) ?? h.lista), chave(lista[k]));
   };
   return html`<span class="hier-setas">
+    <span class="hier-alca" title="Arraste pra mudar de lugar" onPointerDown=${(e) => iniciar(e, k)}>⠿</span>
     <button type="button" class="hier-seta" title="Subir" disabled=${!mover(lista, k, -1)} onClick=${ir(-1)}>↑</button>
     <button type="button" class="hier-seta" title="Descer" disabled=${!mover(lista, k, 1)} onClick=${ir(1)}>↓</button>
   </span>`;
@@ -43,6 +44,7 @@ const Setas = ({ lista, k, mexer }) => {
 
 function TelaHierarquia() {
   const { cfg, estado, ui, setUi, mudar, aviso, tratar, recarregar } = useApp();
+  const [arraste, setArraste] = useState(null); // { de, para }
   const s = estado.servidor;
   if (!estado.bot.online || !s) {
     return html`<div class="cartao sombra"><b>${estado.bot.online ? 'Escolha o servidor lá em cima.' : 'Bot dormindo.'}</b><span class="sub">A hierarquia vem direto do Discord: precisa do bot online e de um servidor escolhido.</span></div>`;
@@ -67,6 +69,36 @@ function TelaHierarquia() {
     mexer((r) => (r.lista = inserir(r.lista, { ...item, id })), id);
   };
 
+  // Arrastar pela alça ⠿ (mouse ou dedo): mostra onde vai cair e aplica no rascunho ao soltar
+  const iniciar = (e, de) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const alca = e.currentTarget;
+    alca.setPointerCapture(e.pointerId);
+    document.body.classList.add('arrastando-hier');
+    let para = de;
+    setArraste({ de, para });
+    const andar = (ev) => {
+      if (ev.clientY < 70) scrollBy(0, -14);
+      else if (ev.clientY > innerHeight - 110) scrollBy(0, 14);
+      const linha = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('[data-k]');
+      const j = linha ? Number(linha.dataset.k) : NaN;
+      if (j !== para && movivel(lista, j)) setArraste({ de, para: (para = j) });
+    };
+    const soltar = () => {
+      alca.removeEventListener('pointermove', andar);
+      alca.removeEventListener('pointerup', soltar);
+      alca.removeEventListener('pointercancel', soltar);
+      document.body.classList.remove('arrastando-hier');
+      setArraste(null);
+      if (para !== de) mexer((r) => (r.lista = moverPara(r.lista, de, para) ?? r.lista), chave(lista[de]));
+    };
+    alca.addEventListener('pointermove', andar);
+    alca.addEventListener('pointerup', soltar);
+    alca.addEventListener('pointercancel', soltar);
+  };
+  const marcaArraste = (i) => (!arraste ? '' : arraste.de === i ? ' arrastando' : arraste.para === i ? (arraste.para < arraste.de ? ' alvo-acima' : ' alvo-abaixo') : '');
+
   // Selecionado: o que foi clicado ou, de começo, o primeiro abaixo do bot
   let ks = lista.findIndex((x) => chave(x) === ui.cargoSel);
   if (ks < 0) ks = lista[b + 1] ? b + 1 : 0;
@@ -78,20 +110,20 @@ function TelaHierarquia() {
     const selecionar = () => setUi({ cargoSel: chave(x) });
     const mexe = movivel(lista, i);
     if (x.k === 'sep') {
-      linhas.push(html`<div class=${`hier-linha hier-sep${marcado ? ' sel' : ''}`} ...${clicavel(selecionar)}>
+      linhas.push(html`<div class=${`hier-linha hier-sep${marcado ? ' sel' : ''}${marcaArraste(i)}`} data-k=${i} ...${clicavel(selecionar)}>
         <span class="hier-traco"></span><span class="hier-sep-nome">${x.nome || ' '}</span><span class="hier-traco"></span>
-        ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} />`}
+        ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} iniciar=${iniciar} />`}
         ${x.travado && html`<span class="hier-travado" title="O bot não consegue mexer em cargos acima dele">🔒 ACIMA DO BOT</span>`}
       </div>`);
     } else if (x.k === 'cores') {
-      linhas.push(html`<div class=${`hier-linha hier-bloco${marcado ? ' sel' : ''}`} ...${clicavel(selecionar)}>
+      linhas.push(html`<div class=${`hier-linha hier-bloco${marcado ? ' sel' : ''}${marcaArraste(i)}`} data-k=${i} ...${clicavel(selecionar)}>
         <span class="hier-bolinhas">${cfg.cores.map((c) => html`<span style=${`background:${fundoDaCor(c)}`}></span>`)}</span>
         <b style="flex:1;font-weight:800;font-size:14px">Bloco de cores · ${cfg.cores.length} cargos</b>
         <span style="font-size:12px;color:var(--cinza)">ordem na aba Cores</span>
-        ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} />`}
+        ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} iniciar=${iniciar} />`}
       </div>`);
       cfg.cores.forEach((c, ci) =>
-        linhas.push(html`<div class="hier-linha hier-cargo hier-da-cor" ...${clicavel(() => setUi({ aba: 'cores', selCor: ci }))} title="Abrir na aba Cores">
+        linhas.push(html`<div class=${`hier-linha hier-cargo hier-da-cor${arraste?.de === i ? ' arrastando' : ''}`} data-k=${i} ...${clicavel(() => setUi({ aba: 'cores', selCor: ci }))} title="Abrir na aba Cores">
           <span class="hier-bola" style=${`background:${fundoDaCor(c)}`}></span>
           <div class="hier-nome"><b>${c.nome}</b><span class="hier-etiqueta" style=${`background:${COR_ETIQUETA.COR}`}>COR</span></div>
           <span class="hier-membros">${qtd(c.cargoId ? membrosDe(c.cargoId) : null)}</span>
@@ -99,12 +131,12 @@ function TelaHierarquia() {
         </div>`),
       );
     } else {
-      linhas.push(html`<div class=${`hier-linha hier-cargo${marcado ? ' sel' : ''}${x.bot ? ' do-bot' : ''}`} ...${clicavel(selecionar)}>
+      linhas.push(html`<div class=${`hier-linha hier-cargo${marcado ? ' sel' : ''}${x.bot ? ' do-bot' : ''}${marcaArraste(i)}`} data-k=${i} ...${clicavel(selecionar)}>
         <span class="hier-bola" style=${`background:${x.hex || 'var(--desligado)'}`}></span>
         <div class="hier-nome"><b>${x.nome}${x.bot ? ' (bot)' : ''}</b>${etiquetas(x).map((t) => html`<span class="hier-etiqueta" style=${`background:${COR_ETIQUETA[t]}`}>${t}</span>`)}</div>
         <span class="hier-membros">${qtd(x.membros)}</span>
         <span class="hier-setas">
-          ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} />`}
+          ${mexe && html`<${Setas} lista=${lista} k=${i} mexer=${mexer} iniciar=${iniciar} />`}
           ${x.travado && !x.bot && html`<span class="hier-travado" title="O bot não consegue mexer em cargos acima dele">🔒 ACIMA DO BOT</span>`}
         </span>
       </div>`);
@@ -158,7 +190,7 @@ function TelaHierarquia() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
         <button type="button" class="btn vermelho sombra" disabled=${b < 0} onClick=${() => novo({ k: 'role', nome: 'Novo cargo', hex: '', perms: [], hoist: false, mencionavel: false, membros: 0 })}>+ Novo cargo</button>
         <button type="button" class="btn sombra" disabled=${b < 0} onClick=${() => novo({ k: 'sep', nome: 'NOVO GRUPO' })}>+ Separador</button>
-        <span style="margin-left:auto;font-size:13px;color:var(--cinza)">Topo = mais poder. O bot só mexe no que está abaixo dele.</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--cinza)">Topo = mais poder. Arraste pelo ⠿ ou use as setas.</span>
       </div>
       <div class="hier">${linhas}</div>
     </div>

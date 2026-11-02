@@ -180,8 +180,8 @@ createServer(async (req, res) => {
     if (c.acao === 'dar') { m.cargos.push(c.cargoId); mensagem = `${m.nome} ganhou o cargo.`; }
     else if (c.acao === 'tirar') { m.cargos = m.cargos.filter((x) => x !== c.cargoId); mensagem = `Tirei o cargo de ${m.nome}.`; }
     else if (c.acao === 'avisar') { m.avisos++; anotar({ tipo: 'AVISO', userId: m.id, nome: m.nome, oque: `levou um aviso${motivo} (${m.avisos}/5)`, por: 'pelo painel', desfazer: 'aviso:n' }); mensagem = `${m.nome} levou um aviso (${m.avisos}/5).`; }
-    else if (c.acao === 'silenciar') { m.silenciadoAte = Date.now() + 600_000; anotar({ tipo: 'SILÊNCIO', userId: m.id, nome: m.nome, oque: `foi silenciado por 10 minutos${motivo}`, por: 'pelo painel', desfazer: 'silencio' }); mensagem = `${m.nome} ficou em silêncio.`; }
-    else if (c.acao === 'dessilenciar') { m.silenciadoAte = null; mensagem = `${m.nome} pode falar de novo.`; }
+    else if (c.acao === 'silenciar') { m.semPrazo = c.duracao === 'sem'; m.silenciadoAte = Date.now() + (m.semPrazo ? 28 * DIA : 600_000); anotar({ tipo: 'SILÊNCIO', userId: m.id, nome: m.nome, oque: `foi silenciado por 10 minutos${motivo}`, por: 'pelo painel', desfazer: 'silencio' }); mensagem = `${m.nome} ficou em silêncio.`; }
+    else if (c.acao === 'dessilenciar') { m.silenciadoAte = null; m.semPrazo = false; mensagem = `${m.nome} pode falar de novo.`; }
     else if (c.acao === 'expulsar') { membros = membros.filter((x) => x !== m); anotar({ tipo: 'EXPULSÃO', userId: m.id, nome: m.nome, oque: `foi expulso${motivo}`, por: 'pelo painel', desfazer: null }); return json(res, 200, { ok: true, mensagem: `${m.nome} foi expulso.`, membro: null }); }
     return json(res, 200, { ok: true, mensagem, membro: m });
   }

@@ -26,6 +26,15 @@ export function mover(lista, k, d) {
   return a;
 }
 
+/** Arrastar: tira o item de "de" e põe na posição "para" (os dois abaixo do bot). null = não dá. */
+export function moverPara(lista, de, para) {
+  if (de === para || !movivel(lista, de) || !movivel(lista, para) || para >= lista.length) return null;
+  const a = [...lista];
+  const [x] = a.splice(de, 1);
+  a.splice(para, 0, x);
+  return a;
+}
+
 /** Cargos com cor entre o bot e o bloco de cores: o nome fica com a cor deles, não com a escolhida */
 export function conflitos(lista) {
   const b = indiceDoBot(lista), c = lista.findIndex((x) => x.k === 'cores');
