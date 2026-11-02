@@ -51,6 +51,29 @@ config.niver = { on: true, canalId: id(12), hora: '09:00', msg: 'Hoje é anivers
 let aniversarios = ['rafa_cringe:14/11:2004', 'marina.exe:03/12:2002', 'joao_sem_braço:22/01:', 'bia.ppt:08/03:2005', 'tio_do_ru:30/06:1998', 'lu.miojo:02/11:2003', 'dudu.zip:10/01:1999', 'carol_rascunho:17/06:2001', 'th3o:24/11:', 'nanda.pdf:05/05:2000']
   // Os dois primeiros têm foto (no bot de verdade vem do Discord); o resto fica com a inicial
   .map((x, i) => { const [nome, d, ano] = x.split(':'); return { userId: id(500 + i), nome, d, ano: ano ? +ano : null, avatar: i < 2 ? `/banners/card-${i ? 'confete' : 'campus'}.gif` : null }; });
+config.moderacao = { silenciar: 3, expulsar: 5, canalId: id(15), automod: { palavrao: { on: true, acao: 'apagar' }, spam: { on: true, acao: 'silenciar' }, convites: { on: true, acao: 'avisar' }, mencoes: { on: false, acao: 'silenciar' }, links: { on: false, acao: 'apagar' } } };
+// Membros do protótipo (cargos pelos ids da lista de cargos daqui de baixo)
+const NOMES_CARGO = { Dono: 50, Moderação: 51, VIP: 52, Calouro: 60, 'Notícias do bot': 61, Veterano: 62, Gamers: 63, Vermelho: 100, Laranja: 101, Amarelo: 102, Verde: 103, Azul: 104, Roxo: 105, Rosa: 106 };
+const CORES_CARGO = { 50: '#F1C40F', 51: '#E91E63', 52: '#F39C12', 100: '#E74C3C', 101: '#E67E22', 102: '#F1C40F', 103: '#2ECC71', 104: '#3498DB', 105: '#9B59B6', 106: '#FF6EC7' };
+const DIA = 864e5;
+let membros = [
+  ['marina.exe', 700, ['Moderação', 'Roxo', 'Veterano'], 0], ['pedrinho', 3, ['Azul', 'Calouro'], 0], ['bia_memes', 240, ['VIP', 'Rosa', 'Veterano'], 0],
+  ['joaozin', 365, ['Vermelho', 'Gamers'], 1], ['caio.dev', 150, ['Verde', 'Notícias do bot'], 0], ['rafa_cringe', 7, ['Calouro'], 2],
+  ['tetê', 120, ['Laranja', 'VIP'], 0], ['luana', 14, ['Amarelo', 'Calouro'], 0], ['gabs', 400, ['Azul', 'Gamers', 'Veterano'], 0], ['kiko', 1, ['Calouro'], 0],
+  ['dudu.zip', 60, ['Roxo'], 0], ['nanda.pdf', 30, ['Verde', 'Veterano'], 0], ['th3o', 90, ['Rosa', 'Gamers'], 0], ['lu.miojo', 20, ['Amarelo', 'Calouro'], 0],
+].map(([nome, dias, cargos, avisos], i) => {
+  const ids = cargos.map((c) => id(NOMES_CARGO[c]));
+  const topo = cargos.map((c) => CORES_CARGO[NOMES_CARGO[c]]).find(Boolean);
+  return { id: id(500 + i), nome, usuario: nome.replace(/[^a-z0-9._]/gi, ''), avatar: i % 3 === 0 ? `/banners/card-${['campus', 'confete', 'campus'][i % 3]}.gif` : null, entrou: Date.now() - dias * DIA, cargos: ids, cor: topo ?? null, avisos, silenciadoAte: null, bot: false, podeSilenciar: i !== 0, podeExpulsar: i !== 0 };
+});
+let ocorrencias = [
+  { id: 'o1', tipo: 'AUTO-MOD', userId: id(505), nome: 'rafa_cringe', oque: 'mandou 6 mensagens em 3s e levou aviso', por: 'anti-spam', quando: Date.now() - 2 * 36e5, desfazer: 'aviso:x', desfeito: false },
+  { id: 'o2', tipo: 'SILÊNCIO', userId: id(509), nome: 'kiko', oque: 'foi silenciado por 10 minutos', por: 'por marina.exe', quando: Date.now() - DIA - 36e5, desfazer: 'silencio', desfeito: false },
+  { id: 'o3', tipo: 'AVISO', userId: id(503), nome: 'joaozin', oque: 'levou aviso por convite de outro servidor', por: 'auto-mod', quando: Date.now() - 3 * DIA, desfazer: 'aviso:y', desfeito: false },
+  { id: 'o4', tipo: 'BAN', userId: id(599), nome: 'vendedor_de_nitro', oque: 'foi banido', por: 'por marina.exe', quando: Date.now() - 7 * DIA, desfazer: 'ban', desfeito: false },
+  ...['luana', 'gabs', 'th3o'].map((nome, i) => ({ id: `o${5 + i}`, tipo: 'AVISO', userId: id(510 + i), nome, oque: 'levou um aviso: flood no #geral (1/5)', por: 'pelo painel', quando: Date.now() - (9 + i) * DIA, desfazer: `aviso:z${i}`, desfeito: false })),
+];
+const anotar = (o) => ocorrencias.unshift({ id: `o${Date.now()}`, quando: Date.now(), desfeito: false, ...o });
 const NOTICIAS = [
   { versao: '3.1.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Extra! O bot agora tem jornal', texto: 'Toda vez que o Manda Chuva ganhar novidade, ele posta a notícia num canal do servidor.', grande: true, adesivo: 'extra! extra!' },
   { versao: '3.0.1', data: '02/11/2026', tag: 'CORREÇÃO', titulo: 'Botão de tirar cor não some mais', texto: 'Tinha painel que perdia o botão depois de salvar. Achamos o culpado e ele já foi pra diretoria.', grande: false, adesivo: 'ai que burro, dá zero pra ele' },
@@ -69,6 +92,8 @@ const cargos = () => [
   ...CORES.slice(0, 10).map(([nome, , hex, membros], i) => ({ id: id(100 + i), nome, cor: hex, cor2: '', perigoso: false, acima: false, membros })),
   { id: id(60), nome: 'Calouro', cor: '#000000', cor2: '', perigoso: false, acima: false, membros: 34 },
   { id: id(61), nome: 'Notícias do bot', cor: '#000000', cor2: '', perigoso: false, acima: false, membros: 40 },
+  { id: id(62), nome: 'Veterano', cor: '#000000', cor2: '', perigoso: false, acima: false, membros: 51 },
+  { id: id(63), nome: 'Gamers', cor: '#000000', cor2: '', perigoso: false, acima: false, membros: 22 },
 ];
 
 // Hierarquia do protótipo (de cima pra baixo); o Salvar aplica o rascunho aqui mesmo
@@ -96,11 +121,12 @@ function estado() {
     servidores: [{ id: id(1), nome: 'Servidor de Teste' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
-      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128,
+      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [],
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length, lista: hierarquia, permsDoBot: ['cargos', 'mensagens'] },
     },
     noticias: NOTICIAS,
     aniversarios,
+    ocorrencias,
     paineis: paineis.map((p) => ({ ...p, canalNome: canais.find((c) => c.id === p.canalId)?.nome ?? 'canal apagado', link: 'https://discord.com/channels/1/2/3' })),
   };
 }
@@ -137,6 +163,34 @@ createServer(async (req, res) => {
     return json(res, 200, { ok: true });
   }
   if (rota === 'POST /api/portaria/testar') return json(res, 200, { ok: true, para: 'você' });
+  if (rota === 'GET /api/membros') {
+    const p = new URL(req.url, 'http://x').searchParams;
+    const q = (p.get('q') ?? '').toLowerCase().replace(/^@/, ''), cargo = p.get('cargo') ?? '';
+    const lista = membros.filter((m) => (!q || m.nome.toLowerCase().includes(q)) && (!cargo || m.cargos.includes(cargo))).sort((a, b) => a.nome.localeCompare(b.nome));
+    const paginas = Math.max(1, Math.ceil(lista.length / 6)), pg = Math.min(Math.max(1, +p.get('pagina') || 1), paginas);
+    return json(res, 200, { itens: lista.slice((pg - 1) * 6, pg * 6), pagina: pg, paginas, total: lista.length });
+  }
+  if (rota === 'POST /api/membros/acao') {
+    const c = await ler(req);
+    const m = membros.find((x) => x.id === c.userId);
+    if (!m) return json(res, 404, { erro: 'Essa pessoa não está mais no servidor.' });
+    const motivo = c.motivo ? `: ${c.motivo}` : '';
+    let mensagem;
+    if (c.acao === 'dar') { m.cargos.push(c.cargoId); mensagem = `${m.nome} ganhou o cargo.`; }
+    else if (c.acao === 'tirar') { m.cargos = m.cargos.filter((x) => x !== c.cargoId); mensagem = `Tirei o cargo de ${m.nome}.`; }
+    else if (c.acao === 'avisar') { m.avisos++; anotar({ tipo: 'AVISO', userId: m.id, nome: m.nome, oque: `levou um aviso${motivo} (${m.avisos}/5)`, por: 'pelo painel', desfazer: 'aviso:n' }); mensagem = `${m.nome} levou um aviso (${m.avisos}/5).`; }
+    else if (c.acao === 'silenciar') { m.silenciadoAte = Date.now() + 600_000; anotar({ tipo: 'SILÊNCIO', userId: m.id, nome: m.nome, oque: `foi silenciado por 10 minutos${motivo}`, por: 'pelo painel', desfazer: 'silencio' }); mensagem = `${m.nome} ficou em silêncio.`; }
+    else if (c.acao === 'dessilenciar') { m.silenciadoAte = null; mensagem = `${m.nome} pode falar de novo.`; }
+    else if (c.acao === 'expulsar') { membros = membros.filter((x) => x !== m); anotar({ tipo: 'EXPULSÃO', userId: m.id, nome: m.nome, oque: `foi expulso${motivo}`, por: 'pelo painel', desfazer: null }); return json(res, 200, { ok: true, mensagem: `${m.nome} foi expulso.`, membro: null }); }
+    return json(res, 200, { ok: true, mensagem, membro: m });
+  }
+  if (rota === 'POST /api/ocorrencias/desfazer') {
+    const { id: oid } = await ler(req);
+    const o = ocorrencias.find((x) => x.id === oid);
+    if (!o?.desfazer) return json(res, 400, { erro: 'Essa não tem volta.' });
+    o.desfeito = true;
+    return json(res, 200, { ok: true, mensagem: `Desfeito: ${o.nome}.` });
+  }
   if (rota === 'POST /api/aniversarios') {
     const c = await ler(req);
     if (c.acao === 'remover') { aniversarios = aniversarios.filter((p) => p.userId !== c.userId); return json(res, 200, { ok: true }); }

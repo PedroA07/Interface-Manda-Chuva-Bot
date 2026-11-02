@@ -1,10 +1,12 @@
-// Aba Cargos: a reitoria. Sub-aba Hierarquia (ordem, separadores, criar/editar/apagar cargos, consertar as cores).
-// Tudo é rascunho até o Salvar: o bot aplica no Discord (lib/hierarquia.js do bot).
+// Aba Cargos: a reitoria. Sub-abas Hierarquia (ordem, separadores, criar/editar/apagar cargos, consertar as cores;
+// rascunho até o Salvar), Membros (ações que valem na hora) e Moderação (avisos e livro de ocorrências).
 import { html } from '../../vendor/preact-htm.js';
 import { useApp } from '../estado.js';
 import { chave, COR_ETIQUETA, conflitos, consertar, etiquetas, indiceDoBot, inserir, listaDe, mover, movivel, PERMS, tirar } from '../hierarquia.js';
 import { fundoDaCor } from '../logica.js';
 import { Amostras, CampoCor, Toggle } from '../ui/basicos.js';
+import { TelaMembros } from './membros.js';
+import { TelaModeracao } from './moderacao.js';
 
 const AMOSTRAS = ['#E74C3C', '#E91E63', '#E67E22', '#F1C40F', '#2ECC71', '#1ABC9C', '#3498DB', '#5865F2', '#9B59B6', '#FF6EC7', '#99AAB5', '#2C2F33', '#111111', '#FFFFFF'];
 const VISTAS = [['hierarquia', 'Hierarquia'], ['membros', 'Membros'], ['moderacao', 'Moderação']];
@@ -21,13 +23,10 @@ export function AbaCargos() {
         <p class="sub">Hierarquia, membros e moderação do servidor num lugar só.</p>
       </div>
       <div class="segmentado sombra" style="margin-left:auto">
-        ${VISTAS.map(([id, nome]) => {
-          const breve = id !== 'hierarquia';
-          return html`<button type="button" class=${v === id ? 'on' : ''} disabled=${breve} title=${breve ? 'Chega na próxima versão' : ''} onClick=${() => setUi({ cargosView: id })}>${nome}${breve && html` <small class="em-breve">em breve</small>`}</button>`;
-        })}
+        ${VISTAS.map(([id, nome]) => html`<button type="button" class=${v === id ? 'on' : ''} onClick=${() => setUi({ cargosView: id })}>${nome}</button>`)}
       </div>
     </div>
-    <${TelaHierarquia} />
+    ${v === 'membros' ? html`<${TelaMembros} />` : v === 'moderacao' ? html`<${TelaModeracao} />` : html`<${TelaHierarquia} />`}
   </div>`;
 }
 
@@ -224,7 +223,10 @@ function Editor({ x, k, lista, mexer, permsDoBot, membros }) {
           })}
         </div>
       </div>
-      <button type="button" class="btn-perigo" style="justify-self:end" onClick=${apagar}>Apagar cargo</button>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        ${/^\d{17,20}$/.test(x.id) && html`<button type="button" class="btn mostarda" onClick=${() => setUi({ cargosView: 'membros', mbCargo: x.id, mbBusca: '', mbPagina: 1 })}>Ver membros</button>`}
+        <button type="button" class="btn-perigo" style="margin-left:auto" onClick=${apagar}>Apagar cargo</button>
+      </div>
     </div>
   </div>`;
 }
