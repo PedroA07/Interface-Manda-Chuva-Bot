@@ -4,6 +4,7 @@ import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
 import { PADROES } from '../galeria.js';
 import { urlImagem } from '../logica.js';
+import { aplicarTema, temaDaPrevia } from '../temas.js';
 import { CORES_CARD, CORES_EVENTO, DURACOES, EVENTOS, MODELOS_ENTRADA, MODELOS_EVENTO, TEMPOS, TEXTO_EVENTO } from '../modelos.js';
 import { Adesivo, Segmentado, Toggle } from '../ui/basicos.js';
 import { ImagensEmbed } from '../ui/imagens-embed.js';
@@ -62,6 +63,10 @@ export function AbaPortaria() {
   const opCanais = [{ v: '', t: 'Escolha um canal' }, ...(s?.canais ?? []).map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }))];
   const modelos = id === 'entrada' ? MODELOS_ENTRADA : MODELOS_EVENTO[id];
   const P = PADROES[id];
+  // Data festiva no ar (ou simulada na aba Temas): a prévia já mostra o visual do tema
+  const tema = aplicarTema(id, ev.imgs, temaDaPrevia(cfg, estado, ui), cfg.temas.respeitar);
+  const imgs = tema?.imgs ?? ev.imgs;
+  const card = id === 'entrada' && tema?.cardBg && (!cfg.temas.respeitar || !ev.card.bg) ? { ...ev.card, bg: tema.cardBg } : ev.card;
   const semMembros = !b.recursos?.membros && (id === 'entrada' || id === 'saida');
   const semAuditoria = punicao && s?.permissoesFaltando?.includes('Ver o registro de auditoria');
 
@@ -75,16 +80,16 @@ export function AbaPortaria() {
   const campos = [ev.motivo && `**Motivo:** ${vars.motivo}`, ev.mod && `**Moderador:** ${vars.moderador}`, id === 'silencio' && `**Duração:** ${vars.tempo}`].filter(Boolean);
   const dentro = ev.textoPos === 'dentro';
   const msg = {
-    topo: urlImagem(ev.imgs.topo, P.topo, api),
+    topo: urlImagem(imgs.topo, P.topo, api),
     fora: dentro ? '' : texto,
-    cor: ev.cor,
+    cor: tema?.cor ?? ev.cor,
     titulo: preencher(ev.titulo, vars),
-    texto: [dentro ? texto : '', campos.join('\n')].filter(Boolean).join('\n\n'),
-    mini: urlImagem(ev.imgs.mini, P.mini, api),
-    imagem: urlImagem(ev.imgs.imagem, P.imagem, api),
+    texto: [tema?.frase && `**${tema.frase}**`, dentro ? texto : '', campos.join('\n')].filter(Boolean).join('\n\n'),
+    mini: urlImagem(imgs.mini, P.mini, api),
+    imagem: urlImagem(imgs.imagem, P.imagem, api),
     rodape: id === 'entrada' ? `Membro nº ${numero} · ${servidor}` : `${servidor} · agora`,
-    card: id === 'entrada' && ev.card.on && html`<${CardPrevia} card=${ev.card} nome=${quem} vars=${vars} api=${api} />`,
-    finais: ev.imgs.finais.map((f) => urlImagem(f, P.final, api)).filter(Boolean),
+    card: id === 'entrada' && ev.card.on && html`<${CardPrevia} card=${card} nome=${quem} vars=${vars} api=${api} />`,
+    finais: imgs.finais.map((f) => urlImagem(f, P.final, api)).filter(Boolean),
   };
   const linhaSistema = id === 'entrada' && html`<div class="dc-sistema"><span>→</span><span><b>${quem}</b> entrou no servidor.</span></div>`;
 

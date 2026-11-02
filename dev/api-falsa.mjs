@@ -31,6 +31,22 @@ let config = {
     };
   })(),
 };
+config.temas = {
+  auto: true,
+  respeitar: true,
+  lista: [
+    ['carnaval', 'Carnaval', '', '', '#9B59B6', 'Bloco dos Memes na rua! Quarta-feira de cinzas a gente volta.', 'carnaval'],
+    ['pascoa', 'Páscoa', '', '', '#2ECC71', 'Caça aos ovos no campus: quem achar primeiro fica com o chocolate.', 'pascoa'],
+    ['namorados', 'Dia dos Namorados', '12/06', '12/06', '#FF6EC7', 'Feliz dia pra quem tem mozão. E pra quem tem só o Wi-Fi da faculdade.'],
+    ['junina', 'Festa Junina', '01/06', '30/06', '#E67E22', 'Olha a cobra! É mentira. Arraiá do campus liberado.'],
+    ['estudante', 'Dia do Estudante', '11/08', '11/08', '#F2C14E', 'Feliz Dia do Estudante! Hoje o café da cantina é por nossa conta (não é).'],
+    ['criancas', 'Dia das Crianças', '12/10', '12/10', '#3498DB', 'Feliz dia pra criança interior que ainda pede pra mãe marcar consulta.'],
+    ['halloween', 'Halloween', '25/10', '31/10', '#E67E22', 'Semana do terror no campus. Cuidado com o DCE assombrado.'],
+    ['natal', 'Natal', '01/12', '26/12', '#C4363C', 'Ho ho ho! O recesso tá chegando.'],
+    ['ano', 'Ano Novo', '27/12', '02/01', '#F2C14E', 'Ano novo, semestre novo, memes novos.'],
+    ['niver', 'Aniversário do servidor', '15/03', '15/03', '#9B59B6', 'Hoje o servidor faz aniversário! Parabéns pra nós.'],
+  ].map(([id, nome, ini, fim, cor, frase, movel]) => ({ id, nome, ini, fim, ...(movel && { movel }), on: true, cor, frase, onde: { painel: true, portaria: true, news: true }, msgs: {} })),
+};
 const NOTICIAS = [
   { versao: '3.1.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Extra! O bot agora tem jornal', texto: 'Toda vez que o Manda Chuva ganhar novidade, ele posta a notícia num canal do servidor.', grande: true, adesivo: 'extra! extra!' },
   { versao: '3.0.1', data: '02/11/2026', tag: 'CORREÇÃO', titulo: 'Botão de tirar cor não some mais', texto: 'Tinha painel que perdia o botão depois de salvar. Achamos o culpado e ele já foi pra diretoria.', grande: false, adesivo: 'ai que burro, dá zero pra ele' },

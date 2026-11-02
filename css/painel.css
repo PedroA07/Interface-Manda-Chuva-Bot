@@ -342,6 +342,44 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .card-previa-nome { font: 400 4.67cqw/1.15 var(--titulo); overflow-wrap: anywhere; }
 .card-previa-baixo { font: 700 2cqw/1.15 var(--corpo); }
 
+/* ---------- Aba Temas ---------- */
+.faixa-tema { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: -8px 0 22px; padding: 10px 14px; background: var(--navy); color: var(--papel); border: var(--borda); border-radius: 12px; box-shadow: var(--sombra); }
+.faixa-tema b { font: 400 17px/1.1 var(--titulo); color: var(--mostarda); }
+.faixa-tema-bola { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--c); border: 2px solid var(--papel); }
+.tema-status { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: #fff; border: var(--borda); border-radius: 14px; box-shadow: 4px 4px 0 var(--tinta); color: var(--tinta); }
+.tema-status.off { background: var(--desligado); }
+.tema-status.no-ar { background: var(--navy); }
+.tema-status.sim { background: var(--mostarda); }
+.tema-status-bola { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--c); border: var(--borda); }
+.tema-status-sub { font: 800 11px/1 var(--corpo); letter-spacing: .1em; color: var(--cinza); }
+.tema-status-titulo { font: 400 20px/1.1 var(--titulo); }
+.tema-status-texto { font-size: 13px; color: var(--cinza); }
+.tema-status.no-ar .tema-status-titulo { color: var(--mostarda); }
+.tema-status.no-ar .tema-status-sub, .tema-status.no-ar .tema-status-texto { color: #c9cbe0; }
+.tema-status.sim .tema-status-sub, .tema-status.sim .tema-status-texto { color: var(--tinta); }
+.calendario { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
+.mes { display: grid; align-content: start; gap: 5px; min-height: 76px; padding: 8px; background: #fff; border: var(--borda); border-radius: 10px; color: var(--tinta); }
+.mes.atual { background: var(--navy); color: var(--mostarda); box-shadow: var(--sombra); }
+.mes-nome { font: 400 13px/1 var(--titulo); }
+.mes-tema { display: flex; align-items: center; gap: 5px; font: 700 11px/1.2 var(--corpo); }
+.mes-tema i, .tema-bola { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); border: 1.5px solid var(--tinta); }
+.tema-bola { width: 10px; height: 10px; border-width: 2px; }
+.tema-linha { display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 10px; background: #fff; border: var(--borda); border-radius: 12px; }
+.tema-linha.sel { background: var(--aviso); box-shadow: 4px 4px 0 var(--tinta); }
+.tema-linha-botao { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; padding: 0; background: none; border: none; cursor: pointer; text-align: left; color: var(--tinta); }
+.tema-linha-botao img { flex: none; width: 120px; aspect-ratio: 3 / 1; object-fit: cover; border-radius: 8px; }
+.tema-estado { flex: none; padding: 3px 8px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 99px; font: 800 11px/1.2 var(--corpo); letter-spacing: .06em; }
+.tema-estado.off { background: var(--desligado); }
+.tema-estado.no-ar { background: var(--verde); color: #fff; }
+.nota-movel { padding: 10px 12px; background: var(--fundo); border: 2px dashed var(--tinta); border-radius: 10px; font-size: 14px; text-wrap: pretty; }
+.tema-msgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.tema-msg { display: grid; gap: 4px; padding: 4px; background: #fff; border: var(--borda); border-radius: 10px; cursor: pointer; text-align: left; color: var(--tinta); }
+.tema-msg.on { background: var(--mostarda); box-shadow: var(--sombra); }
+.tema-msg img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; border-radius: 6px; }
+.tema-msg span { font: 800 11px/1.2 var(--corpo); padding: 0 2px; }
+.pilula-navy { padding: 4px 10px; background: var(--navy); color: var(--mostarda); border: var(--borda); border-radius: 99px; font: 800 12px var(--corpo); }
+.tema-desligado { margin-top: 6px; padding: 12px; border: 2px dashed #4e5058; border-radius: 8px; color: #949ba4; }
+
 @media (max-width: 700px) {
   .secao { padding: 18px; }
   .h1 { font-size: 30px; }

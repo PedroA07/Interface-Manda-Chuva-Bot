@@ -4,14 +4,16 @@ import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
 import { PADROES } from '../galeria.js';
 import { botaoDaCor, ESTILOS, hexOk, urlImagem } from '../logica.js';
+import { aplicarTema, temaDaPrevia } from '../temas.js';
 import { Adesivo, CampoCor, Toggle } from '../ui/basicos.js';
 import { ImagensEmbed } from '../ui/imagens-embed.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 import { Previa } from '../ui/previa.js';
 
 /** A mensagem do painel como o bot vai mandar (lib/painel.js no bot), pra prévia */
-function mensagemDoPainel(cfg, api) {
-  const p = cfg.painel, bt = cfg.botoes, P = PADROES.painel, i = p.imgs;
+/** tema: resultado do aplicarTema (data festiva no ar ou simulada), ou null */
+function mensagemDoPainel(cfg, api, tema) {
+  const p = cfg.painel, bt = cfg.botoes, P = PADROES.painel, i = tema?.imgs ?? p.imgs;
   // Menção falsa pra cada cor: a prévia pinta com a cor que está sendo editada, antes de salvar
   const ctx = { cargos: cfg.cores.map((c, k) => ({ id: String(90000 + k), nome: c.nome, cor: hexOk(c.hex) })) };
   const lista = cfg.cores.map((c, k) => `${c.emoji ? `${c.emoji}  ` : ''}<@&${90000 + k}>`).join('\n');
@@ -23,9 +25,9 @@ function mensagemDoPainel(cfg, api) {
     ctx,
     msg: {
       topo: urlImagem(i.topo, P.topo, api),
-      cor: hexOk(p.corDoEmbed),
+      cor: hexOk(tema?.cor ?? p.corDoEmbed),
       titulo: p.titulo,
-      texto: [p.descricao, p.listarCores ? lista : '', campos].filter(Boolean).join('\n\n'),
+      texto: [tema?.frase && `**${tema.frase}**`, p.descricao, p.listarCores ? lista : '', campos].filter(Boolean).join('\n\n'),
       mini: urlImagem(i.mini, P.mini, api),
       imagem: urlImagem(i.imagem, P.imagem, api),
       rodape: p.rodape,
@@ -36,12 +38,12 @@ function mensagemDoPainel(cfg, api) {
 }
 
 export function AbaPainel() {
-  const { cfg, estado, mudar, salvar, sujo, aviso, tratar, recarregar, api } = useApp();
+  const { cfg, estado, ui, mudar, salvar, sujo, aviso, tratar, recarregar, api } = useApp();
   const [canal, setCanal] = useState('');
   const p = cfg.painel, bt = cfg.botoes, s = estado.servidor, b = estado.bot;
   const muda = (patch) => mudar((x) => Object.assign(x.painel, patch));
   const mudaBotoes = (fn) => mudar((x) => fn(x.botoes));
-  const { msg, ctx } = mensagemDoPainel(cfg, api);
+  const { msg, ctx } = mensagemDoPainel(cfg, api, aplicarTema('painel', p.imgs, temaDaPrevia(cfg, estado, ui), cfg.temas.respeitar));
   const motivo = !b.online ? 'Ligue o bot para enviar o painel.' : !s ? 'Escolha o servidor lá em cima.' : '';
   const opCanais = (s?.canais ?? []).map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }));
 

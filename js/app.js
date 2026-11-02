@@ -3,18 +3,21 @@ import { html, useCallback, useEffect, useMemo, useRef, useState } from '../vend
 import { AbaCores } from './abas/cores.js';
 import { AbaNoticias } from './abas/noticias.js';
 import { AbaPortaria } from './abas/portaria.js';
+import { AbaTemas } from './abas/temas.js';
 import { AbaPainel } from './abas/painel.js';
 import { apiNestePc, chamar, conexao, ErroSenha, esquecerSenha, guardarAcesso } from './api.js';
 import { Ctx } from './estado.js';
-import { naoLidas } from './logica.js';
+import { hexOk, naoLidas } from './logica.js';
+import { temaDaPrevia } from './temas.js';
 import { Adesivo, Toggle } from './ui/basicos.js';
 import { ListaSuspensa } from './ui/lista-suspensa.js';
 
-// As outras abas do design (Cargos, Temas) entram nas próximas versões
+// A aba Cargos do design entra numa próxima versão
 const ABAS = [
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
   { id: 'boas', nome: 'Portaria', cor: '#b9dcb0', Tela: AbaPortaria },
+  { id: 'temas', nome: 'Temas', cor: '#f2b880', Tela: AbaTemas },
   { id: 'news', nome: 'Notícias', cor: '#b6c8ee', Tela: AbaNoticias, badge: (estado, ui) => naoLidas(estado.noticias ?? [], ui.lido).length },
 ];
 
@@ -246,7 +249,18 @@ export function App() {
               return html`<button type="button" class=${`aba${a === aba ? ' ativa' : ''}`} style=${`--cor-aba:${a.cor}`} onClick=${() => setUi({ aba: a.id })}>${a.nome}${badge > 0 && html`<span class="aba-badge">${badge}</span>`}</button>`;
             })}
           </nav>
-          <section class="secao"><${aba.Tela} /></section>
+          <section class="secao">
+            ${(() => {
+              const t = temaDaPrevia(cfg, estado, ui);
+              return t && html`<div class="faixa-tema">
+                <span class="faixa-tema-bola" style=${`--c:${hexOk(t.cor)}`}></span>
+                <b>${ui.tmSim ? 'SIMULAÇÃO · ' : 'NO AR · '}${t.nome.toUpperCase()}</b>
+                <span style="font-size:14px">As mensagens do bot estão com o visual do tema.</span>
+                ${ui.tmSim && html`<button type="button" class="btn mostarda pequeno" style="margin-left:auto" onClick=${() => setUi({ tmSim: '' })}>Parar simulação</button>`}
+              </div>`;
+            })()}
+            <${aba.Tela} />
+          </section>
         </div>
         <div class="barra-salvar">
           <div class="barra-dentro">

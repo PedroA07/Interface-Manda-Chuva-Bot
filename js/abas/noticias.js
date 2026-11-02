@@ -3,6 +3,7 @@ import { html, useState } from '../../vendor/preact-htm.js';
 import { useApp } from '../estado.js';
 import { PADROES } from '../galeria.js';
 import { dataCurta, naoLidas, paginar, urlImagem } from '../logica.js';
+import { aplicarTema, temaDaPrevia } from '../temas.js';
 import { Adesivo, Paginacao, Toggle } from '../ui/basicos.js';
 import { ImagensEmbed } from '../ui/imagens-embed.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
@@ -27,12 +28,13 @@ export function AbaNoticias() {
   const opCanais = [{ v: '', t: 'Escolha um canal' }, ...(s?.canais ?? []).map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }))];
   const opMencao = [{ v: '', t: 'Ninguém' }, ...(s?.cargos ?? []).map((r) => ({ v: r.id, t: `@${r.nome}`, cor: r.cor !== '#000000' ? r.cor : undefined })), { v: 'everyone', t: '@everyone', nota: 'corajoso' }];
   const ultima = (n.quais === 'grandes' ? lista.find((x) => x.grande) : lista[0]) ?? lista[0];
-  const P = PADROES.news, i = n.imgs;
+  const temaN = aplicarTema('news', n.imgs, temaDaPrevia(cfg, estado, ui), cfg.temas.respeitar);
+  const P = PADROES.news, i = temaN?.imgs ?? n.imgs;
   const msg = ultima && {
     acima: n.mencao === 'everyone' ? '@everyone' : n.mencao ? `<@&${n.mencao}>` : '',
     topo: urlImagem(i.topo, P.topo, api),
-    cor: '#f2c14e',
-    texto: `-# **Jornal do Campus · v${ultima.versao}**\n### ${ultima.titulo}\n${ultima.texto}`,
+    cor: temaN?.cor ?? '#f2c14e',
+    texto: `${temaN?.frase ? `**${temaN.frase}**\n\n` : ''}-# **Jornal do Campus · v${ultima.versao}**\n### ${ultima.titulo}\n${ultima.texto}`,
     mini: urlImagem(i.mini, P.mini, api),
     imagem: urlImagem(i.imagem, P.imagem, api),
     rodape: 'Leia tudo no painel',
