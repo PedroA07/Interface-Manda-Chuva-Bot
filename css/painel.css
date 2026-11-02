@@ -384,6 +384,8 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .sub-aba { padding: 9px 16px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 12px; font: 800 15px var(--corpo); cursor: pointer; }
 .sub-aba.on { background: var(--navy); color: var(--mostarda); box-shadow: var(--sombra); }
 .comando, .cartao .comando { padding: 5px 10px; background: var(--tinta); color: var(--mostarda); border-radius: 8px; font: 500 14px var(--mono); }
+.niver-bola, .card-niver-foto { position: relative; overflow: hidden; }
+.niver-bola img, .card-niver-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .niver-bola { flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--c); border: var(--borda); font: 800 14px var(--corpo); color: var(--papel); }
 .niver-nome { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .niver-prox { display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; background: #fff; border: var(--borda); border-radius: 12px; }
@@ -400,6 +402,50 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .card-niver-nome { font: 800 3.17cqw/1.15 var(--corpo); text-shadow: .33cqw .33cqw 0 var(--tinta); }
 .card-niver-baixo { font: 800 2cqw/1 var(--corpo); letter-spacing: .12em; padding: .67cqw 1.67cqw; background: var(--tinta); color: var(--mostarda); border-radius: 1cqw; }
 @media (max-width: 760px) { .tabela-niver-cabeca, .tabela-niver-linha { grid-template-columns: minmax(0, 1fr) 70px 90px 34px; } .tabela-niver-cabeca span:nth-child(3), .tabela-niver-linha > span:nth-child(3) { display: none; } }
+
+/* ---------- Cargos › Hierarquia ---------- */
+.segmentado button:disabled { color: var(--cinza); background: #f6f0e2; }
+.em-breve { font: 700 10px var(--corpo); letter-spacing: .06em; text-transform: uppercase; }
+.hier { background: #fff; border: var(--borda); border-radius: 14px; overflow: hidden; }
+.hier-linha { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; cursor: pointer; }
+.hier-linha + .hier-linha { border-top: 2px solid var(--fundo); }
+.hier-linha:focus-visible { outline: 3px solid var(--mostarda); outline-offset: -3px; }
+.hier-cargo { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto auto; }
+.hier-cargo.sel, .hier-bloco.sel { background: #fff4cf; }
+.hier-cargo.do-bot { background: #e8ecfb; }
+.hier-da-cor { padding-left: 40px; }
+.hier-linha + .hier-da-cor { border-top: 1px dashed #e4dccb; }
+.hier-sep { padding: 8px 14px; background: #f6f0e2; }
+.hier-linha + .hier-sep { border-top: var(--borda); }
+.hier-sep.sel { background: #f3d48a; }
+.hier-traco { flex: 1; height: 2px; background: var(--tinta); }
+.hier-sep-nome { font: 400 13px/1 var(--titulo); letter-spacing: .14em; white-space: pre; }
+.hier-sep-previa { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f6f0e2; border: var(--borda); border-radius: 10px; }
+.hier-bloco { flex-wrap: wrap; padding: 9px 14px; }
+.hier-bolinhas { display: flex; gap: 3px; }
+.hier-bolinhas span { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--tinta); }
+.hier-bola { width: 18px; height: 18px; border-radius: 50%; border: var(--borda); }
+.hier-nome { min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hier-nome b { font-weight: 800; overflow-wrap: anywhere; }
+.hier-etiqueta { padding: 1px 6px; border: 1.5px solid var(--tinta); border-radius: 5px; font: 800 10px/1.4 var(--corpo); letter-spacing: .08em; }
+.hier-membros { font-size: 13px; font-weight: 700; color: var(--cinza); white-space: nowrap; }
+.hier-setas { display: flex; gap: 4px; justify-content: flex-end; min-width: 60px; }
+.hier-seta { width: 28px; height: 26px; padding: 0; background: #fff; border: var(--borda); border-radius: 6px; font: 800 13px sans-serif; color: var(--tinta); cursor: pointer; }
+.hier-seta:disabled { opacity: .3; }
+.hier-travado { font: 800 10px var(--corpo); letter-spacing: .08em; color: var(--vermelho); align-self: center; }
+.hier-linha-bot { display: flex; align-items: center; gap: 10px; padding: 4px 14px; background: var(--papel); }
+.hier-linha-bot > span:not(.rabisco) { flex: 1; border-top: 2px dashed var(--vermelho); }
+.hier-linha-bot .rabisco { transform: none; }
+.hier-conflito { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; background: #f5b5a8; border: var(--borda); border-radius: 12px; }
+.hier-cracha { display: inline-grid; gap: 4px; padding: 6px 10px; background: var(--papel); border: var(--borda); border-radius: 8px; }
+.hier-cracha span { font: 700 10px/1 var(--corpo); letter-spacing: .18em; color: var(--cinza); }
+.hier-cracha b { font: 400 18px/1 var(--titulo); }
+.hier-sem-cor { padding: 3px 10px; background: #fff; border: 2px dashed var(--tinta); border-radius: 99px; font: 700 12px var(--corpo); cursor: pointer; }
+.hier-toggle { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 2px dashed var(--tracejado); }
+.hier-perm { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 99px; font: 700 13px var(--corpo); cursor: pointer; }
+.hier-perm.on { background: var(--navy); color: var(--mostarda); }
+.hier-perm:disabled { opacity: .45; }
+@media (max-width: 560px) { .hier-cargo { grid-template-columns: 18px minmax(0, 1fr) auto; } .hier-cargo .hier-membros { display: none; } }
 
 @media (max-width: 700px) {
   .secao { padding: 18px; }

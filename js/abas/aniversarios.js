@@ -28,7 +28,9 @@ function Extra({ titulo, texto, on, onClick, ultimo }) {
   </div>`;
 }
 
-const Bolinha = ({ p, tam = 34 }) => html`<span class="niver-bola" style=${`--c:${p.cor};width:${tam}px;height:${tam}px`}>${p.nome.charAt(0).toUpperCase()}</span>`;
+// Foto de perfil por cima da inicial; se a foto não carregar, fica a inicial
+const Foto = ({ p }) => p.avatar && html`<img src=${p.avatar} alt="" loading="lazy" onError=${(e) => (e.target.style.display = 'none')} />`;
+const Bolinha = ({ p, tam = 34 }) => html`<span class="niver-bola" style=${`--c:${p.cor};width:${tam}px;height:${tam}px`}>${p.nome.charAt(0).toUpperCase()}<${Foto} p=${p} /></span>`;
 
 export function TelaAniversarios() {
   const { cfg, estado, setUi, mudar, api } = useApp();
@@ -46,7 +48,7 @@ export function TelaAniversarios() {
     <img src=${urlImagem(n.fundo, FUNDO, api)} alt="" />
     <div class="card-niver-dentro">
       ${n.topo && html`<span class="card-niver-topo">${textoDoNiver(n.topo, noCard, n.idade)}</span>`}
-      <span class="card-niver-foto" style=${`--c:${pessoa.cor}`}>${pessoa.nome.charAt(0).toUpperCase()}</span>
+      <span class="card-niver-foto" style=${`--c:${pessoa.cor}`}>${pessoa.nome.charAt(0).toUpperCase()}<${Foto} p=${pessoa} /></span>
       <span class="card-niver-nome">${pessoa.nome}</span>
       ${textoDoNiver(n.baixo, noCard, n.idade) && html`<span class="card-niver-baixo">${textoDoNiver(n.baixo, noCard, n.idade)}</span>`}
     </div>
@@ -66,7 +68,7 @@ export function TelaAniversarios() {
         <div class="cartao" style="background:var(--aviso);gap:10px;padding:16px 18px">
           <b style="font:400 17px/1.1 var(--titulo)">COMO O BOT SABE A DATA?</b>
           <p style="margin:0;font-size:14px;text-wrap:pretty">O Discord não mostra idade nem aniversário de ninguém. Cada membro cadastra o seu, e o ano é opcional: sem ano, a mensagem sai sem idade.</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><code class="comando">/aniversario 14/05/2003</code><span style="font-size:13px;color:var(--cinza)">ou</span><code class="comando">/aniversario 14/05</code></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><code class="comando">/aniversario dia:14 mes:05 ano:2003</code><span style="font-size:13px;color:var(--cinza)">ou sem o ano</span><code class="comando">/aniversario dia:14 mes:05</code></div>
         </div>
         <div class="cartao">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
@@ -116,7 +118,7 @@ export function TelaAniversarios() {
         <span style="font:400 16px var(--titulo)">PRÉVIA · #${canal?.nome ?? 'canal'} · ${pessoa.d} às ${n.hora}</span>
         <${Previa} hora=${n.hora} ctx=${{ usuarios: { 1: pessoa.nome } }} msg=${{ fora: textoDoNiver(n.msg, vars, n.idade), card }}
           depois=${n.cargo && html`<div style="margin-top:6px;font-size:13px;color:#949ba4">@${pessoa.nome} ganhou o cargo <span style="color:#f2c14e;font-weight:700">Aniversariante do dia</span> por 24 horas.</div>`} />
-        <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">Na prévia, a foto aparece como a inicial. No servidor, o bot usa a foto de perfil da pessoa.</span>
+        <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">A prévia usa o próximo aniversariante da lista, com a foto de perfil dele (ou a inicial, se não der pra carregar).</span>
       </aside>
     </div>`;
 }

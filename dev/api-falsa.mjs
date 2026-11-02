@@ -49,7 +49,8 @@ config.temas = {
 };
 config.niver = { on: true, canalId: id(12), hora: '09:00', msg: 'Hoje é aniversário de {usuario}! {idade} anos e ainda não trancou o curso. Parabéns!', topo: 'PARABÉNS!', baixo: '{idade} ANOS DE PURA RESENHA', fundo: '', idade: true, cargo: true, dm: false, botao: true };
 let aniversarios = ['rafa_cringe:14/11:2004', 'marina.exe:03/12:2002', 'joao_sem_braço:22/01:', 'bia.ppt:08/03:2005', 'tio_do_ru:30/06:1998', 'lu.miojo:02/11:2003', 'dudu.zip:10/01:1999', 'carol_rascunho:17/06:2001', 'th3o:24/11:', 'nanda.pdf:05/05:2000']
-  .map((x, i) => { const [nome, d, ano] = x.split(':'); return { userId: id(500 + i), nome, d, ano: ano ? +ano : null }; });
+  // Os dois primeiros têm foto (no bot de verdade vem do Discord); o resto fica com a inicial
+  .map((x, i) => { const [nome, d, ano] = x.split(':'); return { userId: id(500 + i), nome, d, ano: ano ? +ano : null, avatar: i < 2 ? `/banners/card-${i ? 'confete' : 'campus'}.gif` : null }; });
 const NOTICIAS = [
   { versao: '3.1.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Extra! O bot agora tem jornal', texto: 'Toda vez que o Manda Chuva ganhar novidade, ele posta a notícia num canal do servidor.', grande: true, adesivo: 'extra! extra!' },
   { versao: '3.0.1', data: '02/11/2026', tag: 'CORREÇÃO', titulo: 'Botão de tirar cor não some mais', texto: 'Tinha painel que perdia o botão depois de salvar. Achamos o culpado e ele já foi pra diretoria.', grande: false, adesivo: 'ai que burro, dá zero pra ele' },
@@ -70,6 +71,24 @@ const cargos = () => [
   { id: id(61), nome: 'Notícias do bot', cor: '#000000', cor2: '', perigoso: false, acima: false, membros: 40 },
 ];
 
+// Hierarquia do protótipo (de cima pra baixo); o Salvar aplica o rascunho aqui mesmo
+let hierarquia = [
+  { k: 'sep', id: id(70), nome: 'STAFF', travado: true },
+  { k: 'role', id: id(50), nome: 'Dono', hex: '#F1C40F', perms: ['admin'], hoist: true, mencionavel: false, membros: 1, travado: true },
+  { k: 'role', id: id(51), nome: 'Moderação', hex: '#E91E63', perms: ['cargos', 'mensagens', 'silenciar', 'expulsar', 'banir'], hoist: true, mencionavel: true, membros: 4, travado: true },
+  { k: 'role', id: id(53), nome: 'Manda Chuva', hex: '#5865F2', perms: ['cargos'], hoist: false, mencionavel: false, membros: 1, travado: true, gerenciado: 'bot', bot: true },
+  { k: 'sep', id: id(71), nome: 'VIP' },
+  { k: 'role', id: id(52), nome: 'VIP', hex: '#F39C12', perms: [], hoist: true, mencionavel: false, membros: 8 },
+  { k: 'sep', id: id(72), nome: 'CORES' },
+  { k: 'cores' },
+  { k: 'sep', id: id(73), nome: 'INTERESSES' },
+  { k: 'role', id: id(60), nome: 'Calouro', hex: '', perms: [], hoist: false, mencionavel: false, membros: 34 },
+  { k: 'role', id: id(62), nome: 'Veterano', hex: '', perms: [], hoist: false, mencionavel: false, membros: 51 },
+  { k: 'role', id: id(63), nome: 'Gamers', hex: '', perms: [], hoist: false, mencionavel: false, membros: 22 },
+  { k: 'role', id: id(61), nome: 'Notícias do bot', hex: '', perms: [], hoist: false, mencionavel: true, membros: 40 },
+  { k: 'role', id: id(64), nome: 'Server Booster', hex: '#FF73FA', perms: [], hoist: false, mencionavel: false, membros: 2, gerenciado: 'impulso' },
+];
+
 function estado() {
   return {
     config,
@@ -78,7 +97,7 @@ function estado() {
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
       recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128,
-      hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length },
+      hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length, lista: hierarquia, permsDoBot: ['cargos', 'mensagens'] },
     },
     noticias: NOTICIAS,
     aniversarios,
@@ -95,9 +114,17 @@ createServer(async (req, res) => {
   const rota = `${req.method} ${url.pathname}`;
   if (rota === 'GET /api/estado') return json(res, 200, estado());
   if (rota === 'POST /api/salvar') {
-    config = await ler(req);
+    const corpo = await ler(req);
+    const rel = ['(API falsa) nada foi pro Discord.'];
+    if (corpo.hierarquia) {
+      let n = 0;
+      hierarquia = corpo.hierarquia.lista.map((x) => (x.k === 'cores' || /^\d{17,20}$/.test(x.id) ? x : { ...x, id: id(300 + n++), membros: 0 }));
+      rel.push(`Hierarquia: ${n} criado(s), ${corpo.hierarquia.apagar.length} apagado(s).`);
+    }
+    delete corpo.hierarquia;
+    config = corpo;
     config.cores.forEach((c, i) => (c.cargoId ??= id(200 + i)));
-    return json(res, 200, { config, relatorio: ['(API falsa) nada foi pro Discord.'] });
+    return json(res, 200, { config, relatorio: rel });
   }
   if (rota === 'POST /api/enviar') {
     const { canalId } = await ler(req);
