@@ -1,8 +1,11 @@
 # Interface do Manda Chuva BOT
 
-Painel no navegador pra configurar o [Manda Chuva BOT](https://github.com/PedroA07/Manda-Chuva-BOT): cores (nome, cor, emoji, estilo do botão e cargo), textos do embed, campos, imagens, botões e respostas, com prévia ao vivo. Daqui também dá pra enviar o painel num canal e ver se a hierarquia de cargos está certa.
+Painel no navegador pra configurar o [Manda Chuva BOT](https://github.com/PedroA07/Manda-Chuva-BOT), no visual "college" (papel de caderno, adesivos, sombras duras):
 
-É um site estático (HTML + JavaScript, sem build). Ele não guarda nada: tudo fica no bot, e a interface conversa com a API dele.
+- **Cores**: os cargos de cor como cartões de matrícula. Cor sólida ou degradê, emoji por categoria, cor do botão (padrão do Discord, cor do cargo ou cor própria) e o boletim da hierarquia.
+- **Painel**: texto, campos, imagens (banner em cima, miniatura, imagem grande e até 4 no final: modelos da galeria, link ou arquivo enviado), botões e respostas, com prévia ao vivo. Daqui também dá pra enviar o painel num canal.
+
+É um site estático (HTML + JavaScript com [Preact](https://preactjs.com) embutido em `vendor/`, sem build). Ele não guarda nada: tudo fica no bot, e a interface conversa com a API dele.
 
 **Endereço:** https://pedroa07.github.io/Interface-Manda-Chuva-Bot/
 
@@ -30,6 +33,18 @@ npx serve -l 5500
 
 e abra http://localhost:5500. Aberta assim, ela usa `http://localhost:3000` como endereço padrão do bot.
 
+Pra mexer no visual sem o bot, tem uma API falsa com dados de exemplo (serve o site junto):
+
+```
+node dev/api-falsa.mjs
+```
+
+e abra http://localhost:3000. Os testes das regras (paginação, cores, imagens, prévia) rodam com `npm test`.
+
 ## Publicar
 
 O GitHub Pages publica sozinho a cada `git push` na branch `main` (Settings → Pages → Deploy from a branch → `main` / raiz).
+
+## Imagens
+
+A pasta `banners/` tem a galeria de modelos (banners animados das datas festivas, miniaturas, fundos de card e os clássicos). O bot usa essas imagens direto deste site, então elas precisam estar publicadas aqui.
