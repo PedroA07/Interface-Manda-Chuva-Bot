@@ -4,8 +4,8 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 export const urlEmoji = (id, animado) => `https://cdn.discordapp.com/emojis/${id}.${animado ? 'gif' : 'png'}?size=48`;
 export const pilula = (texto, cor = '#c9cdfb', fundo = '#5865f24d') => `<span class="dc-mencao" style="color:${cor};background:${fundo}">${texto}</span>`;
 
-/** @param {{ cargos?: { id: string, nome: string, cor: string }[], canais?: { id: string, nome: string }[] }} ctx */
-function linha(t, { cargos = [], canais = [] }) {
+/** @param {{ cargos?: { id: string, nome: string, cor: string }[], canais?: { id: string, nome: string }[], usuarios?: Record<string, string> }} ctx */
+function linha(t, { cargos = [], canais = [], usuarios = {} }) {
   return esc(t)
     .replace(/&lt;(a?):\w+:(\d+)&gt;/g, (_, a, id) => `<img class="dc-emoji" src="${urlEmoji(id, a)}" alt="">`)
     .replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
@@ -13,7 +13,7 @@ function linha(t, { cargos = [], canais = [] }) {
       const cor = r && r.cor !== '#000000' ? r.cor : '#C9CDFB';
       return pilula(`@${esc(r ? r.nome : 'cargo')}`, cor, `${cor}26`);
     })
-    .replace(/&lt;@!?(\d+)&gt;/g, () => pilula('@usuário'))
+    .replace(/&lt;@!?(\d+)&gt;/g, (_, id) => pilula(`@${esc(usuarios[id] ?? 'usuário')}`))
     .replace(/&lt;#(\d+)&gt;/g, (_, id) => pilula(`#${esc(canais.find((c) => c.id === id)?.nome ?? 'canal')}`))
     .replace(/@(everyone|here)\b/g, (_, quem) => pilula(`@${quem}`))
     .replace(/`([^`]+)`/g, '<code>$1</code>')

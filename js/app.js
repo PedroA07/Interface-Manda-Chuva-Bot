@@ -2,6 +2,7 @@
 import { html, useCallback, useEffect, useMemo, useRef, useState } from '../vendor/preact-htm.js';
 import { AbaCores } from './abas/cores.js';
 import { AbaNoticias } from './abas/noticias.js';
+import { AbaPortaria } from './abas/portaria.js';
 import { AbaPainel } from './abas/painel.js';
 import { apiNestePc, chamar, conexao, ErroSenha, esquecerSenha, guardarAcesso } from './api.js';
 import { Ctx } from './estado.js';
@@ -9,10 +10,11 @@ import { naoLidas } from './logica.js';
 import { Adesivo, Toggle } from './ui/basicos.js';
 import { ListaSuspensa } from './ui/lista-suspensa.js';
 
-// As outras abas do design (Cargos, Portaria, Temas) entram nas próximas versões
+// As outras abas do design (Cargos, Temas) entram nas próximas versões
 const ABAS = [
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
+  { id: 'boas', nome: 'Portaria', cor: '#b9dcb0', Tela: AbaPortaria },
   { id: 'news', nome: 'Notícias', cor: '#b6c8ee', Tela: AbaNoticias, badge: (estado, ui) => naoLidas(estado.noticias ?? [], ui.lido).length },
 ];
 

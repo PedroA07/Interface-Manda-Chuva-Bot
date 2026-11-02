@@ -316,6 +316,32 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .noticia-nao-lida i { width: 8px; height: 8px; border-radius: 50%; background: var(--vermelho); }
 .noticia-titulo { margin: 0; font: 800 22px/1.15 var(--corpo); text-wrap: balance; }
 
+/* ---------- Aba Portaria ---------- */
+.aba-evento { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 12px; cursor: pointer; text-align: left; }
+.aba-evento.ativo { background: var(--navy); color: var(--mostarda); box-shadow: var(--sombra); }
+.aba-evento-bola { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--c); border: var(--borda); }
+.aba-evento-estado { font: 700 11px/1 var(--corpo); color: var(--c); }
+.caixa-liga { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #fff; border: var(--borda); border-radius: 12px; }
+.modelo { padding: 8px 14px; background: #fff; border: var(--borda); border-radius: 99px; font: 700 14px var(--corpo); color: var(--tinta); cursor: pointer; }
+.modelo.on { background: var(--verde-claro); box-shadow: var(--sombra); }
+.variavel { padding: 4px 10px; background: var(--fundo); border: var(--borda); border-radius: 6px; font: 500 13px var(--mono); color: var(--tinta); cursor: pointer; }
+.variavel:hover { background: var(--mostarda); }
+.segmentado.pequeno button { padding: 5px 10px; font-size: 12px; }
+.dc-sistema { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; color: #949ba4; font-size: 14px; }
+.dc-sistema span:first-child { width: 40px; text-align: center; color: #23a55a; font-weight: 700; }
+.dc-sistema b { color: #f2f3f5; font-weight: 500; }
+/* Card de boas-vindas: medidas em cqw = proporcional à largura, igual ao card que o bot desenha em 1200×520 */
+.card-previa { position: relative; margin-top: 6px; aspect-ratio: 600 / 260; border-radius: 8px; overflow: hidden; background: #2b2d31; container-type: inline-size; }
+.card-previa > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card-previa-dentro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.33cqw; padding: 2.33cqw 4.67cqw; }
+.card-previa-dentro.lado { flex-direction: row; }
+.card-previa-foto { flex: none; width: 12.67cqw; height: 12.67cqw; display: grid; place-items: center; background: #5865f2; border: .67cqw solid var(--borda-foto); font: 400 5cqw/1 var(--titulo); color: #fff; box-sizing: content-box; }
+.card-previa-textos { display: grid; gap: .67cqw; text-align: center; min-width: 0; color: var(--txt); text-shadow: 0 .33cqw 0 var(--sombra); }
+.card-previa-dentro.lado .card-previa-textos { text-align: left; }
+.card-previa-cima { font: 800 1.83cqw/1.15 var(--corpo); letter-spacing: .14em; }
+.card-previa-nome { font: 400 4.67cqw/1.15 var(--titulo); overflow-wrap: anywhere; }
+.card-previa-baixo { font: 700 2cqw/1.15 var(--corpo); }
+
 @media (max-width: 700px) {
   .secao { padding: 18px; }
   .h1 { font-size: 30px; }

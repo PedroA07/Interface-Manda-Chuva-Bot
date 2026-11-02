@@ -17,6 +17,19 @@ let config = {
   botoes: { porLinha: 4, remover: { ativo: true, texto: 'Tirar cor', emoji: '❌', estilo: 'Danger' } },
   mensagens: { ganhou: 'Pronto! Agora você é {cor}.', removeu: 'Tirei {cor} de você.' },
   noticias: { on: true, canalId: id(13), mencao: id(61), quais: 'todas', imgs: { topo: '', mini: '', imagem: '', finais: [] } },
+  portaria: (() => {
+    const imgs = () => ({ topo: '', mini: '', imagem: '', finais: [] });
+    return {
+      entrada: { on: true, canalId: id(14), titulo: 'Bem-vindo(a) ao campus!', textoPos: 'fora', cor: '#F2C14E', dm: false, imgs: imgs(),
+        msg: 'Para nossa alegria, {usuario} acabou de chegar no **{servidor}**! 🎉\nPega sua cor em #escolha-sua-cor e se apresenta.',
+        cargoAuto: { on: true, cargoId: id(60) },
+        card: { on: true, bg: '', cima: 'BEM-VINDO(A) AO CAMPUS', baixo: 'Membro nº {numero}', layout: 'centro', forma: 'circulo', texto: '#FFFFFF', borda: '#F2C14E' } },
+      saida: { on: true, canalId: id(14), titulo: 'Matrícula trancada', textoPos: 'fora', cor: '#95A5A6', dm: false, imgs: imgs(), msg: '{usuario} trancou a matrícula. A turma agora tem {numero} alunos.' },
+      expulsao: { on: false, canalId: null, titulo: 'Expulsão', textoPos: 'fora', cor: '#E67E22', dm: true, mod: true, motivo: true, imgs: imgs(), msg: '{usuario} foi pra diretoria e não volta hoje.' },
+      ban: { on: false, canalId: null, titulo: 'Banimento', textoPos: 'fora', cor: '#C4363C', dm: true, mod: true, motivo: true, imgs: imgs(), msg: '{usuario} foi **JUBILADO(A)** do {servidor}. Não volta nem com recurso.' },
+      silencio: { on: false, canalId: null, titulo: 'Silenciado', textoPos: 'dentro', cor: '#3498DB', dm: true, mod: true, motivo: true, duracao: '1h', imgs: imgs(), msg: 'Shhh, biblioteca! {usuario} ficou em silêncio por {tempo}.' },
+    };
+  })(),
 };
 const NOTICIAS = [
   { versao: '3.1.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Extra! O bot agora tem jornal', texto: 'Toda vez que o Manda Chuva ganhar novidade, ele posta a notícia num canal do servidor.', grande: true, adesivo: 'extra! extra!' },
@@ -45,7 +58,7 @@ function estado() {
     servidores: [{ id: id(1), nome: 'Servidor de Teste' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
-      recursos: { degrade: false }, permissoesFaltando: [], podeMencionarTodos: false,
+      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128,
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length },
     },
     noticias: NOTICIAS,
@@ -76,6 +89,7 @@ createServer(async (req, res) => {
     paineis = paineis.filter((p) => p.mensagemId !== mensagemId);
     return json(res, 200, { ok: true });
   }
+  if (rota === 'POST /api/portaria/testar') return json(res, 200, { ok: true, para: 'você' });
   if (rota === 'POST /api/anexo') {
     const { base64, tipo } = await ler(req);
     const buf = Buffer.from(base64, 'base64');

@@ -47,4 +47,9 @@ export const GALERIA = {
 export const PADROES = {
   painel: { topo: 'banners/painel-cores.gif', mini: 'banners/mini-paleta.gif', imagem: 'none', final: 'banners/rodape-campus.gif' },
   news: { topo: 'banners/noticias.gif', mini: 'banners/mini-selo.gif', imagem: 'none', final: 'banners/rodape-campus.gif' },
+  entrada: { topo: 'banners/boas-vindas.gif', mini: 'banners/mini-capelo.gif', imagem: 'none', final: 'banners/rodape-campus.gif', card: 'banners/card-campus.gif' },
+  saida: { topo: 'banners/saida-trancou.gif', mini: 'none', imagem: 'none', final: 'banners/rodape-campus.gif' },
+  expulsao: { topo: 'banners/expulso-diretoria.gif', mini: 'none', imagem: 'none', final: 'banners/rodape-campus.gif' },
+  ban: { topo: 'banners/ban-jubilado.gif', mini: 'none', imagem: 'none', final: 'banners/rodape-campus.gif' },
+  silencio: { topo: 'banners/silencio-biblioteca.gif', mini: 'none', imagem: 'none', final: 'banners/rodape-campus.gif' },
 };

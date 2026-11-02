@@ -106,3 +106,8 @@ test('banner de evento aparece com a placa desenhada pelo bot', () => {
   assert.equal(urlImagem('banners/eventos/fundo-entrada.jpg', '', 'https://bot.x'), 'banners/eventos/fundo-entrada.jpg');
   assert.equal(urlImagem('banners/eventos/card-entrada.jpg', '', 'https://bot.x'), 'banners/eventos/card-entrada.jpg');
 });
+
+test('markdown da prévia: menção de usuário mostra o nome de exemplo', () => {
+  assert.match(markdown('<@1> chegou', { usuarios: { 1: 'pedrinho' } }), />@pedrinho</);
+  assert.match(markdown('<@9>', {}), />@usuário</);
+});
