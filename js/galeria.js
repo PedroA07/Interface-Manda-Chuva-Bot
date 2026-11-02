@@ -34,4 +34,5 @@ export const GALERIA = {
 // Padrões de cada lugar (os mesmos do bot, em lib/imagens.js)
 export const PADROES = {
   painel: { topo: 'banners/painel-cores.gif', mini: 'banners/mini-paleta.gif', imagem: 'none', final: 'banners/rodape-campus.gif' },
+  news: { topo: 'banners/noticias.gif', mini: 'banners/mini-selo.gif', imagem: 'none', final: 'banners/rodape-campus.gif' },
 };

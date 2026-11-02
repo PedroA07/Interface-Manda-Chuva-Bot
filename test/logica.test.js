@@ -72,3 +72,18 @@ test('markdown da prévia: título ###, letra miúda -# e quebra de linha', () =
   assert.match(html, /<div class="dc-sub">rodapé<\/div>/);
   assert.match(html, /fim/);
 });
+
+test('notícias: versões comparadas como números e não lidas', async () => {
+  const { compararVersoes, naoLidas, dataCurta } = await import('../js/logica.js');
+  assert.ok(compararVersoes('3.10.0', '3.9.0') > 0);
+  const lista = [{ versao: '3.1.0' }, { versao: '3.0.0' }, { versao: '2.0.0' }];
+  assert.deepEqual(naoLidas(lista, '').map((n) => n.versao), ['3.1.0', '3.0.0', '2.0.0']);
+  assert.deepEqual(naoLidas(lista, '3.0.0').map((n) => n.versao), ['3.1.0']);
+  assert.deepEqual(naoLidas(lista, '3.1.0'), []);
+  assert.equal(dataCurta('02/11/2026'), '02 NOV');
+  assert.equal(dataCurta('28/10/2026'), '28 OUT');
+});
+
+test('markdown da prévia: @everyone vira pílula', () => {
+  assert.match(markdown('@everyone', {}), /class="dc-mencao"[^>]*>@everyone</);
+});

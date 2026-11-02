@@ -15,6 +15,7 @@ function linha(t, { cargos = [], canais = [] }) {
     })
     .replace(/&lt;@!?(\d+)&gt;/g, () => pilula('@usuário'))
     .replace(/&lt;#(\d+)&gt;/g, (_, id) => pilula(`#${esc(canais.find((c) => c.id === id)?.nome ?? 'canal')}`))
+    .replace(/@(everyone|here)\b/g, (_, quem) => pilula(`@${quem}`))
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
     .replace(/__(.+?)__/g, '<u>$1</u>')

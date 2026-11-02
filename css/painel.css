@@ -301,6 +301,20 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .painel-enviado:last-of-type { border-bottom: 2px dashed var(--tracejado); }
 .painel-enviado b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ---------- Aba Notícias ---------- */
+.jornal-cabeca { display: grid; gap: 8px; text-align: center; padding-bottom: 12px; border-bottom: 5px double var(--tinta); }
+.jornal-linha { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-bottom: 8px; border-bottom: var(--borda); font: 700 11px var(--corpo); letter-spacing: .16em; color: var(--cinza); }
+.jornal-titulo { margin: 4px 0 0; font: 400 clamp(34px, 5vw, 56px)/1 var(--titulo); letter-spacing: .03em; }
+.noticia { position: relative; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 20px; padding: 20px; background: #fff; border: var(--borda); border-radius: 14px; box-shadow: 4px 4px 0 var(--tinta); }
+.noticia.nova { box-shadow: 5px 5px 0 var(--vermelho); }
+.noticia-lado { display: grid; align-content: start; gap: 4px; padding-right: 16px; border-right: 2px dashed var(--tracejado); }
+.noticia-versao { font: 400 22px/1 var(--titulo); overflow-wrap: anywhere; }
+.noticia-data { font: 700 12px var(--corpo); letter-spacing: .1em; color: var(--cinza); }
+.noticia-tag { padding: 2px 8px; background: var(--c); border: var(--borda); border-radius: 6px; font: 800 11px var(--corpo); letter-spacing: .08em; }
+.noticia-nao-lida { display: inline-flex; align-items: center; gap: 6px; font: 800 11px var(--corpo); letter-spacing: .08em; color: var(--vermelho); }
+.noticia-nao-lida i { width: 8px; height: 8px; border-radius: 50%; background: var(--vermelho); }
+.noticia-titulo { margin: 0; font: 800 22px/1.15 var(--corpo); text-wrap: balance; }
+
 @media (max-width: 700px) {
   .secao { padding: 18px; }
   .h1 { font-size: 30px; }

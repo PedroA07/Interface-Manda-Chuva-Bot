@@ -16,7 +16,15 @@ let config = {
   painel: { titulo: '🎨 Escolha sua cor', descricao: 'Clique num botão pra pintar seu nome. Clicar de novo na mesma cor tira ela.', listarCores: true, campos: [{ nome: 'Como funciona', valor: 'Clicou, pintou. Clicou de novo, tirou.' }], rodape: 'Manda Chuva', corDoEmbed: '#5865F2', imgs: { topo: '', mini: '', imagem: '', finais: [] } },
   botoes: { porLinha: 4, remover: { ativo: true, texto: 'Tirar cor', emoji: '❌', estilo: 'Danger' } },
   mensagens: { ganhou: 'Pronto! Agora você é {cor}.', removeu: 'Tirei {cor} de você.' },
+  noticias: { on: true, canalId: id(13), mencao: id(61), quais: 'todas', imgs: { topo: '', mini: '', imagem: '', finais: [] } },
 };
+const NOTICIAS = [
+  { versao: '3.1.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Extra! O bot agora tem jornal', texto: 'Toda vez que o Manda Chuva ganhar novidade, ele posta a notícia num canal do servidor.', grande: true, adesivo: 'extra! extra!' },
+  { versao: '3.0.1', data: '02/11/2026', tag: 'CORREÇÃO', titulo: 'Botão de tirar cor não some mais', texto: 'Tinha painel que perdia o botão depois de salvar. Achamos o culpado e ele já foi pra diretoria.', grande: false, adesivo: 'ai que burro, dá zero pra ele' },
+  { versao: '3.0.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Visual novo: o painel virou campus', texto: 'Cada cor virou um cartão de matrícula.', grande: true, adesivo: 'stonks' },
+  { versao: '2.1.0', data: '28/10/2026', tag: 'MELHORIA', titulo: 'Prévia mais parecida com o Discord', texto: 'Menções coloridas e emojis do servidor aparecem do jeitinho que vão ficar.', grande: false, adesivo: 'this is fine' },
+  { versao: '2.0.0', data: '01/10/2026', tag: 'NOVIDADE', titulo: 'Painel na web', texto: 'Cores, textos, botões e respostas pelo navegador.', grande: true, adesivo: 'confia' },
+];
 let paineis = [{ servidorId: id(1), canalId: id(11), mensagemId: id(900), v2: true }];
 const anexos = new Map();
 
@@ -37,9 +45,10 @@ function estado() {
     servidores: [{ id: id(1), nome: 'Servidor de Teste' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
-      recursos: { degrade: false }, permissoesFaltando: [],
+      recursos: { degrade: false }, permissoesFaltando: [], podeMencionarTodos: false,
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length },
     },
+    noticias: NOTICIAS,
     paineis: paineis.map((p) => ({ ...p, canalNome: canais.find((c) => c.id === p.canalId)?.nome ?? 'canal apagado', link: 'https://discord.com/channels/1/2/3' })),
   };
 }

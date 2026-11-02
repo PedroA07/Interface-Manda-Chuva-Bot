@@ -1,5 +1,5 @@
 // Prévia imitando o Discord, no mesmo formato das mensagens do bot (lib/mensagem.js lá no bot):
-// banner do topo → texto de fora → caixa colorida (título, texto, miniatura, imagem, rodapé) → card → finais → botões
+// texto de cima → banner do topo → texto de fora → caixa colorida (título, texto, miniatura, imagem, rodapé) → card → finais → botões
 import { html } from '../../vendor/preact-htm.js';
 import { useApp } from '../estado.js';
 import { esc, markdown } from '../markdown.js';
@@ -8,7 +8,7 @@ import { Emoji } from './basicos.js';
 const agora = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
 /**
- * msg: { topo?, fora?, cor?, titulo?, texto?, mini?, imagem?, rodape?, card? (nó), finais?: string[], linhas?: { texto, emoji, bg, bolinha }[][] }
+ * msg: { acima?, topo?, fora?, cor?, titulo?, texto?, mini?, imagem?, rodape?, card? (nó), finais?: string[], linhas?: { texto, emoji, bg, bolinha }[][] }
  * ctx: { cargos, canais } pras menções; antes: nó mostrado acima (ex.: "fulano entrou no servidor")
  */
 export function Previa({ msg, ctx = {}, hora, antes, depois }) {
@@ -24,6 +24,7 @@ export function Previa({ msg, ctx = {}, hora, antes, depois }) {
         ${b.avatar ? html`<img class="dc-avatar" src=${b.avatar} alt="" />` : html`<div class="dc-avatar">🎨</div>`}
         <div class="dc-corpo">
           <div class="dc-autor">${b.nome || 'Manda Chuva'}<span class="dc-app">APP</span><span class="dc-hora">hoje às ${hora ?? agora()}</span></div>
+          ${msg.acima && html`<div class="dc-texto" dangerouslySetInnerHTML=${md(msg.acima)}></div>`}
           ${msg.topo && html`<img class="dc-img" src=${msg.topo} alt="" />`}
           ${msg.fora && html`<div class="dc-texto" style="margin-top:4px" dangerouslySetInnerHTML=${md(msg.fora)}></div>`}
           ${temCaixa &&

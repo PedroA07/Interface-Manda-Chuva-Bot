@@ -1,16 +1,19 @@
 // Casca do painel: entrada (senha), cabeçalho, abas, barra de salvar e avisos
 import { html, useCallback, useEffect, useMemo, useRef, useState } from '../vendor/preact-htm.js';
 import { AbaCores } from './abas/cores.js';
+import { AbaNoticias } from './abas/noticias.js';
 import { AbaPainel } from './abas/painel.js';
 import { apiNestePc, chamar, conexao, ErroSenha, esquecerSenha, guardarAcesso } from './api.js';
 import { Ctx } from './estado.js';
+import { naoLidas } from './logica.js';
 import { Adesivo, Toggle } from './ui/basicos.js';
 import { ListaSuspensa } from './ui/lista-suspensa.js';
 
-// As outras abas do design (Cargos, Portaria, Temas, Notícias) entram nas próximas versões
+// As outras abas do design (Cargos, Portaria, Temas) entram nas próximas versões
 const ABAS = [
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
+  { id: 'news', nome: 'Notícias', cor: '#b6c8ee', Tela: AbaNoticias, badge: (estado, ui) => naoLidas(estado.noticias ?? [], ui.lido).length },
 ];
 
 const Marca = () => html`
@@ -99,7 +102,7 @@ export function App() {
   const [sujo, setSujo] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [toast, setToast] = useState(null);
-  const [ui, setUiBruto] = useState({ aba: localStorage.getItem('mc_aba') || 'cores', selCor: 0, emojiCat: 'Cores' });
+  const [ui, setUiBruto] = useState({ aba: localStorage.getItem('mc_aba') || 'cores', selCor: 0, emojiCat: 'Cores', lido: localStorage.getItem('mc_lido') || '' });
   const atual = useRef({});
   atual.current = { sujo, cfg, salvando, fase };
   const relogio = useRef(0);
@@ -202,6 +205,7 @@ export function App() {
 
   const setUi = useCallback((patch) => {
     if (patch.aba) localStorage.setItem('mc_aba', patch.aba);
+    if ('lido' in patch) localStorage.setItem('mc_lido', patch.lido);
     setUiBruto((u) => ({ ...u, ...patch }));
   }, []);
 
@@ -235,7 +239,10 @@ export function App() {
         <${Topo} estado=${estado} cfg=${cfg} trocarServidor=${trocarServidor} sair=${sair} />
         <div class="miolo">
           <nav class="abas">
-            ${ABAS.map((a) => html`<button type="button" class=${`aba${a === aba ? ' ativa' : ''}`} style=${`--cor-aba:${a.cor}`} onClick=${() => setUi({ aba: a.id })}>${a.nome}</button>`)}
+            ${ABAS.map((a) => {
+              const badge = a.badge?.(estado, ui) ?? 0;
+              return html`<button type="button" class=${`aba${a === aba ? ' ativa' : ''}`} style=${`--cor-aba:${a.cor}`} onClick=${() => setUi({ aba: a.id })}>${a.nome}${badge > 0 && html`<span class="aba-badge">${badge}</span>`}</button>`;
+            })}
           </nav>
           <section class="secao"><${aba.Tela} /></section>
         </div>

@@ -89,3 +89,21 @@ export function paginar(lista, pagina, porPagina) {
     nums: ids.map((x) => ({ n: x, atual: x === pg })),
   };
 }
+
+// ---------- Notícias ----------
+/** Compara "3.10.0" com "3.9.0" como números */
+export function compararVersoes(a, b) {
+  const pa = String(a).split('.').map(Number), pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
+  return 0;
+}
+
+/** Notícias mais novas que a última lida (sem nada lido: todas) */
+export const naoLidas = (lista, lido) => lista.filter((n) => !lido || compararVersoes(n.versao, lido) > 0);
+
+const MESES_CURTOS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+/** '02/11/2026' → '02 NOV' */
+export function dataCurta(data) {
+  const [d, m] = String(data).split('/');
+  return `${d} ${MESES_CURTOS[Number(m) - 1] ?? ''}`.trim();
+}
