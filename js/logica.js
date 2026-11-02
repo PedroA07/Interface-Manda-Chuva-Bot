@@ -88,6 +88,7 @@ export function paginar(lista, pagina, porPagina) {
     paginas,
     multi: paginas > 1,
     vazio: n === 0,
+    total: n,
     info: n ? `Mostrando ${(pg - 1) * porPagina + 1}–${Math.min(pg * porPagina, n)} de ${n}` : '',
     temAnterior: pg > 1,
     temProxima: pg < paginas,

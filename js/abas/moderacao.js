@@ -1,10 +1,10 @@
 // Aba Cargos › Moderação: auto-mod, sistema de avisos (vai no Salvar) e livro de ocorrências (Desfazer vale na hora)
-import { html } from '../../vendor/preact-htm.js';
+import { html, useState } from '../../vendor/preact-htm.js';
 import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
 import { paginar } from '../logica.js';
 import { COR_TIPO, tempoRelativo } from '../moderacao.js';
-import { Adesivo, Paginacao, Toggle } from '../ui/basicos.js';
+import { Adesivo, Paginacao, Toggle, usePorPagina } from '../ui/basicos.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 
 const AUTOMOD = [
@@ -15,21 +15,36 @@ const AUTOMOD = [
   ['links', 'Links suspeitos', 'Encurtadores e golpes de “nitro grátis”.'],
 ];
 const ACOES = [{ v: 'apagar', t: 'Só apagar' }, { v: 'avisar', t: 'Apagar e avisar' }, { v: 'silenciar', t: 'Silenciar 10 min' }, { v: 'expulsar', t: 'Expulsar' }];
-const POR_PAGINA = 5;
+const POR_PAGINA = [5, 10, 25, 50];
+
+/** Lista do filtro de palavrões: o texto fica como a pessoa digitou; a config recebe a lista limpa */
+function Palavras({ lista, onChange }) {
+  const [texto, setTexto] = useState(lista.join(', '));
+  return html`<label class="rotulo" style="flex-basis:100%">Palavras (separe por vírgula ou uma por linha)
+    <textarea class="campo" rows="4" value=${texto} onInput=${(e) => {
+      setTexto(e.target.value);
+      onChange(e.target.value.split(/[,\n]/).map((x) => x.trim()).filter(Boolean));
+    }}></textarea>
+    <span style="font-size:12px;font-weight:600;text-transform:none;letter-spacing:0">${lista.length} palavras. Vale a palavra inteira ("cu" não pega "cupom"); com * pega dentro de outras (tipo *merda*).</span>
+  </label>`;
+}
 
 export function TelaModeracao() {
   const { cfg, estado, ui, setUi, mudar, aviso, tratar, recarregar } = useApp();
   const md = cfg.moderacao;
   const s = estado.servidor;
   const muda = (patch) => mudar((c) => Object.assign(c.moderacao, patch));
+  const mudaRegra = (k, patch) => mudar((c) => Object.assign(c.moderacao.automod[k], patch));
+  const faltaAutomod = (s?.moderacaoFaltando ?? []).filter((n) => /auto-mod|anti-spam/.test(n));
   const opCanais = [{ v: '', t: 'Nenhum (só no painel)' }, ...(s?.canais ?? []).map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }))];
   const numero = (campo) => (e) => {
     const n = Math.min(20, Math.max(0, Math.trunc(Number(e.target.value)) || 0));
     muda({ [campo]: n });
   };
 
+  const [por, setPor] = usePorPagina('livro', 10);
   const livro = estado.ocorrencias ?? [];
-  const p = paginar(livro, ui.livroPg ?? 1, POR_PAGINA);
+  const p = paginar(livro, ui.livroPg ?? 1, por);
   const desfazer = async (o) => {
     try {
       const r = await chamar('/api/ocorrencias/desfazer', { id: o.id });
@@ -42,14 +57,15 @@ export function TelaModeracao() {
 
   return html`<div class="colunas">
     <div style="flex:999 1 520px;min-width:0;display:grid;gap:20px">
-      <div class="cartao" style="gap:4px;position:relative">
-        <${Adesivo} texto="chega na próxima atualização" cor="#d9c2ec" giro="3deg" estilo="top:-14px;right:16px" />
+      <div class="cartao" style="gap:4px">
         <h2 class="h2">AUTO-MODERAÇÃO</h2>
-        <p style="margin:0 0 8px;font-size:14px;color:var(--cinza)">O bot age sozinho quando alguém pisa na bola.</p>
-        ${AUTOMOD.map(([k, titulo, texto]) => html`<div class="mod-linha desligada">
-          <${Toggle} on=${md.automod[k].on} titulo=${titulo} onClick=${() => {}} />
+        <p style="margin:0 0 8px;font-size:14px;color:var(--cinza);text-wrap:pretty">O bot age sozinho quando alguém pisa na bola. Palavrões, convites, menções e links viram regras da AutoMod do próprio Discord (funcionam até com o bot dormindo); o anti-spam é o bot que conta. Vale quando você clicar em Salvar. Quem modera não leva bronca.</p>
+        ${faltaAutomod.length > 0 && html`<div class="aviso-faixa" style="margin:0 0 8px"><b>Falta permissão pro bot:</b><span>${faltaAutomod.join(', ')}.</span></div>`}
+        ${AUTOMOD.map(([k, titulo, texto]) => html`<div class="mod-linha">
+          <${Toggle} on=${md.automod[k].on} titulo=${titulo} onClick=${() => mudaRegra(k, { on: !md.automod[k].on })} />
           <div style="flex:1 1 200px;display:grid;gap:2px"><b style="font-weight:800">${titulo}</b><span style="font-size:13px;color:var(--cinza)">${texto}</span></div>
-          <${ListaSuspensa} estilo="flex:0 0 190px" valor=${md.automod[k].acao} opcoes=${ACOES} desabilitada=${true} onChange=${() => {}} />
+          <${ListaSuspensa} estilo="flex:0 0 190px" valor=${md.automod[k].acao} opcoes=${ACOES} onChange=${(v) => mudaRegra(k, { acao: v })} />
+          ${k === 'palavrao' && md.automod.palavrao.on && html`<${Palavras} lista=${md.palavras ?? []} onChange=${(palavras) => muda({ palavras })} />`}
         </div>`)}
       </div>
       <div class="cartao">
@@ -83,7 +99,7 @@ export function TelaModeracao() {
             </div>
           </div>
         </div>`)}
-        <div style="padding-top:10px;border-top:2px dashed var(--tracejado)"><${Paginacao} p=${p} ir=${(n) => setUi({ livroPg: n })} /></div>
+        <div style="padding-top:10px;border-top:2px dashed var(--tracejado)"><${Paginacao} p=${p} ir=${(n) => setUi({ livroPg: n })} por=${{ valor: por, opcoes: POR_PAGINA, mudar: setPor }} /></div>
       </div>
     </aside>
   </div>`;

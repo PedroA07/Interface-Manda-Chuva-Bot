@@ -4,10 +4,10 @@ import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
 import { paginar } from '../logica.js';
 import { ateQuando, SILENCIOS, tempoRelativo } from '../moderacao.js';
-import { Paginacao, Segmentado } from '../ui/basicos.js';
+import { Paginacao, Segmentado, usePorPagina } from '../ui/basicos.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 
-const POR_PAGINA = 6;
+const POR_PAGINA = [10, 25, 50, 100];
 const MEME = { avisar: 'anotado na caderneta', silenciar: 'shhh, biblioteca', expulsar: 'foi pra diretoria', dessilenciar: 'pode falar' };
 
 /** Foto com anel da cor do cargo mais alto; inicial se não tiver foto */
@@ -23,6 +23,7 @@ export function TelaMembros() {
   const [res, setRes] = useState(null);
   const [indo, setIndo] = useState(false);
   const [acao, setAcao] = useState(null); // { tipo, m }
+  const [por, setPor] = usePorPagina('membros', 25);
   const q = ui.mbBusca ?? '', cargo = ui.mbCargo ?? '', pg = ui.mbPagina ?? 1;
 
   // Busca só depois de parar de digitar
@@ -34,11 +35,11 @@ export function TelaMembros() {
   const carregar = () => {
     if (!s) return;
     setIndo(true);
-    chamar(`/api/membros?q=${encodeURIComponent(q)}&cargo=${encodeURIComponent(cargo)}&pagina=${pg}`)
+    chamar(`/api/membros?q=${encodeURIComponent(q)}&cargo=${encodeURIComponent(cargo)}&pagina=${pg}&por=${por}`)
       .then(setRes, tratar)
       .finally(() => setIndo(false));
   };
-  useEffect(carregar, [q, cargo, pg, s?.id]);
+  useEffect(carregar, [q, cargo, pg, por, s?.id]);
 
   if (!estado.bot.online || !s) return html`<div class="cartao sombra"><b>${estado.bot.online ? 'Escolha o servidor lá em cima.' : 'Bot dormindo.'}</b><span class="sub">A lista vem direto do Discord.</span></div>`;
 
@@ -65,7 +66,7 @@ export function TelaMembros() {
   };
 
   const filtros = [{ v: '', t: 'Todos os cargos' }, ...s.cargos.map((c) => ({ v: c.id, t: c.nome, cor: corDe(c) }))];
-  const nav = res ? paginar(Array.from({ length: res.total }), res.pagina, POR_PAGINA) : null;
+  const nav = res ? paginar(Array.from({ length: res.total }), res.pagina, por) : null;
 
   return html`<div style="display:grid;gap:14px">
     ${!estado.bot.recursos?.membros &&
@@ -107,7 +108,7 @@ export function TelaMembros() {
         </div>`;
       })}
     </div>
-    ${nav && html`<${Paginacao} p=${nav} ir=${(n) => setUi({ mbPagina: n })} />`}
+    ${nav && html`<${Paginacao} p=${nav} ir=${(n) => setUi({ mbPagina: n })} por=${{ valor: por, opcoes: POR_PAGINA, mudar: setPor }} />`}
     ${acao && html`<${FichaAcao} acao=${acao} regras=${cfg.moderacao} fechar=${() => setAcao(null)} fazer=${fazer} />`}
   </div>`;
 }

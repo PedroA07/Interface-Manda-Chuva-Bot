@@ -1,5 +1,5 @@
 // Peças pequenas do design: liga/desliga, botões grudados, paginação, adesivo, campo de cor, emoji
-import { html } from '../../vendor/preact-htm.js';
+import { html, useState } from '../../vendor/preact-htm.js';
 import { hexEntrada, hexOk } from '../logica.js';
 import { urlEmoji } from '../markdown.js';
 
@@ -12,10 +12,22 @@ export const Segmentado = ({ opcoes, valor, onChange, classe = '' }) => html`
     ${opcoes.map(([id, nome]) => html`<button type="button" class=${valor === id ? 'on' : ''} onClick=${() => onChange(id)}>${nome}</button>`)}
   </div>`;
 
-/** p = resultado do paginar(); ir(n) troca de página */
-export const Paginacao = ({ p, ir }) =>
-  p.multi &&
-  html`<div class="paginacao">
+/** Linhas por página de uma lista: [valor, mudar]. Fica guardado neste navegador. */
+export function usePorPagina(nome, padrao) {
+  const [n, setN] = useState(() => Number(localStorage.getItem(`mc_pp_${nome}`)) || padrao);
+  return [n, (v) => (localStorage.setItem(`mc_pp_${nome}`, String(v)), setN(v))];
+}
+
+/**
+ * p = resultado do paginar(); ir(n) troca de página.
+ * por = { valor, opcoes, mudar }: mostra o "por página" (volta pra página 1 ao trocar).
+ */
+export const Paginacao = ({ p, ir, por }) => {
+  const seletor = por && p.total > Math.min(...por.opcoes) && html`<span class="por-pagina">por página
+    <${Segmentado} classe="pequeno" opcoes=${por.opcoes.map((n) => [n, String(n)])} valor=${por.valor} onChange=${(v) => (por.mudar(v), ir(1))} />
+  </span>`;
+  if (!p.multi) return seletor ? html`<div class="paginacao">${seletor}</div>` : null;
+  return html`<div class="paginacao">
     <button type="button" class="seta" disabled=${!p.temAnterior} onClick=${() => ir(p.pagina - 1)}>‹ Anterior</button>
     ${p.nums.map((x) =>
       x.n === '…'
@@ -24,7 +36,9 @@ export const Paginacao = ({ p, ir }) =>
     )}
     <button type="button" class="seta" disabled=${!p.temProxima} onClick=${() => ir(p.pagina + 1)}>Próxima ›</button>
     <span class="info">${p.info}</span>
+    ${seletor}
   </div>`;
+};
 
 /** Adesivo de "meme" colado no canto. cor = fundo, giro = rotação */
 export const Adesivo = ({ texto, cor = '#f2c14e', giro = '-3deg', estilo = '', solto = false }) =>

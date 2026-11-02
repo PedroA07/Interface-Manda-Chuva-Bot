@@ -51,7 +51,7 @@ config.niver = { on: true, canalId: id(12), hora: '09:00', msg: 'Hoje é anivers
 let aniversarios = ['rafa_cringe:14/11:2004', 'marina.exe:03/12:2002', 'joao_sem_braço:22/01:', 'bia.ppt:08/03:2005', 'tio_do_ru:30/06:1998', 'lu.miojo:02/11:2003', 'dudu.zip:10/01:1999', 'carol_rascunho:17/06:2001', 'th3o:24/11:', 'nanda.pdf:05/05:2000']
   // Os dois primeiros têm foto (no bot de verdade vem do Discord); o resto fica com a inicial
   .map((x, i) => { const [nome, d, ano] = x.split(':'); return { userId: id(500 + i), nome, d, ano: ano ? +ano : null, avatar: i < 2 ? `/banners/card-${i ? 'confete' : 'campus'}.gif` : null }; });
-config.moderacao = { silenciar: 3, expulsar: 5, canalId: id(15), automod: { palavrao: { on: true, acao: 'apagar' }, spam: { on: true, acao: 'silenciar' }, convites: { on: true, acao: 'avisar' }, mencoes: { on: false, acao: 'silenciar' }, links: { on: false, acao: 'apagar' } } };
+config.moderacao = { silenciar: 3, expulsar: 5, canalId: id(15), automod: { palavrao: { on: true, acao: 'apagar' }, spam: { on: true, acao: 'silenciar' }, convites: { on: true, acao: 'avisar' }, mencoes: { on: false, acao: 'silenciar' }, links: { on: false, acao: 'apagar' } }, palavras: ['porra', 'caralho', 'merda', 'fdp', 'vsf', 'pqp'] };
 // Membros do protótipo (cargos pelos ids da lista de cargos daqui de baixo)
 const NOMES_CARGO = { Dono: 50, Moderação: 51, VIP: 52, Calouro: 60, 'Notícias do bot': 61, Veterano: 62, Gamers: 63, Vermelho: 100, Laranja: 101, Amarelo: 102, Verde: 103, Azul: 104, Roxo: 105, Rosa: 106 };
 const CORES_CARGO = { 50: '#F1C40F', 51: '#E91E63', 52: '#F39C12', 100: '#E74C3C', 101: '#E67E22', 102: '#F1C40F', 103: '#2ECC71', 104: '#3498DB', 105: '#9B59B6', 106: '#FF6EC7' };
@@ -167,8 +167,9 @@ createServer(async (req, res) => {
     const p = new URL(req.url, 'http://x').searchParams;
     const q = (p.get('q') ?? '').toLowerCase().replace(/^@/, ''), cargo = p.get('cargo') ?? '';
     const lista = membros.filter((m) => (!q || m.nome.toLowerCase().includes(q)) && (!cargo || m.cargos.includes(cargo))).sort((a, b) => a.nome.localeCompare(b.nome));
-    const paginas = Math.max(1, Math.ceil(lista.length / 6)), pg = Math.min(Math.max(1, +p.get('pagina') || 1), paginas);
-    return json(res, 200, { itens: lista.slice((pg - 1) * 6, pg * 6), pagina: pg, paginas, total: lista.length });
+    const por = Math.min(100, Math.max(1, +p.get('por') || 6));
+    const paginas = Math.max(1, Math.ceil(lista.length / por)), pg = Math.min(Math.max(1, +p.get('pagina') || 1), paginas);
+    return json(res, 200, { itens: lista.slice((pg - 1) * por, pg * por), pagina: pg, paginas, total: lista.length });
   }
   if (rota === 'POST /api/membros/acao') {
     const c = await ler(req);
