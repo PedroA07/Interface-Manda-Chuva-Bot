@@ -47,6 +47,9 @@ config.temas = {
     ['niver', 'Aniversário do servidor', '15/03', '15/03', '#9B59B6', 'Hoje o servidor faz aniversário! Parabéns pra nós.'],
   ].map(([id, nome, ini, fim, cor, frase, movel]) => ({ id, nome, ini, fim, ...(movel && { movel }), on: true, cor, frase, onde: { painel: true, portaria: true, news: true }, msgs: {} })),
 };
+config.niver = { on: true, canalId: id(12), hora: '09:00', msg: 'Hoje é aniversário de {usuario}! {idade} anos e ainda não trancou o curso. Parabéns!', topo: 'PARABÉNS!', baixo: '{idade} ANOS DE PURA RESENHA', fundo: '', idade: true, cargo: true, dm: false, botao: true };
+let aniversarios = ['rafa_cringe:14/11:2004', 'marina.exe:03/12:2002', 'joao_sem_braço:22/01:', 'bia.ppt:08/03:2005', 'tio_do_ru:30/06:1998', 'lu.miojo:02/11:2003', 'dudu.zip:10/01:1999', 'carol_rascunho:17/06:2001', 'th3o:24/11:', 'nanda.pdf:05/05:2000']
+  .map((x, i) => { const [nome, d, ano] = x.split(':'); return { userId: id(500 + i), nome, d, ano: ano ? +ano : null }; });
 const NOTICIAS = [
   { versao: '3.1.0', data: '02/11/2026', tag: 'NOVIDADE', titulo: 'Extra! O bot agora tem jornal', texto: 'Toda vez que o Manda Chuva ganhar novidade, ele posta a notícia num canal do servidor.', grande: true, adesivo: 'extra! extra!' },
   { versao: '3.0.1', data: '02/11/2026', tag: 'CORREÇÃO', titulo: 'Botão de tirar cor não some mais', texto: 'Tinha painel que perdia o botão depois de salvar. Achamos o culpado e ele já foi pra diretoria.', grande: false, adesivo: 'ai que burro, dá zero pra ele' },
@@ -78,6 +81,7 @@ function estado() {
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length },
     },
     noticias: NOTICIAS,
+    aniversarios,
     paineis: paineis.map((p) => ({ ...p, canalNome: canais.find((c) => c.id === p.canalId)?.nome ?? 'canal apagado', link: 'https://discord.com/channels/1/2/3' })),
   };
 }
@@ -106,6 +110,15 @@ createServer(async (req, res) => {
     return json(res, 200, { ok: true });
   }
   if (rota === 'POST /api/portaria/testar') return json(res, 200, { ok: true, para: 'você' });
+  if (rota === 'POST /api/aniversarios') {
+    const c = await ler(req);
+    if (c.acao === 'remover') { aniversarios = aniversarios.filter((p) => p.userId !== c.userId); return json(res, 200, { ok: true }); }
+    const m = /^(\d{1,2})\/(\d{1,2})$/.exec(c.data ?? '');
+    if (!m) return json(res, 400, { erro: 'Data no formato dia/mês, tipo 14/05.' });
+    const d = `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}`;
+    aniversarios.push({ userId: id(900 + aniversarios.length), nome: c.membro, d, ano: c.ano ? +c.ano : null });
+    return json(res, 200, { ok: true, nome: c.membro, d });
+  }
   if (rota === 'POST /api/anexo') {
     const { base64, tipo } = await ler(req);
     const buf = Buffer.from(base64, 'base64');

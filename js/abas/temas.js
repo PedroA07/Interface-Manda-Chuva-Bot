@@ -7,6 +7,7 @@ import { Adesivo, Toggle } from '../ui/basicos.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 import { Previa } from '../ui/previa.js';
 import { SeletorBanner } from '../ui/seletor-banner.js';
+import { ListaAniversarios, TelaAniversarios } from './aniversarios.js';
 
 const MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 const CORES = ['#C4363C', '#2F6B4A', '#F2C14E', '#E67E22', '#9B59B6', '#3498DB', '#FF6EC7', '#111111'];
@@ -14,7 +15,19 @@ const TIPOS = [['painel', 'Painel', 'painel'], ['entrada', 'Entrou', 'portaria']
 const dois = (n) => String(n).padStart(2, '0');
 const quandoTxt = (d) => (d === 0 ? 'hoje' : d === 1 ? 'amanhã' : `em ${d} dias`);
 
+// Sub-abas: Datas festivas, Aniversários e Lista de aniversários
 export function AbaTemas() {
+  const { ui, setUi } = useApp();
+  const v = ui.tmView ?? 'datas';
+  return html`<div style="display:grid;gap:22px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      ${[['datas', 'Datas festivas'], ['niver', 'Aniversários'], ['lista', 'Lista de aniversários']].map(([id, nome]) => html`<button type="button" class=${`sub-aba${v === id ? ' on' : ''}`} onClick=${() => setUi({ tmView: id })}>${nome}</button>`)}
+    </div>
+    ${v === 'niver' ? html`<${TelaAniversarios} />` : v === 'lista' ? html`<${ListaAniversarios} />` : html`<${TelaDatas} />`}
+  </div>`;
+}
+
+function TelaDatas() {
   const { cfg, estado, ui, setUi, mudar, api } = useApp();
   const T = cfg.temas;
   const hoje = hojeDe(estado);

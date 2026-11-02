@@ -380,6 +380,27 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .pilula-navy { padding: 4px 10px; background: var(--navy); color: var(--mostarda); border: var(--borda); border-radius: 99px; font: 800 12px var(--corpo); }
 .tema-desligado { margin-top: 6px; padding: 12px; border: 2px dashed #4e5058; border-radius: 8px; color: #949ba4; }
 
+/* ---------- Aniversários ---------- */
+.sub-aba { padding: 9px 16px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 12px; font: 800 15px var(--corpo); cursor: pointer; }
+.sub-aba.on { background: var(--navy); color: var(--mostarda); box-shadow: var(--sombra); }
+.comando, .cartao .comando { padding: 5px 10px; background: var(--tinta); color: var(--mostarda); border-radius: 8px; font: 500 14px var(--mono); }
+.niver-bola { flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--c); border: var(--borda); font: 800 14px var(--corpo); color: var(--papel); }
+.niver-nome { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.niver-prox { display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; background: #fff; border: var(--borda); border-radius: 12px; }
+.niver-quando { flex: none; min-width: 70px; text-align: center; padding: 3px 8px; background: #fff; border: var(--borda); border-radius: 99px; font: 800 11px/1.2 var(--corpo); white-space: nowrap; }
+.niver-form { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-items: end; padding: 16px 18px; background: var(--aviso); }
+.tabela-niver { background: #fff; border: var(--borda); border-radius: 14px; overflow: hidden; }
+.tabela-niver-cabeca, .tabela-niver-linha { display: grid; grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1.3fr) 100px 40px; gap: 12px; align-items: center; padding: 9px 16px; }
+.tabela-niver-cabeca { padding: 10px 16px; background: var(--fundo); border-bottom: var(--borda); font: 700 12px/1.2 var(--corpo); letter-spacing: .06em; text-transform: uppercase; color: var(--cinza); }
+.tabela-niver-linha + .tabela-niver-linha { border-top: 2px dashed var(--tracejado); }
+/* Card de aniversário na prévia, nas proporções do que o bot desenha (1200×520) */
+.card-niver-dentro { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 1cqw; padding: 2cqw; text-align: center; color: var(--papel); }
+.card-niver-topo { font: 400 4cqw/1.1 var(--titulo); text-shadow: .33cqw .33cqw 0 var(--tinta); }
+.card-niver-foto { display: grid; place-items: center; width: 12.33cqw; height: 12.33cqw; border-radius: 50%; background: var(--c); border: .67cqw solid var(--papel); box-shadow: .5cqw .5cqw 0 var(--tinta); font: 800 5cqw var(--corpo); box-sizing: content-box; }
+.card-niver-nome { font: 800 3.17cqw/1.15 var(--corpo); text-shadow: .33cqw .33cqw 0 var(--tinta); }
+.card-niver-baixo { font: 800 2cqw/1 var(--corpo); letter-spacing: .12em; padding: .67cqw 1.67cqw; background: var(--tinta); color: var(--mostarda); border-radius: 1cqw; }
+@media (max-width: 760px) { .tabela-niver-cabeca, .tabela-niver-linha { grid-template-columns: minmax(0, 1fr) 70px 90px 34px; } .tabela-niver-cabeca span:nth-child(3), .tabela-niver-linha > span:nth-child(3) { display: none; } }
+
 @media (max-width: 700px) {
   .secao { padding: 18px; }
   .h1 { font-size: 30px; }

@@ -6,6 +6,7 @@ Painel no navegador pra configurar o [Manda Chuva BOT](https://github.com/PedroA
 - **Painel**: texto, campos, imagens (banner em cima, miniatura, imagem grande e até 4 no final: modelos da galeria, link ou arquivo enviado), botões e respostas, com prévia ao vivo. Daqui também dá pra enviar o painel num canal.
 - **Portaria**: mensagem quando alguém entra (com card de boas-vindas), sai, é expulso, banido ou silenciado: canal, modelos prontos, variáveis, texto dentro/fora, imagens, cargo automático, DM e "Testar comigo".
 - **Temas**: as datas festivas (Natal, Ano Novo, Carnaval e Páscoa calculados, Junina, Halloween...), calendário, avisos personalizados, imagem do tema pra cada mensagem e "Simular uma data" pra ver as outras abas naquele dia.
+- **Aniversários** (dentro de Temas): canal, horário, modelos, card do aniversariante, cargo de 24 h, DM, botão de cadastro no painel de cores, próximos aniversários e a lista completa (buscar, filtrar por mês, adicionar e tirar).
 - **Notícias**: o Jornal do Campus com tudo que mudou no bot (filtros, não lidas) e onde o bot anuncia cada versão nova no Discord (canal, menção, imagens, "só as grandes").
 
 É um site estático (HTML + JavaScript com [Preact](https://preactjs.com) embutido em `vendor/`, sem build). Ele não guarda nada: tudo fica no bot, e a interface conversa com a API dele.
