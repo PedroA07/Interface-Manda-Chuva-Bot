@@ -1,5 +1,6 @@
 // Casca do painel: entrada (senha), cabeçalho, abas, barra de salvar e avisos
 import { html, useCallback, useEffect, useMemo, useRef, useState } from '../vendor/preact-htm.js';
+import { AbaCargos } from './abas/cargos.js';
 import { AbaCores } from './abas/cores.js';
 import { AbaNoticias } from './abas/noticias.js';
 import { AbaPortaria } from './abas/portaria.js';
@@ -12,9 +13,9 @@ import { temaDaPrevia } from './temas.js';
 import { Adesivo, Toggle } from './ui/basicos.js';
 import { ListaSuspensa } from './ui/lista-suspensa.js';
 
-// A aba Cargos do design entra numa próxima versão
 const ABAS = [
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
+  { id: 'cargos', nome: 'Cargos', cor: '#d9c2ec', Tela: AbaCargos },
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
   { id: 'boas', nome: 'Portaria', cor: '#b9dcb0', Tela: AbaPortaria },
   { id: 'temas', nome: 'Temas', cor: '#f2b880', Tela: AbaTemas },
@@ -109,7 +110,7 @@ export function App() {
   const [toast, setToast] = useState(null);
   const [ui, setUiBruto] = useState({ aba: localStorage.getItem('mc_aba') || 'cores', selCor: 0, emojiCat: 'Cores', lido: localStorage.getItem('mc_lido') || '' });
   const atual = useRef({});
-  atual.current = { sujo, cfg, salvando, fase };
+  atual.current = { sujo, cfg, salvando, fase, estado };
   const relogio = useRef(0);
   const ultimaCarga = useRef(0);
 
@@ -158,8 +159,17 @@ export function App() {
   }, []);
 
   const salvar = useCallback(async () => {
-    const { cfg: c, salvando: ocupado } = atual.current;
+    const { cfg: c, salvando: ocupado, estado: e } = atual.current;
     if (ocupado || !c) return false;
+    // Apagar cargo no Discord não tem volta: confirma antes
+    const apagar = c.hierarquia?.apagar ?? [];
+    if (apagar.length) {
+      const nomes = apagar.map((id) => {
+        const x = e?.servidor?.hierarquia?.lista.find((y) => y.id === id);
+        return x ? (x.k === 'sep' ? `━━ ${x.nome} ━━` : `@${x.nome}`) : id;
+      });
+      if (!confirm(`Vai apagar no Discord: ${nomes.join(', ')}. Quem tem esses cargos perde. Continuar?`)) return false;
+    }
     setSalvando(true);
     try {
       const r = await chamar('/api/salvar', c);
@@ -225,7 +235,10 @@ export function App() {
   }
 
   const trocarServidor = (id) => {
-    mudar((c) => (c.servidorId = id || null));
+    mudar((c) => {
+      c.servidorId = id || null;
+      delete c.hierarquia; // o rascunho da hierarquia é do servidor anterior
+    });
     carregar(id).catch(tratar);
   };
   const sair = () => {

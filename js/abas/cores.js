@@ -38,7 +38,7 @@ function boletim(estado) {
       ? { nota: 'D', cor: '#c4363c', item: 'Bot acima dos cargos de cor', texto: `${nomes(h.acimaDoBot)} estão acima do cargo do bot (@${h.cargoDoBot}), então ele não consegue dar. Arraste o cargo do bot pra cima deles.` }
       : { nota: 'A', cor: '#2f8f5b', item: 'Bot acima dos cargos de cor', texto: 'Ele consegue dar todas as cores.' },
     h.coloridosAcima.length
-      ? { nota: 'C', cor: '#c4363c', item: 'Cargos coloridos por cima', texto: `${nomes(h.coloridosAcima)} têm cor e estão acima das cores. Quem tiver um deles não vê o nome mudar. Arraste os cargos de cor pra cima deles (mas abaixo do bot).`, sticker: 'this is fine' }
+      ? { nota: 'C', cor: '#c4363c', item: 'Cargos coloridos por cima', texto: `${nomes(h.coloridosAcima)} têm cor e estão acima das cores. Quem tiver um deles não vê o nome mudar. Dá pra consertar na aba Cargos.`, sticker: 'this is fine' }
       : { nota: 'A', cor: '#2f8f5b', item: 'Cargos coloridos por cima', texto: 'Nenhum. As cores aparecem pra todo mundo.' },
   ];
   if (h.semCargo) itens.push({ nota: 'B', cor: '#b07a00', item: 'Cores sem cargo', texto: `${h.semCargo} cor(es) ainda sem cargo no servidor. Clique em Salvar que o bot cria.` });
