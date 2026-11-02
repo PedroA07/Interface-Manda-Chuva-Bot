@@ -189,6 +189,7 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .sb-modelo.on { outline: 3px solid var(--vermelho); }
 .sb-modelo img { display: block; width: 100%; aspect-ratio: var(--prop); object-fit: cover; }
 .sb-modelo span { padding: 4px 6px; border-top: var(--borda); font: 700 11px/1.2 var(--corpo); color: var(--tinta); }
+.sb-gif { padding: 0 3px; background: var(--tinta); color: var(--mostarda); border-radius: 3px; font: 800 9px/1.4 var(--corpo); letter-spacing: .06em; }
 .sb-pagina { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .sb-pagina button { padding: 5px 10px; background: #fff; border: var(--borda); border-radius: 8px; font: 800 12px var(--corpo); color: var(--tinta); cursor: pointer; }
 .sb-pagina button:disabled { opacity: .35; }

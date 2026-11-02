@@ -83,6 +83,9 @@ createServer(async (req, res) => {
     anexos.set(a, { buf, tipo });
     return json(res, 200, { id: a, ref: `anexo:${a}` });
   }
+  // Placas dos banners de evento: aqui mostra o JPG original (o bot de verdade desenha com o nome do servidor)
+  const placa = /^\/placas\/([a-z]+)\.jpg$/.exec(url.pathname);
+  if (placa) url.pathname = `/banners/eventos/${placa[1]}.jpg`;
   const anexo = /^\/anexos\/([0-9a-f]{16})/.exec(url.pathname);
   if (anexo && anexos.has(anexo[1])) return res.writeHead(200, { 'Content-Type': anexos.get(anexo[1]).tipo }).end(anexos.get(anexo[1]).buf);
   // Arquivos do site

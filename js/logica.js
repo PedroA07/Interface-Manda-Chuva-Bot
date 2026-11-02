@@ -44,11 +44,16 @@ export const fundoDaCor = (c) => (c.tipo === 'degrade' ? `linear-gradient(120deg
 // ---------- Imagens ----------
 // Na config: '' = padrão do lugar, 'none' = sem imagem, 'banners/…' (modelo), 'https://…' ou 'anexo:<id>'
 
+// Banners "Eventos" que o bot desenha com o nome do servidor na placa
+const PLACA = /^banners\/eventos\/(painel|entrada|saida|expulsao|ban|silencio|news|aniversario)\.jpg$/;
+
 /** Endereço pra mostrar a imagem no painel, ou null quando é "sem imagem" */
 export function urlImagem(ref, padrao, api) {
   const r = ref || padrao;
   if (!r || r === 'none') return null;
   if (r.startsWith('anexo:')) return `${api}/anexos/${r.slice(6)}`;
+  const placa = PLACA.exec(r);
+  if (placa) return `${api}/placas/${placa[1]}.jpg`;
   return r;
 }
 

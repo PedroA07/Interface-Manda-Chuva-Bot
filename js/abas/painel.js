@@ -91,7 +91,7 @@ export function AbaPainel() {
               <input class="campo" maxlength="2048" value=${p.rodape} onInput=${(e) => muda({ rodape: e.target.value })} />
             </label>
             <div style="grid-column:1/-1">
-              <${ImagensEmbed} imgs=${p.imgs} padroes=${PADROES.painel} onChange=${(imgs) => muda({ imgs })} />
+              <${ImagensEmbed} imgs=${p.imgs} padroes=${PADROES.painel} mensagem="painel" onChange=${(imgs) => muda({ imgs })} />
             </div>
           </div>
           <div style="display:grid;gap:10px">

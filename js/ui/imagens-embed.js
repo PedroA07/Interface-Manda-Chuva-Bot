@@ -4,15 +4,15 @@ import { SeletorBanner } from './seletor-banner.js';
 
 export const MAX_FINAIS = 4;
 
-/** imgs = { topo, mini, imagem, finais[] }; padroes = { topo, mini, imagem, final } */
-export function ImagensEmbed({ imgs, padroes, onChange }) {
+/** imgs = { topo, mini, imagem, finais[] }; padroes = { topo, mini, imagem, final }; mensagem = 'painel', 'entrada'... */
+export function ImagensEmbed({ imgs, padroes, mensagem = '', onChange }) {
   const muda = (patch) => onChange({ ...imgs, ...patch });
   const finais = imgs.finais ?? [];
   return html`
     <div style="display:grid;gap:16px">
       <div style="display:grid;gap:6px">
         <span class="rotulo">Banner do topo</span>
-        <${SeletorBanner} valor=${imgs.topo} padrao=${padroes.topo} tipo="banner" opcional onChange=${(v) => muda({ topo: v })} />
+        <${SeletorBanner} valor=${imgs.topo} padrao=${padroes.topo} tipo="banner" mensagem=${mensagem} opcional onChange=${(v) => muda({ topo: v })} />
       </div>
       <div class="bloco-dentro">
         <span style="font:400 15px/1.1 var(--titulo)">DENTRO DO EMBED</span>
@@ -23,7 +23,7 @@ export function ImagensEmbed({ imgs, padroes, onChange }) {
           </div>
           <div style="display:grid;gap:6px">
             <span class="rotulo">Imagem grande (embaixo)</span>
-            <${SeletorBanner} valor=${imgs.imagem} padrao=${padroes.imagem} tipo="banner" opcional onChange=${(v) => muda({ imagem: v })} />
+            <${SeletorBanner} valor=${imgs.imagem} padrao=${padroes.imagem} tipo="banner" mensagem=${mensagem} opcional onChange=${(v) => muda({ imagem: v })} />
           </div>
         </div>
       </div>
@@ -38,7 +38,7 @@ export function ImagensEmbed({ imgs, padroes, onChange }) {
               <b style="flex:1;font-weight:800">Imagem ${k + 1}</b>
               <button type="button" class="btn-perigo" style="padding:4px 10px;font:700 12px var(--corpo)" onClick=${() => muda({ finais: finais.filter((_, j) => j !== k) })}>Tirar</button>
             </div>
-            <${SeletorBanner} valor=${src} padrao=${padroes.final} tipo="rodape" onChange=${(v) => muda({ finais: finais.map((x, j) => (j === k ? v : x)) })} />
+            <${SeletorBanner} valor=${src} padrao=${padroes.final} tipo="rodape" mensagem=${mensagem} onChange=${(v) => muda({ finais: finais.map((x, j) => (j === k ? v : x)) })} />
           </div>`,
         )}
         <button type="button" class="btn-tracejado" disabled=${finais.length >= MAX_FINAIS} onClick=${() => muda({ finais: [...finais, ''] })}>+ Adicionar imagem no final</button>

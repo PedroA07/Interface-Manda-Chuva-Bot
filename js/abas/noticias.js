@@ -90,7 +90,7 @@ export function AbaNoticias() {
           ${n.mencao === 'everyone' && s && !s.podeMencionarTodos && html`<span class="sb-erro">O cargo do bot precisa da permissão "Mencionar @everyone" pra isso marcar alguém.</span>`}
           <div style="display:grid;gap:6px">
             <span class="rotulo">Imagens do aviso</span>
-            <${ImagensEmbed} imgs=${n.imgs} padroes=${P} onChange=${(imgs) => muda({ imgs })} />
+            <${ImagensEmbed} imgs=${n.imgs} padroes=${P} mensagem="news" onChange=${(imgs) => muda({ imgs })} />
           </div>
           <div style="display:grid;gap:6px">
             <span class="rotulo">Quais atualizações</span>

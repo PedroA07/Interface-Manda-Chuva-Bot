@@ -2,7 +2,7 @@
 import { html, useState } from '../../vendor/preact-htm.js';
 import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
-import { GALERIA } from '../galeria.js';
+import { GALERIA, TEMAS } from '../galeria.js';
 import { origemImagem, urlImagem } from '../logica.js';
 import { Segmentado } from './basicos.js';
 
@@ -18,13 +18,15 @@ const lerBase64 = (arquivo) =>
     r.readAsDataURL(arquivo);
   });
 
-export function SeletorBanner({ valor = '', padrao = 'none', tipo = 'banner', opcional = false, onChange }) {
+/** mensagem: 'painel', 'entrada', 'news'... — a versão de cada banner pra essa mensagem aparece primeiro */
+export function SeletorBanner({ valor = '', padrao = 'none', tipo = 'banner', opcional = false, mensagem = '', onChange }) {
   const { api } = useApp();
   const [modo, setModo] = useState('padrao');
   const [link, setLink] = useState('');
   const [arquivo, setArquivo] = useState('');
   const [erro, setErro] = useState('');
   const [cat, setCat] = useState('Todos');
+  const [tema, setTema] = useState('');
   const [pg, setPg] = useState(1);
   const [enviando, setEnviando] = useState(false);
   const [arrastando, setArrastando] = useState(false);
@@ -33,11 +35,17 @@ export function SeletorBanner({ valor = '', padrao = 'none', tipo = 'banner', op
   const atual = urlImagem(valor, padrao, api);
   const escolhido = valor || padrao;
   const todos = GALERIA[tipo] ?? GALERIA.banner;
-  const lista = cat === 'Todos' ? todos : todos.filter((x) => x[2] === cat);
+  const daMensagem = (x) => (mensagem && x[3]?.tipo === mensagem ? 0 : 1);
+  const lista = todos
+    .filter((x) => (cat === 'Todos' || x[2] === cat) && (!tema || x[3]?.tema === tema))
+    .map((x, i) => [x, i])
+    .sort((a, b) => daMensagem(a[0]) - daMensagem(b[0]) || a[1] - b[1])
+    .map(([x]) => x);
   const porPagina = mini ? 12 : 6;
   const paginas = Math.max(1, Math.ceil(lista.length / porPagina));
   const pagina = Math.min(pg, paginas);
-  const cats = ['Todos', ...['Eventos', 'Festas', 'Clássicos'].filter((c) => todos.some((x) => x[2] === c))];
+  const cats = ['Todos', ...['Eventos', 'Festas', 'Fundos', 'Clássicos'].filter((c) => todos.some((x) => x[2] === c))];
+  const temas = cat === 'Festas' || cat === 'Fundos' ? TEMAS.filter(([id]) => todos.some((x) => x[2] === cat && x[3]?.tema === id)) : [];
 
   const usarLink = () => {
     const v = link.trim();
@@ -78,13 +86,17 @@ export function SeletorBanner({ valor = '', padrao = 'none', tipo = 'banner', op
       ${modo === 'padrao' &&
       html`
         <div class="sb-linha">
-          ${cats.map((c) => html`<button type="button" class=${`chip${cat === c ? ' on' : ''}`} style="font-weight:800" onClick=${() => (setCat(c), setPg(1))}>${c}</button>`)}
+          ${cats.map((c) => html`<button type="button" class=${`chip${cat === c ? ' on' : ''}`} style="font-weight:800" onClick=${() => (setCat(c), setTema(''), setPg(1))}>${c}</button>`)}
         </div>
+        ${temas.length > 0 &&
+        html`<div class="sb-linha">
+          ${[['', 'Todas'], ...temas].map(([id, nome]) => html`<button type="button" class=${`chip navy${tema === id ? ' on' : ''}`} style="padding:3px 9px;font-size:11px" onClick=${() => (setTema(id), setPg(1))}>${nome}</button>`)}
+        </div>`}
         <div class="sb-grade" style=${`--col:${mini ? '64px' : '110px'};--prop:${mini ? '1 / 1' : tipo === 'card' ? '600 / 260' : '3 / 1'}`}>
           ${lista.slice((pagina - 1) * porPagina, pagina * porPagina).map(
-            ([nome, src]) => html`<button type="button" class=${`sb-modelo${escolhido === src ? ' on' : ''}`} onClick=${() => onChange(src)}>
-              <img src=${src} alt="" loading="lazy" />
-              <span>${nome}</span>
+            ([nome, src]) => html`<button type="button" class=${`sb-modelo${escolhido === src ? ' on' : ''}`} title=${nome} onClick=${() => onChange(src)}>
+              <img src=${urlImagem(src, '', api)} alt="" loading="lazy" />
+              <span>${nome}${/\.gif$/i.test(src) ? html` <b class="sb-gif">GIF</b>` : ''}</span>
             </button>`,
           )}
         </div>

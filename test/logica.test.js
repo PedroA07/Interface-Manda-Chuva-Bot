@@ -87,3 +87,22 @@ test('notícias: versões comparadas como números e não lidas', async () => {
 test('markdown da prévia: @everyone vira pílula', () => {
   assert.match(markdown('@everyone', {}), /class="dc-mencao"[^>]*>@everyone</);
 });
+
+test('galeria completa: eventos, todas as festas (GIF e imagem), fundos e clássicos', async () => {
+  const { GALERIA, TEMAS } = await import('../js/galeria.js');
+  const conta = (lista, cat) => lista.filter((x) => x[2] === cat).length;
+  assert.equal(conta(GALERIA.banner, 'Eventos'), 8);
+  assert.equal(conta(GALERIA.banner, 'Festas'), 140);
+  assert.equal(conta(GALERIA.banner, 'Fundos'), 18);
+  assert.equal(conta(GALERIA.banner, 'Clássicos'), 22);
+  assert.equal(TEMAS.length, 10);
+  assert.ok(GALERIA.banner.some((x) => x[1] === 'banners/festas/natal-silencio.gif' && x[3].tema === 'natal' && x[3].tipo === 'silencio'));
+  assert.equal(conta(GALERIA.card, 'Festas'), 10);
+  assert.equal(GALERIA.mini.length, 24);
+});
+
+test('banner de evento aparece com a placa desenhada pelo bot', () => {
+  assert.equal(urlImagem('banners/eventos/entrada.jpg', '', 'https://bot.x'), 'https://bot.x/placas/entrada.jpg');
+  assert.equal(urlImagem('banners/eventos/fundo-entrada.jpg', '', 'https://bot.x'), 'banners/eventos/fundo-entrada.jpg');
+  assert.equal(urlImagem('banners/eventos/card-entrada.jpg', '', 'https://bot.x'), 'banners/eventos/card-entrada.jpg');
+});
