@@ -4,6 +4,7 @@ import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
 import { paginar } from '../logica.js';
 import { ateQuando, SILENCIOS, tempoRelativo } from '../moderacao.js';
+import { imagemDaMedalha, MEDALHAS_EVENTO } from '../perfil.js';
 import { Paginacao, Segmentado, usePorPagina } from '../ui/basicos.js';
 import { ListaSuspensa } from '../ui/lista-suspensa.js';
 
@@ -101,6 +102,7 @@ export function TelaMembros() {
           <div class="membro-acoes">
             ${m.avisos > 0 && html`<span class="membro-selo">${m.avisos} ${m.avisos === 1 ? 'aviso' : 'avisos'}</span>`}
             ${m.silenciadoAte && html`<button type="button" class="membro-selo azul" title="Tirar o silêncio" onClick=${() => fazer({ acao: 'dessilenciar', userId: m.id }, MEME.dessilenciar)}>🔇 ${m.semPrazo ? 'sem prazo' : ateQuando(m.silenciadoAte)} ×</button>`}
+            <button type="button" class="btn pequeno" disabled=${m.bot} title="Medalhas de evento (aparecem no perfil do site)" onClick=${() => setAcao({ tipo: 'medalha', m })}>🏅</button>
             <button type="button" class="btn pequeno" disabled=${m.bot} onClick=${() => setAcao({ tipo: 'avisar', m })}>Avisar</button>
             <button type="button" class="btn pequeno" disabled=${!m.podeSilenciar} title=${m.podeSilenciar ? '' : 'Admin, dono ou acima do bot: não dá'} onClick=${() => setAcao({ tipo: 'silenciar', m })}>Silenciar</button>
             <button type="button" class="btn-perigo pequeno" disabled=${!m.podeExpulsar} title=${m.podeExpulsar ? '' : 'Admin, dono ou acima do bot: não dá'} onClick=${() => setAcao({ tipo: 'expulsar', m })}>Expulsar</button>
@@ -109,11 +111,46 @@ export function TelaMembros() {
       })}
     </div>
     ${nav && html`<${Paginacao} p=${nav} ir=${(n) => setUi({ mbPagina: n })} por=${{ valor: por, opcoes: POR_PAGINA, mudar: setPor }} />`}
-    ${acao && html`<${FichaAcao} acao=${acao} regras=${cfg.moderacao} fechar=${() => setAcao(null)} fazer=${fazer} />`}
+    ${acao?.tipo === 'medalha' && html`<${FichaMedalha} m=${acao.m} fechar=${() => setAcao(null)} />`}
+    ${acao && acao.tipo !== 'medalha' && html`<${FichaAcao} acao=${acao} regras=${cfg.moderacao} fechar=${() => setAcao(null)} fazer=${fazer} />`}
   </div>`;
 }
 
 /** Confirmação de Avisar/Silenciar/Expulsar, com motivo (e duração no silêncio) */
+/** Medalhas de evento: a staff soma (ou tira) depois de uma noite de jogo, campeonato ou festa */
+function FichaMedalha({ m, fechar }) {
+  const { aviso, tratar } = useApp();
+  const [totais, setTotais] = useState({});
+  const [indo, setIndo] = useState('');
+  const somar = async (id, qtd) => {
+    setIndo(id);
+    try {
+      const r = await chamar('/api/medalhas', { userId: m.id, medalha: id, qtd });
+      setTotais((t) => ({ ...t, [id]: r.total }));
+      aviso(`${m.nome} · ${r.mensagem}`, qtd > 0 ? 'merecido' : 'corrigido');
+    } catch (e) {
+      tratar(e);
+    } finally {
+      setIndo('');
+    }
+  };
+  return html`<div class="fundo-ficha" onClick=${(e) => e.target === e.currentTarget && fechar()}>
+    <div class="cartao sombra ficha-acao">
+      <h2 class="h2">MEDALHAS · @${m.nome}</h2>
+      <p style="margin:0;font-size:14px;text-wrap:pretty">Depois de um evento do servidor, some +1 pra quem participou ou ganhou. Também dá no Discord com <code>/medalha</code>.</p>
+      <div style="display:grid">
+        ${MEDALHAS_EVENTO.map(([id, nome, max]) => html`<div class="mod-linha" style="flex-wrap:nowrap">
+          <img src=${imagemDaMedalha(id)} alt="" style="width:44px;height:44px;object-fit:contain;flex:none" />
+          <div style="flex:1;display:grid"><b style="font-weight:800">${nome}</b><span style="font-size:12px;color:var(--cinza)">${id in totais ? `${Math.min(totais[id], max)}/${max}${totais[id] >= max ? ' · conquistada!' : ''}` : `ganha com ${max}`}</span></div>
+          <button type="button" class="btn pequeno" disabled=${indo === id} onClick=${() => somar(id, -1)}>−1</button>
+          <button type="button" class="btn navy pequeno" disabled=${indo === id} onClick=${() => somar(id, 1)}>+1</button>
+        </div>`)}
+      </div>
+      <div style="display:flex;justify-content:flex-end"><button type="button" class="btn" onClick=${fechar}>Fechar</button></div>
+    </div>
+  </div>`;
+}
+
 function FichaAcao({ acao, regras, fechar, fazer }) {
   const { tipo, m } = acao;
   const [motivo, setMotivo] = useState('');

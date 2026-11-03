@@ -144,10 +144,52 @@ function estado() {
 const ler = (req) => new Promise((ok) => { const p = []; req.on('data', (d) => p.push(d)).on('end', () => ok(p.length ? JSON.parse(Buffer.concat(p).toString('utf8')) : {})); });
 const json = (res, status, dados) => (res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }), res.end(JSON.stringify(dados)));
 
+// ---------- Login e perfil ----------
+const MEDALHAS = [['calouro', 'Calouro', 'Entrou no servidor.', 'COMUM', 1, 1, ''], ['veterano', 'Veterano', '6 meses de casa.', 'RARA', 3, 6, 'meses'], ['lenda', 'Lenda do Campus', '2 anos de casa sem trancar.', 'LENDÁRIA', 3, 24, 'meses'], ['tagarela', 'Tagarela', 'Mandou 1.000 mensagens na resenha.', 'COMUM', 1000, 1000, ''], ['rei-resenha', 'Rei da Resenha', 'Top 1 de mensagens de um mês.', 'ÉPICA', 0, 1, ''], ['rato-call', 'Rato de Call', '50 horas em call de voz.', 'RARA', 32, 50, 'h'], ['construtor', 'Mestre dos Blocos', 'Foi em 10 noites de Minecraft do servidor.', 'RARA', 10, 10, '', 'evento'], ['detetive', 'Detetive Espacial', 'Achou o impostor 5 vezes nas noites de Among.', 'RARA', 3, 5, '', 'evento'], ['mira-ouro', 'Mira de Ouro', 'Ganhou um campeonato de CS ou Valorant do servidor.', 'ÉPICA', 0, 1, '', 'evento'], ['sobrevivente', 'Último de Pé', 'Venceu uma partida no evento de Free Fire.', 'RARA', 1, 1, '', 'evento'], ['foliao', 'Folião', 'Participou de 3 festas do servidor.', 'COMUM', 2, 3, '', 'evento'], ['aniversario', 'Parabéns!', 'Cadastrou o aniversário com /aniversario.', 'COMUM', 1, 1, ''], ['moderador', 'Guardião', 'Faz parte da staff.', 'ÉPICA', 1, 1, ''], ['coruja', 'Coruja da Madrugada', 'Mandou mensagem entre 3h e 5h da manhã.', 'SECRETA', 1, 1, ''], ['capivara', 'Capivara Zen', 'Ficou 6 horas seguidas numa call, de boa.', 'SECRETA', 0, 1, ''], ['pintor', 'Pintor de Nomes', 'Trocou de cor 10 vezes no painel.', 'COMUM', 7, 10, '']]
+  .map(([id, nome, desc, rar, v, max, un, origem = 'auto']) => ({ id, nome, desc, rar, v, max, un, origem, ganha: v >= max }));
+let meuPerfil = { banner: 'banners/perfil/jogos-1.jpg', bio: 'Main suporte no Valorant, construtor no Minecraft e o primeiro a chegar na call. Calouro, mas já sei onde fica o RU.', fixadas: ['calouro', 'sobrevivente'] };
+const CATS = ['jogos', 'musica', 'diversos', 'animais', 'desenhos', 'codigo'];
+function quem(req) {
+  const t = /^Sessao (.+)$/.exec(req.headers.authorization ?? '')?.[1];
+  return t === 'membro' || t === 'staff' ? t : t ? null : 'admin';
+}
+function eu(papel) {
+  if (papel === 'admin') return { papel, papelTxt: 'Senha do painel', usuario: null };
+  return {
+    papel, papelTxt: papel === 'staff' ? 'Staff · Moderação' : 'Membro',
+    usuario: { id: id(501), nome: 'pedrinho', usuario: 'pedrinho', avatar: null, entrou: Date.now() - 3 * DIA, cargos: [...(papel === 'staff' ? [{ nome: 'Moderação', cor: '#E91E63' }] : []), { nome: 'Azul', cor: '#3498DB' }, { nome: 'Calouro', cor: '#99AAB5' }] },
+    perfil: meuPerfil, medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
+    stats: { mensagens: 1284, horas: 32, medalhas: MEDALHAS.filter((m) => m.ganha).length },
+  };
+}
+
 createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   if (req.method === 'OPTIONS') return res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' }).end();
   const rota = `${req.method} ${url.pathname}`;
+  if (rota === 'GET /saude') return json(res, 200, { ok: true, bot: 'online', versao: '3.11.0', login: true });
+  if (rota === 'GET /auth/entrar') return res.writeHead(302, { Location: `${url.searchParams.get('volta')}#sessao=${process.env.PAPEL || 'staff'}` }).end();
+  if (url.pathname.startsWith('/api/')) {
+    const papel = quem(req);
+    if (!papel) return json(res, 401, { erro: 'Sua sessão acabou. Entre com o Discord de novo.' });
+    if (rota === 'GET /api/eu') return json(res, 200, eu(papel));
+    if (rota === 'GET /api/publico') return json(res, 200, { bot: { online: true, nome: 'Manda Chuva', avatar: null, versao: '3.11.0' }, servidor: { id: id(1), nome: 'Servidor de Teste', membros: 128 }, noticias: NOTICIAS });
+    if (rota === 'POST /api/eu/perfil') {
+      const c = await ler(req);
+      if (c.fixadas?.some((x) => !MEDALHAS.find((m) => m.id === x)?.ganha)) return json(res, 400, { erro: 'Só dá pra fixar medalha que você já ganhou.' });
+      meuPerfil = { ...meuPerfil, ...c };
+      return json(res, 200, { ok: true, perfil: meuPerfil });
+    }
+    if (rota === 'GET /api/turma') {
+      const q = (url.searchParams.get('q') ?? '').toLowerCase();
+      const lista = membros.filter((m) => !q || m.nome.toLowerCase().includes(q));
+      const por = 9, pg = Math.max(1, Math.min(Math.ceil(lista.length / por) || 1, Number(url.searchParams.get('pagina')) || 1));
+      const ids = MEDALHAS.map((m) => m.id);
+      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
+      return json(res, 200, { itens, pagina: pg, paginas: Math.ceil(lista.length / por) || 1, total: lista.length, completa: true });
+    }
+    if (papel === 'membro') return json(res, 403, { erro: 'Essa parte é só pra staff.' });
+  }
   if (rota === 'GET /api/estado') return json(res, 200, estado());
   if (rota === 'POST /api/salvar') {
     const corpo = await ler(req);

@@ -519,3 +519,84 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .dc-menu-op span span { font-size: 12px; color: #949ba4; }
 .dc-dm { margin-top: 14px; padding-top: 12px; border-top: 1px solid #3f4147; display: grid; gap: 8px; }
 .dc-estrela { width: 40px; height: 34px; padding: 0; background: var(--c); border: none; border-radius: 4px; font-size: 17px; cursor: pointer; }
+
+/* Login (v9): fundo navy quadriculado, cartão com o mascote à esquerda */
+.login-fundo { min-height: 100vh; overflow: auto; background: var(--navy); background-image: linear-gradient(#2a3670 1px, transparent 1px), linear-gradient(90deg, #2a3670 1px, transparent 1px); background-size: 26px 26px; display: flex; align-items: safe center; justify-content: center; padding: 32px 20px; color: var(--tinta); font: 500 15px/1.5 var(--corpo); }
+.login-cartao { width: 100%; max-width: 960px; display: flex; flex-wrap: wrap; background: var(--papel); border: 3px solid var(--tinta); border-radius: 22px; box-shadow: 10px 10px 0 #0e1430; overflow: hidden; }
+.login-arte { flex: 1 1 360px; min-height: 280px; position: relative; background: var(--mostarda); border-right: 3px solid var(--tinta); }
+.login-arte img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.login-adesivo { position: absolute; left: 18px; bottom: 18px; padding: 6px 12px; background: var(--vermelho); color: var(--papel); border: var(--borda); border-radius: 8px; font: 400 17px/1 var(--rabisco); transform: rotate(-4deg); }
+.login-lado { flex: 1 1 380px; display: grid; gap: 20px; align-content: center; padding: 40px 36px; }
+.login-titulo { margin: 0; font: 400 44px/1 var(--titulo); color: var(--navy); }
+.btn-discord { display: flex; align-items: center; justify-content: center; gap: 12px; height: 56px; padding: 0 22px; background: #5865f2; color: #fff; border: var(--borda); border-radius: 14px; box-shadow: 5px 5px 0 var(--tinta); font: 800 18px var(--corpo); cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.btn-discord:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--tinta); }
+.btn-discord:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--tinta); }
+.btn-discord:disabled { opacity: .5; cursor: not-allowed; }
+.login-veja { display: grid; gap: 8px; padding: 14px 16px; background: var(--fundo); border: 2px dashed var(--tinta); border-radius: 12px; font-size: 14px; }
+.login-rodape { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--cinza); }
+.login-senha { display: grid; gap: 14px; padding: 16px; border: var(--borda); border-radius: 12px; background: #fff; }
+@media (max-width: 560px) { .login-lado { padding: 28px 20px; } .login-titulo { font-size: 34px; } }
+
+/* Quem entrou, no topo */
+.quem-sou { display: flex; align-items: center; gap: 10px; padding: 4px 14px 4px 4px; background: var(--papel); color: var(--tinta); border: var(--borda); border-radius: 99px; box-shadow: 3px 3px 0 #0e1430; }
+.quem-sou b { font-weight: 800; font-size: 15px; }
+.quem-sou-foto { position: relative; flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #5865f2; border: var(--borda); font: 800 16px var(--corpo); color: #fff; }
+.quem-sou-foto img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.quem-sou-foto i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #3ccf7a; border: 2px solid var(--papel); }
+.quem-sou-papel { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #5865f2; font-weight: 700; }
+.pagina.sem-barra { padding-bottom: 40px; }
+
+/* Meu perfil */
+.pilula { padding: 7px 14px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 99px; font: 800 14px var(--corpo); cursor: pointer; }
+.pilula.on { background: var(--navy); color: var(--mostarda); box-shadow: 3px 3px 0 var(--tinta); }
+.grade-banners { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.banner-opcao { position: relative; padding: 0; aspect-ratio: 21 / 9; border: var(--borda); border-radius: 10px; overflow: hidden; cursor: pointer; background: #e4dccb; }
+.banner-opcao img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.banner-opcao span { position: absolute; left: 6px; bottom: 6px; padding: 2px 7px; background: var(--tinta); color: var(--papel); border-radius: 5px; font: 700 11px/1.3 var(--corpo); }
+.banner-opcao.on { outline: 3px solid var(--vermelho); outline-offset: 3px; box-shadow: 4px 4px 0 var(--tinta); }
+.grade-medalhas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.medalha { display: flex; gap: 12px; align-items: center; padding: 10px 12px; text-align: left; background: #fff; border: var(--borda); border-radius: 12px; cursor: default; font: inherit; color: var(--tinta); }
+.medalha.ganha { cursor: pointer; }
+.medalha.fixada { background: var(--aviso); box-shadow: 3px 3px 0 var(--tinta); }
+.medalha img { flex: none; width: 64px; height: 64px; object-fit: contain; }
+.medalha:not(.ganha) img { filter: grayscale(1); }
+.raridade { padding: 1px 6px; background: var(--bg); color: var(--c); border: 1.5px solid var(--tinta); border-radius: 5px; font: 800 9px/1.4 var(--corpo); letter-spacing: .08em; }
+.barra-prog { flex: 1; height: 8px; background: var(--fundo); border: 1.5px solid var(--tinta); border-radius: 99px; overflow: hidden; }
+.barra-prog span { display: block; height: 100%; background: var(--mostarda); }
+
+/* Cartão do perfil ("como a galera te vê" e a lista da turma) */
+.perfil-cartao { background: var(--papel); border: 3px solid var(--tinta); border-radius: 18px; box-shadow: 6px 6px 0 var(--tinta); overflow: hidden; text-align: left; }
+.perfil-banner { aspect-ratio: 21 / 9; background: #e4dccb; border-bottom: 3px solid var(--tinta); }
+.perfil-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.perfil-corpo { display: grid; gap: 12px; padding: 0 20px 20px; }
+.perfil-linha-foto { display: flex; align-items: flex-end; gap: 12px; margin-top: -40px; }
+.perfil-foto { position: relative; flex: none; width: 88px; height: 88px; display: grid; place-items: center; border-radius: 50%; background: #5865f2; border: 4px solid var(--papel); box-shadow: 0 0 0 3px var(--tinta); font: 800 36px var(--corpo); color: #fff; }
+.perfil-foto img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.perfil-foto i { position: absolute; right: 2px; bottom: 2px; width: 20px; height: 20px; border-radius: 50%; background: #3ccf7a; border: 3px solid var(--papel); }
+.perfil-fixadas { margin-left: auto; display: flex; gap: 4px; padding-bottom: 4px; }
+.perfil-fixadas img { width: 44px; height: 44px; object-fit: contain; }
+.perfil-nome { font: 400 26px/1.05 var(--titulo); overflow-wrap: anywhere; }
+.perfil-sub { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--cinza); }
+.perfil-cargos { display: flex; flex-wrap: wrap; gap: 6px; }
+.perfil-cargo { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 6px; background: #fff; border: var(--borda); border-radius: 99px; font-size: 13px; font-weight: 800; }
+.perfil-cargo i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); border: 1.5px solid var(--tinta); }
+.perfil-bio { margin: 0; padding: 10px 12px; background: var(--fundo); border-radius: 10px; font-size: 14px; text-wrap: pretty; overflow-wrap: anywhere; }
+.perfil-stats { display: grid; grid-template-columns: repeat(3, 1fr); border: var(--borda); border-radius: 12px; overflow: hidden; }
+.perfil-stats div { display: grid; gap: 2px; padding: 10px; text-align: center; background: #fff; }
+.perfil-stats div + div { border-left: var(--borda); }
+.perfil-stats b { font: 400 20px/1 var(--titulo); }
+.perfil-stats span { font-size: 11px; font-weight: 700; color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; }
+/* Versão pequena (lista da turma) */
+.perfil-cartao.pequeno { border-width: 2px; border-radius: 14px; box-shadow: 4px 4px 0 var(--tinta); }
+.perfil-cartao.pequeno .perfil-banner { aspect-ratio: 21 / 8; border-bottom-width: 2px; }
+.perfil-cartao.pequeno .perfil-corpo { gap: 8px; padding: 0 14px 14px; }
+.perfil-cartao.pequeno .perfil-linha-foto { margin-top: -26px; gap: 10px; }
+.perfil-cartao.pequeno .perfil-foto { width: 56px; height: 56px; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--tinta); font-size: 22px; }
+.perfil-cartao.pequeno .perfil-fixadas img { width: 30px; height: 30px; }
+.perfil-cartao.pequeno .perfil-nome { font: 800 16px/1.2 var(--corpo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.perfil-cartao.pequeno .perfil-sub { font-size: 12px; }
+.perfil-cartao.pequeno .perfil-cargo { padding: 2px 8px 2px 5px; border-width: 1.5px; font-size: 12px; gap: 5px; }
+.perfil-cartao.pequeno .perfil-cargo i { width: 10px; height: 10px; }
+.grade-turma { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; align-items: start; }
+.turma-item { padding: 0; background: none; border: none; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.vazio-tracejado { padding: 28px; text-align: center; color: var(--cinza); background: #fff; border: 2px dashed var(--tinta); border-radius: 14px; }
