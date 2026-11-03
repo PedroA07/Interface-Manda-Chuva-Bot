@@ -34,13 +34,13 @@ const abasDe = (eu) => (ehStaff(eu) ? [...ABAS_STAFF, ...(eu.usuario ? [PERFIL] 
 
 
 const Marca = () => html`
-  <div class="marca">
+  <a class="marca" href="./" title="Página inicial" style="text-decoration:none">
     <img class="selo-mc" src="banners/bot/mascote-256.png" alt="Manda Chuva" />
     <div style="display:grid;gap:2px">
       <div class="marca-nome">MANDA CHUVA</div>
       <div class="marca-sub">PAINEL OFICIAL · EST. 2026</div>
     </div>
-  </div>`;
+  </a>`;
 
 /** Entrar com a senha do painel (o jeito antigo: dono do bot) */
 function FormSenha({ aoEntrar, setMsg }) {

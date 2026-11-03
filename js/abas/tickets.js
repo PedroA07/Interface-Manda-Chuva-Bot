@@ -37,11 +37,16 @@ export function AbaTickets() {
   const mudaMotivo = (i, patch) => mudar((c) => Object.assign(c.tickets.motivos[i], patch));
 
   const canais = s?.canais ?? [];
-  const opCanais = (vazio) => [{ v: '', t: vazio }, ...canais.map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }))];
+  const opCanais = (vazio, novo) => [
+    { v: '', t: vazio },
+    ...canais.map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' })),
+    { v: 'novo', t: `Criar #${novo}`, nota: 'o bot cria ao salvar' },
+  ];
   const opCategorias = [{ v: '', t: 'Sem categoria' }, ...(s?.categorias ?? []).map((c) => ({ v: c.id, t: c.nome.toUpperCase(), nota: 'categoria' })), { v: 'nova', t: 'Criar categoria nova', nota: 'o bot cria ao salvar' }];
   const opStaff = [{ v: '', t: 'Só quem gerencia o servidor' }, ...(s?.cargos ?? []).map((r) => ({ v: r.id, t: `@${r.nome}`, cor: r.cor }))];
-  const canal = canais.find((c) => c.id === t.canalId);
-  const logs = canais.find((c) => c.id === t.logsId);
+  // 'novo' = o bot cria ao salvar: a prévia já mostra com o nome que vai ter
+  const canal = t.canalId === 'novo' ? { nome: 'abrir-ticket' } : canais.find((c) => c.id === t.canalId);
+  const logs = t.logsId === 'novo' ? { nome: 'registros-tickets' } : canais.find((c) => c.id === t.logsId);
   const staff = s?.cargos.find((r) => r.id === t.staffId);
   const categoria = t.categoriaId === 'nova' ? '🎫 TICKETS' : (s?.categorias ?? []).find((c) => c.id === t.categoriaId)?.nome.toUpperCase();
 
@@ -115,11 +120,11 @@ export function AbaTickets() {
         <h2 class="h2">ONDE FICA</h2>
         <div class="grade-campos">
           <div class="rotulo">Categoria dos tickets<${ListaSuspensa} valor=${t.categoriaId ?? ''} opcoes=${opCategorias} onChange=${(v) => muda({ categoriaId: v || null })} /></div>
-          <div class="rotulo">Canal do botão<${ListaSuspensa} valor=${t.canalId ?? ''} opcoes=${opCanais('Escolha um canal')} onChange=${(v) => muda({ canalId: v || null })} /></div>
+          <div class="rotulo">Canal do botão<${ListaSuspensa} valor=${t.canalId ?? ''} opcoes=${opCanais('Escolha um canal', 'abrir-ticket')} onChange=${(v) => muda({ canalId: v || null })} /></div>
           <div class="rotulo">Cargo da staff<${ListaSuspensa} valor=${t.staffId ?? ''} opcoes=${opStaff} onChange=${(v) => muda({ staffId: v || null })} /></div>
-          <div class="rotulo">Canal de transcrições<${ListaSuspensa} valor=${t.logsId ?? ''} opcoes=${opCanais('Nenhum')} onChange=${(v) => muda({ logsId: v || null })} /></div>
+          <div class="rotulo">Canal de transcrições<${ListaSuspensa} valor=${t.logsId ?? ''} opcoes=${opCanais('Nenhum', 'registros-tickets')} onChange=${(v) => muda({ logsId: v || null })} /></div>
         </div>
-        <span style="font-size:13px;color:var(--cinza);text-wrap:pretty">Cada ticket vira um canal <code class="mono-pilula">#ticket-0042-pedrinho</code> dentro da categoria escolhida. Só quem abriu e a staff veem. Ao salvar com os tickets ligados, o bot põe (ou atualiza) o menu no canal do botão.</span>
+        <span style="font-size:13px;color:var(--cinza);text-wrap:pretty">Cada ticket vira um canal <code class="mono-pilula">#ticket-0042-pedrinho</code> dentro da categoria escolhida. Só quem abriu e a staff veem. Ao salvar com os tickets ligados, o bot põe (ou atualiza) o menu no canal do botão. "Criar" faz o canal na categoria: o do botão todo mundo vê mas só o bot escreve; o de transcrições só a staff vê.</span>
       </div>
 
       <div class="cartao">

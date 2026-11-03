@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manda Chuva · Central do Bot</title>
+<meta name="description" content="Apresentação, Termos de Uso, Política de Privacidade e Suporte do bot Manda Chuva.">
+<link rel="icon" href="banners/bot/mascote-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Graduate&family=JetBrains+Mono:wght@500&family=Permanent+Marker&display=swap">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body class="central">
+<div class="ct-caderno"></div>
+<header class="ct-topo">
+  <div class="ct-topo-dentro">
+    <a href="./" class="ct-logo"><img src="banners/bot/mascote-256.png" alt=""><span style="display:grid;gap:2px"><b>MANDA CHUVA</b><small>CENTRAL DO BOT</small></span></a>
+    <a href="painel.html" class="ct-btn-painel">Abrir painel</a>
+  </div>
+</header>
+
+<div class="ct-miolo">
+  <nav class="ct-abas">
+    <a class="ct-aba" href="#apresentacao" style="--c:#f3d48a">Apresentação</a>
+    <a class="ct-aba" href="#termos" style="--c:#b6c8ee">Termos de Uso</a>
+    <a class="ct-aba" href="#privacidade" style="--c:#d9c2ec">Privacidade</a>
+    <a class="ct-aba" href="#suporte" style="--c:#b9dcb0">Suporte</a>
+    <a class="ct-aba" href="#checklist" style="--c:#f5b5a8">Verificação</a>
+  </nav>
+
+  <!-- ===== APRESENTAÇÃO ===== -->
+  <section class="ct-secao" id="apresentacao" style="display:grid;gap:28px">
+    <div style="border:3px solid var(--tinta);border-radius:16px;overflow:hidden;box-shadow:5px 5px 0 var(--tinta)"><img src="banners/bot/banner.png" alt="Banner do Manda Chuva" style="display:block;width:100%"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+      <div style="flex:2 1 420px;display:grid;gap:12px">
+        <h1 class="ct-h1">O QUE É O MANDA CHUVA</h1>
+        <p style="margin:0;font-size:18px;text-wrap:pretty">Bot brasileiro para servidores de resenha e jogos. Ele cuida dos cargos de cor, recebe quem chega com card de foto, troca o visual nas festas do ano, lembra os aniversários, organiza os tickets de suporte e dá a cada membro um perfil com banner e medalhas. Tudo configurado pelo painel no site.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px"><span class="ct-pilula">Cargos de cor</span><span class="ct-pilula">Boas-vindas</span><span class="ct-pilula">Temas festivos</span><span class="ct-pilula">Aniversários</span><span class="ct-pilula">Tickets</span><span class="ct-pilula">Perfis e medalhas</span></div>
+      </div>
+      <div class="ct-convite">
+        <b style="font:400 18px var(--titulo);color:var(--mostarda)">CONVITE</b>
+        <span style="font-size:14px;color:#c9cbe0">Permissões pedidas: gerenciar cargos e canais, enviar mensagens, links e arquivos, ver o registro de auditoria e as de moderação usadas pelo painel (expulsar, silenciar, banir, gerenciar mensagens e servidor). Nada de Administrador.</span>
+        <a href="#" class="botao js-convite">Adicionar ao Discord</a>
+        <a href="#suporte" style="color:var(--mostarda);font-weight:700;font-size:14px">Precisa de ajuda? ›</a>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+      <div class="ct-cartao"><b class="ct-h3">Cores</b><span>24 cargos de cor com degradê e emoji, num painel de botões.</span></div>
+      <div class="ct-cartao"><b class="ct-h3">Portaria</b><span>Card com foto e nome pra quem chega, mais saída, expulsão, ban e silêncio.</span></div>
+      <div class="ct-cartao"><b class="ct-h3">Festas</b><span>Natal, Ano Novo, Carnaval, Junina, Halloween e mais, trocando sozinhos pela data.</span></div>
+      <div class="ct-cartao"><b class="ct-h3">Aniversários</b><span>Parabéns automático com card, idade e cargo do dia.</span></div>
+      <div class="ct-cartao"><b class="ct-h3">Tickets</b><span>Canal privado por motivo, fila, transcrição e avaliação.</span></div>
+      <div class="ct-cartao"><b class="ct-h3">Perfil</b><span>Banner, bio e 16 medalhas do servidor, visíveis no site.</span></div>
+    </div>
+    <div style="display:grid;gap:12px">
+      <h2 class="ct-h2">COMANDOS</h2>
+      <div class="ct-tabela" id="comandos"></div>
+    </div>
+  </section>
+
+  <!-- ===== TERMOS ===== -->
+  <section class="ct-secao" id="termos" hidden>
+    <article class="ct-artigo">
+      <div style="display:grid;gap:6px"><h1 class="ct-h1">TERMOS DE USO</h1><span class="ct-cinza">Última atualização: 2 de novembro de 2026</span></div>
+      <section><h2 class="ct-h3">1. Aceite</h2><p>Ao adicionar o Manda Chuva a um servidor ou usar o painel, você concorda com estes termos e com os Termos de Serviço e as Diretrizes da Comunidade do Discord.</p></section>
+      <section><h2 class="ct-h3">2. O que o bot faz</h2><p>Gerencia cargos de cor, mensagens de entrada e saída, temas festivos, aniversários, moderação configurada pela staff, tickets de suporte, perfis e medalhas nos servidores em que foi adicionado.</p></section>
+      <section><h2 class="ct-h3">3. Quem pode usar</h2><p>Qualquer pessoa com conta no Discord e idade mínima exigida pelo Discord no seu país. Funções de configuração ficam com quem tem permissão no servidor (quem gerencia o servidor ou tem o cargo da staff).</p></section>
+      <section><h2 class="ct-h3">4. Uso proibido</h2><p>Não use o bot para spam, assédio, burlar punições, coletar dados de outras pessoas ou qualquer coisa que viole as regras do Discord. Abuso leva a bloqueio do servidor ou da conta no bot.</p></section>
+      <section><h2 class="ct-h3">5. Conteúdo do servidor</h2><p>Textos, imagens e banners enviados pela staff são de responsabilidade do servidor. As artes padrão do bot são originais e podem ser usadas só dentro do Manda Chuva.</p></section>
+      <section><h2 class="ct-h3">6. Disponibilidade</h2><p>O bot é oferecido como está, de graça. Pode ficar fora do ar, mudar ou ganhar e perder funções. As mudanças saem no Jornal do Campus, a aba Notícias do painel.</p></section>
+      <section><h2 class="ct-h3">7. Responsabilidade</h2><p>Não respondemos por perdas causadas por mau uso, configurações erradas ou falhas do Discord. A moderação do servidor continua sendo da staff dele.</p></section>
+      <section><h2 class="ct-h3">8. Mudanças nos termos</h2><p>Podemos atualizar estes termos. A data no topo mostra a última versão, e mudanças grandes são avisadas no Jornal do Campus.</p></section>
+      <section><h2 class="ct-h3">9. Contato</h2><p>Dúvidas: fale com a staff do servidor (<code>/ticket abrir</code>) ou abra uma issue no <a href="https://github.com/PedroA07/Manda-Chuva-BOT/issues">GitHub do projeto</a>.</p></section>
+    </article>
+  </section>
+
+  <!-- ===== PRIVACIDADE ===== -->
+  <section class="ct-secao" id="privacidade" hidden>
+    <article class="ct-artigo">
+      <div style="display:grid;gap:6px"><h1 class="ct-h1">POLÍTICA DE PRIVACIDADE</h1><span class="ct-cinza">Última atualização: 2 de novembro de 2026</span></div>
+      <p class="ct-resumo"><b>Resumo:</b> o bot guarda só o necessário pra funcionar (IDs, configurações do servidor, aniversários cadastrados, perfil do site e contadores das medalhas). Não vendemos nada, não lemos DM e você pode apagar seus dados quando quiser com <code>/privacidade apagar</code>.</p>
+      <section><h2 class="ct-h3">Quem somos</h2><p>O Manda Chuva é um projeto mantido pelo dono do bot (PedroA07 no GitHub), responsável pelos dados tratados por ele, conforme a LGPD.</p></section>
+      <section><h2 class="ct-h3">Dados que coletamos</h2><p>IDs de usuários, servidores, canais e cargos; nomes e fotos de perfil públicos do Discord; configurações feitas no painel; datas de aniversário cadastradas; perfil do site (banner, bio e medalhas fixadas); contadores das medalhas (quantas mensagens, quanto tempo em call e trocas de cor, sem guardar o texto das mensagens); avisos e ocorrências de moderação; e o resumo dos tickets (número, motivo, datas e nota).</p></section>
+      <section><h2 class="ct-h3">Intents privilegiadas</h2><p>Server Members: para receber quem entra e sai, dar cargos e postar aniversários. Message Content: só para salvar a conversa de um ticket na transcrição quando ele fecha. As mensagens do chat são contadas para as medalhas sem o texto ser lido ou guardado. Não lemos mensagens diretas.</p></section>
+      <section><h2 class="ct-h3">Para que usamos</h2><p>Só para fazer as funções do bot funcionarem. Não usamos dados para anúncios, não vendemos e não treinamos inteligência artificial com eles.</p></section>
+      <section><h2 class="ct-h3">Login no site</h2><p>O login com Discord usa os escopos identify e guilds: nome, foto, ID e a lista de servidores (só pra achar o servidor do bot). Não recebemos senha nem e-mail. A sessão fica só no seu navegador e vale 7 dias.</p></section>
+      <section><h2 class="ct-h3">Com quem compartilhamos</h2><p>Ninguém. Os dados ficam na hospedagem do bot e num Gist privado do GitHub, que só armazenam. As transcrições de tickets vão pro canal de logs escolhido pela staff e pra DM de quem abriu. Se a lei exigir, podemos ser obrigados a fornecer dados.</p></section>
+      <section><h2 class="ct-h3">Seus direitos</h2><p>Você pode ver e apagar seus dados com <code>/privacidade ver</code> e <code>/privacidade apagar</code> (aniversário, perfil e medalhas), ou pedindo pra staff. Registros de moderação ficam com a staff do servidor até vencerem.</p></section>
+      <section><h2 class="ct-h3">Segurança</h2><p>Tokens e segredos ficam em variáveis de ambiente da hospedagem, o painel só abre com login do Discord ou a senha do dono, e o armazenamento é privado.</p></section>
+      <section><h2 class="ct-h3">Menores de idade</h2><p>Seguimos a idade mínima do Discord. Se identificarmos dados de alguém abaixo dela, apagamos.</p></section>
+      <div style="display:grid;gap:8px"><h2 class="ct-h3">O QUE GUARDAMOS E POR QUANTO TEMPO</h2>
+        <div class="ct-tabela" id="retencao"></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== SUPORTE ===== -->
+  <section class="ct-secao" id="suporte" hidden style="display:grid;gap:24px">
+    <div style="display:grid;gap:6px"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><h1 class="ct-h1">SUPORTE</h1><span class="ct-rabisco">calma, a gente resolve</span></div><p style="margin:0;max-width:60ch" class="ct-cinza">Três jeitos de falar com a gente. O mais rápido é o ticket no próprio servidor.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px">
+      <div class="ct-cartao sombra"><b class="ct-h3">Ticket no servidor</b><span>Abra um ticket com a staff no menu de tickets ou com o comando.</span><code style="font:500 14px var(--mono);color:var(--navy)">/ticket abrir</code></div>
+      <div class="ct-cartao sombra"><b class="ct-h3">GitHub</b><span>Achou um bug ou tem uma ideia? Abra uma issue no projeto.</span><a href="https://github.com/PedroA07/Manda-Chuva-BOT/issues" style="font:500 14px var(--mono)">github.com/PedroA07/…/issues</a></div>
+      <div class="ct-cartao sombra"><b class="ct-h3">Status</b><span>Veja se o bot está acordado antes de abrir ticket.</span><span id="status" style="font:500 14px var(--mono);color:var(--navy)">conferindo…</span></div>
+    </div>
+    <div style="display:grid;gap:10px">
+      <h2 class="ct-h2">PERGUNTAS FREQUENTES</h2>
+      <details class="ct-faq" open><summary>O bot não muda minha cor. E agora?</summary><p>O cargo do Manda Chuva precisa ficar acima dos cargos de cor na lista de cargos do servidor. No painel, a aba Cargos mostra o aviso e tem o botão "Consertar".</p></details>
+      <details class="ct-faq"><summary>O card de boas-vindas não aparece</summary><p>Confira se o bot pode Anexar arquivos no canal da portaria e se o card está ligado na aba Portaria.</p></details>
+      <details class="ct-faq"><summary>Como mudo meu banner do perfil?</summary><p>Entre no painel com o Discord, abra Meu perfil e escolha um dos 48 banners. Muda na hora.</p></details>
+      <details class="ct-faq"><summary>Quem consegue ver meu aniversário?</summary><p>Só a data aparece pra galera no dia. O ano é opcional e serve só pra calcular a idade.</p></details>
+      <details class="ct-faq"><summary>O ticket some quando fecha?</summary><p>Sim. O canal é apagado depois do tempo configurado pela staff, mas a transcrição fica salva no canal de logs e na sua DM.</p></details>
+      <details class="ct-faq"><summary>Como tiro o bot do servidor?</summary><p>Configurações do servidor › Integrações › Manda Chuva › Remover. Pra apagar seus dados pessoais antes, use <code>/privacidade apagar</code>.</p></details>
+    </div>
+  </section>
+
+  <!-- ===== CHECKLIST ===== -->
+  <section class="ct-secao" id="checklist" hidden style="display:grid;gap:22px">
+    <div style="display:grid;gap:6px"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><h1 class="ct-h1">CHECKLIST DE VERIFICAÇÃO</h1><span class="ct-rabisco">o selinho azul vem</span></div><p style="margin:0;max-width:64ch" class="ct-cinza">O Discord pede verificação quando o bot chega a 100 servidores. Intents privilegiadas têm revisão à parte, a partir de 10 mil usuários. Marque o que já está pronto (fica salvo neste navegador).</p></div>
+    <div class="ct-placar"><b id="ck-feitos">0/0</b><span id="ck-texto" style="flex:1 1 200px"></span><span class="ct-barra"><span id="ck-barra"></span></span></div>
+    <div id="ck-grupos" style="display:grid;gap:22px"></div>
+    <div style="display:grid;gap:8px;padding:16px 18px;background:var(--aviso);border:2px solid var(--tinta);border-radius:14px">
+      <b style="font:400 18px var(--titulo)">TEXTO PRONTO PARA AS INTENTS</b>
+      <p style="margin:0;font-size:15px;text-wrap:pretty"><b>Server Members:</b> O Manda Chuva envia boas-vindas e saídas com card, entrega cargos de cor escolhidos pelo membro, mostra a lista de membros no painel da staff e posta aniversários cadastrados. Para isso precisa saber quando membros entram, saem ou mudam de cargo.</p>
+      <p style="margin:0;font-size:15px;text-wrap:pretty"><b>Message Content:</b> Usado só para gerar a transcrição dos tickets de suporte quando eles são fechados, com a conversa daquele canal privado. Não lemos nem armazenamos mensagens fora dos tickets; a auto-moderação usa a AutoMod do próprio Discord.</p>
+    </div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script type="module" src="js/central.js"></script>
+</body>
+</html>

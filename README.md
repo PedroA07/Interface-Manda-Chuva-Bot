@@ -7,11 +7,22 @@ Painel no navegador pra configurar o [Manda Chuva BOT](https://github.com/PedroA
 - **Portaria**: mensagem quando alguém entra (com card de boas-vindas), sai, é expulso, banido ou silenciado: canal, modelos prontos, variáveis, texto dentro/fora, imagens, cargo automático, DM e "Testar comigo".
 - **Temas**: as datas festivas (Natal, Ano Novo, Carnaval e Páscoa calculados, Junina, Halloween...), calendário, avisos personalizados, imagem do tema pra cada mensagem e "Simular uma data" pra ver as outras abas naquele dia.
 - **Aniversários** (dentro de Temas): canal, horário, modelos, card do aniversariante, cargo de 24 h, DM, botão de cadastro no painel de cores, próximos aniversários e a lista completa (buscar, filtrar por mês, adicionar e tirar).
+- **Tickets**: categoria, canal do menu e de transcrições (escolher ou mandar o bot criar), motivos, regras, fila de abertos e prévia em 3 etapas.
+- **Meu perfil** e **Membros** (com login do Discord): banner, bio e medalhas fixadas; a turma toda com os cartões de perfil.
 - **Notícias**: o Jornal do Campus com tudo que mudou no bot (filtros, não lidas) e onde o bot anuncia cada versão nova no Discord (canal, menção, imagens, "só as grandes").
 
 É um site estático (HTML + JavaScript com [Preact](https://preactjs.com) embutido em `vendor/`, sem build). Ele não guarda nada: tudo fica no bot, e a interface conversa com a API dele.
 
-**Endereço:** https://pedroa07.github.io/Interface-Manda-Chuva-Bot/
+**Endereço:** https://pedroa07.github.io/Interface-Manda-Chuva-Bot/ (o painel fica em `painel.html`)
+
+
+## Páginas
+
+| Arquivo | O que é |
+|---|---|
+| `index.html` | Página inicial: hero com 48 quadros que andam com o scroll, recursos com o mascote em 3D (three.js), comandos, medalhas e convite. |
+| `painel.html` | O painel: login com Discord (ou a senha do painel), abas da staff e, pra membros, Notícias, Membros e Meu perfil. |
+| `central.html` | Central do Bot: Apresentação, Termos de Uso (`#termos`), Política de Privacidade (`#privacidade`), Suporte e checklist de verificação. Os links de Termos e Privacidade vão no Developer Portal do Discord. |
 
 ## Como entrar
 
@@ -29,7 +40,7 @@ Marcando "Lembrar neste navegador", ela não pergunta de novo. O botão **Sair**
 
 ## Testar no PC
 
-Abrindo o `index.html` direto (dando dois cliques) não funciona: precisa de um servidor. Por exemplo:
+Abrindo o `painel.html` direto (dando dois cliques) não funciona: precisa de um servidor. Por exemplo:
 
 ```
 npx serve -l 5500
