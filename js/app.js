@@ -14,17 +14,17 @@ import { Adesivo, Toggle } from './ui/basicos.js';
 import { ListaSuspensa } from './ui/lista-suspensa.js';
 
 const ABAS = [
+  { id: 'news', nome: 'Notícias', cor: '#b6c8ee', Tela: AbaNoticias, badge: (estado, ui) => naoLidas(estado.noticias ?? [], ui.lido).length },
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
   { id: 'cargos', nome: 'Cargos', cor: '#d9c2ec', Tela: AbaCargos },
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
   { id: 'boas', nome: 'Portaria', cor: '#b9dcb0', Tela: AbaPortaria },
   { id: 'temas', nome: 'Temas', cor: '#f2b880', Tela: AbaTemas },
-  { id: 'news', nome: 'Notícias', cor: '#b6c8ee', Tela: AbaNoticias, badge: (estado, ui) => naoLidas(estado.noticias ?? [], ui.lido).length },
 ];
 
 const Marca = () => html`
   <div class="marca">
-    <div class="selo-mc">MC</div>
+    <img class="selo-mc" src="banners/bot/mascote-256.png" alt="Manda Chuva" />
     <div style="display:grid;gap:2px">
       <div class="marca-nome">MANDA CHUVA</div>
       <div class="marca-sub">PAINEL OFICIAL · EST. 2026</div>
@@ -108,7 +108,7 @@ export function App() {
   const [sujo, setSujo] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [toast, setToast] = useState(null);
-  const [ui, setUiBruto] = useState({ aba: localStorage.getItem('mc_aba') || 'cores', selCor: 0, emojiCat: 'Cores', lido: localStorage.getItem('mc_lido') || '' });
+  const [ui, setUiBruto] = useState({ aba: localStorage.getItem('mc_aba') || 'news', selCor: 0, emojiCat: 'Cores', lido: localStorage.getItem('mc_lido') || '' });
   const atual = useRef({});
   atual.current = { sujo, cfg, salvando, fase, estado };
   const relogio = useRef(0);
@@ -231,7 +231,7 @@ export function App() {
 
   if (fase === 'entrada') return html`<${Entrada} erro=${erroEntrada} aoEntrar=${entrar} />`;
   if (!cfg || !estado) {
-    return html`<div class="pagina"><div class="caderno"></div><div class="carregando"><div class="selo-mc" style="margin:0 auto">MC</div><b>CHAMANDO O BOT…</b><p class="sub">Na hospedagem grátis ele pode levar até 1 minuto pra acordar.</p></div></div>`;
+    return html`<div class="pagina"><div class="caderno"></div><div class="carregando"><img class="selo-mc" style="margin:0 auto" src="banners/bot/mascote-256.png" alt="" /><b>CHAMANDO O BOT…</b><p class="sub">Na hospedagem grátis ele pode levar até 1 minuto pra acordar.</p></div></div>`;
   }
 
   const trocarServidor = (id) => {

@@ -34,19 +34,20 @@ function LinhaExtra({ titulo, texto, on, onClick, ultimo, children }) {
   </div>`;
 }
 
-/** Card de boas-vindas em HTML, nas mesmas proporções do que o bot desenha (lib/card.js) */
+/** Card de boas-vindas em HTML, nas mesmas proporções do que o bot desenha (lib/card.js): placa creme no meio do fundo */
 function CardPrevia({ card, nome, vars, api }) {
   const noCard = { ...vars, usuario: nome };
   const lado = card.layout === 'lado';
-  const sombra = card.texto.toUpperCase() === '#1B1F33' ? '#ffffff99' : '#00000099';
-  return html`<div class="card-previa" style=${`--txt:${card.texto};--borda-foto:${card.borda};--sombra:${sombra}`}>
+  return html`<div class="card-previa" style=${`--borda-foto:${card.borda}`}>
     <img src=${urlImagem(card.bg, PADROES.entrada.card, api)} alt="" />
-    <div class=${`card-previa-dentro${lado ? ' lado' : ''}`}>
-      <span class="card-previa-foto" style=${`border-radius:${card.forma === 'quadrado' ? '18%' : '50%'}`}>${nome.charAt(0).toUpperCase()}</span>
-      <div class="card-previa-textos">
-        ${card.cima && html`<span class="card-previa-cima">${preencher(card.cima, noCard)}</span>`}
-        <span class="card-previa-nome">${nome}</span>
-        ${card.baixo && html`<span class="card-previa-baixo">${preencher(card.baixo, noCard)}</span>`}
+    <div class="card-previa-dentro">
+      <div class=${`card-placa${lado ? ' lado' : ''}`}>
+        <span class="card-previa-foto" style=${`border-radius:${card.forma === 'quadrado' ? '18%' : '50%'}`}>${nome.charAt(0).toUpperCase()}</span>
+        <div class="card-previa-textos">
+          ${card.cima && html`<span class="card-previa-cima">${preencher(card.cima, noCard)}</span>`}
+          <span class="card-previa-nome">${nome}</span>
+          ${card.baixo && html`<span class="card-previa-baixo">${preencher(card.baixo, noCard)}</span>`}
+        </div>
       </div>
     </div>
   </div>`;
@@ -197,7 +198,6 @@ export function AbaPortaria() {
                 <div style="display:grid;gap:6px"><span class="rotulo">Formato da foto</span><${Segmentado} opcoes=${[['circulo', 'Círculo'], ['quadrado', 'Quadrado']]} valor=${ev.card.forma} onChange=${(v) => mudar((x) => (x.portaria.entrada.card.forma = v))} /></div>
               </div>
               <div class="grade-campos">
-                <div style="display:grid;gap:8px"><span class="rotulo">Cor do texto</span><${Amostras} cores=${CORES_CARD} valor=${ev.card.texto} onEscolher=${(v) => mudar((x) => (x.portaria.entrada.card.texto = v))} /></div>
                 <div style="display:grid;gap:8px"><span class="rotulo">Borda da foto</span><${Amostras} cores=${CORES_CARD} valor=${ev.card.borda} onEscolher=${(v) => mudar((x) => (x.portaria.entrada.card.borda = v))} /></div>
               </div>
               <span style="font-size:12px;color:var(--cinza)">A foto e o nome vêm do perfil de quem entrou. {usuario}, {servidor} e {numero} funcionam nos textos.</span>

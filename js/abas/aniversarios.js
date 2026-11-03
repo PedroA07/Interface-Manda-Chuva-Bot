@@ -47,10 +47,12 @@ export function TelaAniversarios() {
   const card = html`<div class="card-previa card-niver" style="container-type:inline-size">
     <img src=${urlImagem(n.fundo, FUNDO, api)} alt="" />
     <div class="card-niver-dentro">
-      ${n.topo && html`<span class="card-niver-topo">${textoDoNiver(n.topo, noCard, n.idade)}</span>`}
-      <span class="card-niver-foto" style=${`--c:${pessoa.cor}`}>${pessoa.nome.charAt(0).toUpperCase()}<${Foto} p=${pessoa} /></span>
-      <span class="card-niver-nome">${pessoa.nome}</span>
-      ${textoDoNiver(n.baixo, noCard, n.idade) && html`<span class="card-niver-baixo">${textoDoNiver(n.baixo, noCard, n.idade)}</span>`}
+      <div class="card-niver-placa">
+        ${n.topo && html`<span class="card-niver-topo">${textoDoNiver(n.topo, noCard, n.idade)}</span>`}
+        <span class="card-niver-foto" style=${`--c:${pessoa.cor}`}>${pessoa.nome.charAt(0).toUpperCase()}<${Foto} p=${pessoa} /></span>
+        <span class="card-niver-nome">${pessoa.nome}</span>
+        ${textoDoNiver(n.baixo, noCard, n.idade) && html`<span class="card-niver-baixo">${textoDoNiver(n.baixo, noCard, n.idade)}</span>`}
+      </div>
     </div>
   </div>`;
 
