@@ -1,44 +1,84 @@
-// Página inicial: hero com 48 quadros no canvas conforme o scroll, listas de recursos/comandos/medalhas e o link de convite
+// Página inicial: hero com os 121 quadros do vídeo no canvas conforme o scroll, listas de recursos/comandos/medalhas e o link de convite
 import { convite } from './site.js';
 
-const N = 48;
+const N = 121; // todos os quadros do vídeo (5 s a 24 por segundo)
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 // ---------- Hero ----------
 const secao = document.getElementById('topo');
 const tela = secao.querySelector('canvas');
-const quadros = Array.from({ length: N }, (_, i) => {
+const ctx = tela.getContext('2d');
+// Tela grande ganha os quadros em 1920; celular, em 960 (metade do peso)
+const pasta = innerWidth * Math.min(devicePixelRatio, 2) > 1300 ? 'q' : 'qp';
+const quadros = new Array(N);
+const pronto = (i) => quadros[i]?.complete && quadros[i].naturalWidth > 0;
+// Baixa primeiro uns quadros espalhados e depois preenche os buracos: qualquer ponto do scroll já tem um quadro perto
+const ordem = [];
+for (const passo of [30, 15, 8, 4, 2, 1]) for (let i = 0; i < N; i += passo) if (!ordem.includes(i)) ordem.push(i);
+for (const i of ordem) {
   const im = new Image();
-  im.src = `banners/landing/f/${String(i).padStart(2, '0')}.jpg`;
+  im.decoding = 'async';
   im.onload = () => desenhar(true);
-  return im;
-});
-let ultimo = -1, pedido = 0;
+  im.src = `banners/landing/${pasta}/${String(i).padStart(3, '0')}.webp`;
+  quadros[i] = im;
+}
+/** Quadro baixado mais perto de i */
+function maisPerto(i) {
+  for (let d = 0; d < N; d++) {
+    if (pronto(i - d)) return quadros[i - d];
+    if (pronto(i + d)) return quadros[i + d];
+  }
+  return null;
+}
 
-function desenhar(forcar) {
-  const b = secao.getBoundingClientRect(), vao = Math.max(1, b.height - innerHeight);
-  const p = Math.min(1, Math.max(0, -b.top / vao));
+let alvo = 0, atual = 0, rodando = 0;
+function progresso() {
+  const b = secao.getBoundingClientRect();
+  return Math.min(1, Math.max(0, -b.top / Math.max(1, b.height - innerHeight)));
+}
+function textos(p) {
   // Cada texto aparece numa janela do scroll: sobe, fica e some
   const janela = (a, c, d, e) => Math.max(0, Math.min(1, p < c ? (p - a) / (c - a) : p <= d ? 1 : (e - p) / (e - d)));
   secao.style.setProperty('--p', p.toFixed(4));
   secao.style.setProperty('--o1', janela(-1, 0, 0.12, 0.26).toFixed(3));
   secao.style.setProperty('--o2', janela(0.3, 0.4, 0.56, 0.68).toFixed(3));
   secao.style.setProperty('--o3', janela(0.78, 0.9, 1.1, 1.2).toFixed(3));
-  const i = Math.round(p * (N - 1));
-  const dpr = Math.min(devicePixelRatio, 2), W = Math.round(tela.clientWidth * dpr), H = Math.round(tela.clientHeight * dpr);
-  if (!forcar && i === ultimo && tela.width === W) return;
-  // Quadro ainda baixando: usa o último que já chegou
-  const im = [quadros[i], ...quadros.slice(0, i).reverse()].find((f) => f?.complete && f.naturalWidth);
-  if (!im) return;
-  ultimo = i;
-  if (tela.width !== W || tela.height !== H) [tela.width, tela.height] = [W, H];
-  const ctx = tela.getContext('2d'), e = Math.max(W / im.naturalWidth, H / im.naturalHeight);
-  const w = im.naturalWidth * e, h = im.naturalHeight * e;
-  ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
 }
-const agendar = () => (pedido ||= requestAnimationFrame(() => ((pedido = 0), desenhar())));
-addEventListener('scroll', agendar, { passive: true });
-addEventListener('resize', agendar);
+/** Desenha a posição "atual" (com fração): o quadro de baixo e o de cima por cima, misturados pela fração */
+function desenhar(forcar) {
+  const dpr = Math.min(devicePixelRatio, 2), W = Math.round(tela.clientWidth * dpr), H = Math.round(tela.clientHeight * dpr);
+  if (tela.width !== W || tela.height !== H) [tela.width, tela.height] = [W, H];
+  const i = Math.floor(atual), t = atual - i;
+  const a = maisPerto(i);
+  if (!a) return;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  const cobrir = (im, alfa) => {
+    const e = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * e, h = im.naturalHeight * e;
+    ctx.globalAlpha = alfa;
+    ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+  };
+  cobrir(a, 1);
+  if (t > 0.02 && pronto(i + 1) && quadros[i + 1] !== a) cobrir(quadros[i + 1], t);
+  ctx.globalAlpha = 1;
+}
+/** O quadro anda atrás do scroll com inércia: rolar rápido não pula, rolar devagar fica liso */
+function passo() {
+  atual += (alvo - atual) * 0.2;
+  if (Math.abs(alvo - atual) < 0.005) atual = alvo;
+  desenhar();
+  rodando = atual === alvo ? 0 : requestAnimationFrame(passo);
+}
+function rolou() {
+  const p = progresso();
+  textos(p);
+  alvo = p * (N - 1);
+  if (!rodando) rodando = requestAnimationFrame(passo);
+}
+addEventListener('scroll', rolou, { passive: true });
+addEventListener('resize', () => desenhar(true));
+alvo = atual = progresso() * (N - 1);
+textos(progresso());
 desenhar(true);
 
 // ---------- Recursos ----------

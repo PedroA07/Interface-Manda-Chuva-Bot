@@ -1,4 +1,5 @@
-// <mascote-3d src="..." fallback="..."> — mascote em three.js que gira e anda conforme o scroll da seção pai [data-3d-track]
+// <mascote-3d src="..." fallback="..."> — mascote em three.js que gira e anda conforme o scroll da seção pai [data-3d-track].
+// A câmera se afasta o bastante pro boneco caber inteiro em qualquer pose (maior escala 1.1, sobe/desce até 0.12, gira em Y).
 (function () {
   if (customElements.get('mascote-3d')) return;
   const POSES = [
@@ -33,20 +34,34 @@
       this.appendChild(r.domElement);
       const scene = new THREE.Scene();
       const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-      cam.position.set(0, 0.1, 4.2);
+      cam.position.set(0, 0, 4.2);
       scene.add(new THREE.HemisphereLight(0xfff6dd, 0x1f2a5c, 1.6));
       const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(2, 3, 4); scene.add(key);
       const rim = new THREE.DirectionalLight(0xf2c14e, 2); rim.position.set(-3, 1, -2); scene.add(rim);
       const pivot = new THREE.Group(); scene.add(pivot);
       const gltf = await new GLTFLoader().loadAsync(this.getAttribute('src'));
       const obj = gltf.scene;
-      const box = new THREE.Box3().setFromObject(obj), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
-      obj.position.sub(c);
-      obj.scale.setScalar(2.2 / Math.max(size.x, size.y, size.z));
+      // Primeiro o tamanho, depois o centro (centralizar antes de escalar tirava o boneco do meio)
+      const bruto = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+      obj.scale.setScalar(2.2 / Math.max(bruto.x, bruto.y, bruto.z));
+      const caixa = new THREE.Box3().setFromObject(obj);
+      obj.position.sub(caixa.getCenter(new THREE.Vector3()));
+      const size = caixa.getSize(new THREE.Vector3());
+      const giro = Math.max(size.x, size.z) * 1.08; // largura girando em Y (a silhueta não chega na diagonal da caixa)
+      const meiaAltura = (size.y / 2) * 1.1 + 0.14;
+      const meiaLargura = (giro / 2) * 1.1 + 0.15;
       obj.traverse((m) => { if (m.isMesh && m.material && !m.material.map) { m.material = new THREE.MeshStandardMaterial({ color: 0xe9e1cf, roughness: 0.55 }); } });
       pivot.add(obj);
       this._img.style.opacity = '0';
-      const fit = () => { const w = this.clientWidth || 1, h = this.clientHeight || 1; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+      const fit = () => {
+        const w = this.clientWidth || 1, h = this.clientHeight || 1;
+        r.setSize(w, h, false);
+        cam.aspect = w / h;
+        const tv = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+        // Distância pra caber na altura e na largura, com 3% de folga, contada da frente do boneco
+        cam.position.z = Math.max(meiaAltura / tv, meiaLargura / (tv * cam.aspect)) * 1.03 + size.z / 2;
+        cam.updateProjectionMatrix();
+      };
       this._ro = new ResizeObserver(fit); this._ro.observe(this); fit();
       let target = 0, cur = 0;
       this._onScroll = () => {
