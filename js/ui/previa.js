@@ -21,7 +21,7 @@ export function Previa({ msg, ctx = {}, hora, antes, depois }) {
     <div class="dc">
       ${antes}
       <div class="dc-msg">
-        ${b.avatar ? html`<img class="dc-avatar" src=${b.avatar} alt="" />` : html`<div class="dc-avatar">🎨</div>`}
+        ${b.avatar ? html`<img class="dc-avatar" src=${b.avatar} alt="" />` : html`<img class="dc-avatar" src="banners/bot/mascote-64.png" alt="" />`}
         <div class="dc-corpo">
           <div class="dc-autor">${b.nome || 'Manda Chuva'}<span class="dc-app">APP</span><span class="dc-hora">hoje às ${hora ?? agora()}</span></div>
           ${msg.acima && html`<div class="dc-texto" dangerouslySetInnerHTML=${md(msg.acima)}></div>`}

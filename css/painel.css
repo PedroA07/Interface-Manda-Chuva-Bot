@@ -44,7 +44,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .topo { position: relative; z-index: 2; background: var(--navy); color: var(--fundo); border-bottom: 3px solid var(--tinta); }
 .topo-dentro { max-width: 1320px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
 .marca { display: flex; align-items: center; gap: 14px; }
-.selo-mc { width: 48px; height: 48px; border-radius: 50%; background: var(--mostarda); border: 3px solid var(--fundo); display: grid; place-items: center; font: 400 18px/1 var(--titulo); color: var(--navy); flex: none; }
+.selo-mc { width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--fundo); background: var(--mostarda); object-fit: cover; display: block; flex: none; }
 .marca-nome { font: 400 26px/1 var(--titulo); color: var(--mostarda); letter-spacing: .04em; }
 .marca-sub { font: 700 11px/1 var(--corpo); letter-spacing: .22em; color: #c9cbe0; }
 .status-bot { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 8px; border: 2px solid var(--fundo); border-radius: 99px; font-size: 13px; font-weight: 700; }
@@ -335,14 +335,16 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 /* Card de boas-vindas: medidas em cqw = proporcional à largura, igual ao card que o bot desenha em 1200×520 */
 .card-previa { position: relative; margin-top: 6px; aspect-ratio: 600 / 260; border-radius: 8px; overflow: hidden; background: #2b2d31; container-type: inline-size; }
 .card-previa > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.card-previa-dentro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.33cqw; padding: 2.33cqw 4.67cqw; }
-.card-previa-dentro.lado { flex-direction: row; }
-.card-previa-foto { flex: none; width: 12.67cqw; height: 12.67cqw; display: grid; place-items: center; background: #5865f2; border: .67cqw solid var(--borda-foto); font: 400 5cqw/1 var(--titulo); color: #fff; box-sizing: content-box; }
-.card-previa-textos { display: grid; gap: .67cqw; text-align: center; min-width: 0; color: var(--txt); text-shadow: 0 .33cqw 0 var(--sombra); }
-.card-previa-dentro.lado .card-previa-textos { text-align: left; }
-.card-previa-cima { font: 800 1.83cqw/1.15 var(--corpo); letter-spacing: .14em; }
-.card-previa-nome { font: 400 4.67cqw/1.15 var(--titulo); overflow-wrap: anywhere; }
-.card-previa-baixo { font: 700 2cqw/1.15 var(--corpo); }
+/* 1cqw = 6px do design (600 de largura). O texto fica numa placa creme, nunca em cima da ilustração */
+.card-previa-dentro { position: absolute; inset: 0; display: grid; place-items: center; padding: 7% 9%; }
+.card-placa { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.33cqw; max-width: 100%; padding: 2.33cqw 3.67cqw; background: var(--papel); border: .5cqw solid var(--tinta); border-radius: 2.33cqw; box-shadow: .67cqw .67cqw 0 var(--tinta); }
+.card-placa.lado { flex-direction: row; }
+.card-previa-foto { flex: none; width: 12cqw; height: 12cqw; display: grid; place-items: center; background: #5865f2; border: .67cqw solid var(--borda-foto); box-shadow: 0 0 0 .33cqw var(--tinta); font: 400 5cqw/1 var(--titulo); color: #fff; box-sizing: content-box; }
+.card-previa-textos { display: grid; gap: .67cqw; justify-items: center; text-align: center; min-width: 0; }
+.card-placa.lado .card-previa-textos { justify-items: start; text-align: left; }
+.card-previa-cima { padding: .33cqw 1.33cqw; background: var(--vermelho); color: var(--papel); border-radius: .83cqw; font: 800 1.67cqw/1.3 var(--corpo); letter-spacing: .14em; }
+.card-previa-nome { font: 400 4.33cqw/1 var(--titulo); color: var(--tinta); overflow-wrap: anywhere; }
+.card-previa-baixo { font: 700 2cqw/1.2 var(--corpo); color: var(--cinza); }
 
 /* ---------- Aba Temas ---------- */
 .faixa-tema { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: -8px 0 22px; padding: 10px 14px; background: var(--navy); color: var(--papel); border: var(--borda); border-radius: 12px; box-shadow: var(--sombra); }
@@ -398,11 +400,12 @@ textarea.campo { resize: vertical; font-weight: 500; line-height: 1.45; }
 .tabela-niver-cabeca { padding: 10px 16px; background: var(--fundo); border-bottom: var(--borda); font: 700 12px/1.2 var(--corpo); letter-spacing: .06em; text-transform: uppercase; color: var(--cinza); }
 .tabela-niver-linha + .tabela-niver-linha { border-top: 2px dashed var(--tracejado); }
 /* Card de aniversário na prévia, nas proporções do que o bot desenha (1200×520) */
-.card-niver-dentro { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 1cqw; padding: 2cqw; text-align: center; color: var(--papel); }
-.card-niver-topo { font: 400 4cqw/1.1 var(--titulo); text-shadow: .33cqw .33cqw 0 var(--tinta); }
-.card-niver-foto { display: grid; place-items: center; width: 12.33cqw; height: 12.33cqw; border-radius: 50%; background: var(--c); border: .67cqw solid var(--papel); box-shadow: .5cqw .5cqw 0 var(--tinta); font: 800 5cqw var(--corpo); box-sizing: content-box; }
-.card-niver-nome { font: 800 3.17cqw/1.15 var(--corpo); text-shadow: .33cqw .33cqw 0 var(--tinta); }
-.card-niver-baixo { font: 800 2cqw/1 var(--corpo); letter-spacing: .12em; padding: .67cqw 1.67cqw; background: var(--tinta); color: var(--mostarda); border-radius: 1cqw; }
+.card-niver-dentro { position: absolute; inset: 0; display: grid; place-items: center; padding: 6% 10%; }
+.card-niver-placa { display: grid; justify-items: center; gap: .83cqw; max-width: 100%; padding: 2cqw 4.33cqw 2.33cqw; background: var(--papel); border: .5cqw solid var(--tinta); border-radius: 2.33cqw; box-shadow: .67cqw .67cqw 0 var(--tinta); text-align: center; color: var(--tinta); }
+.card-niver-topo { padding: .33cqw 1.67cqw; background: var(--vermelho); color: var(--papel); border-radius: .83cqw; font: 400 2.5cqw/1.2 var(--titulo); }
+.card-niver-foto { display: grid; place-items: center; width: 10.67cqw; height: 10.67cqw; border-radius: 50%; background: var(--c); border: .5cqw solid var(--tinta); font: 800 4.33cqw var(--corpo); color: var(--papel); box-sizing: content-box; }
+.card-niver-nome { font: 400 3.67cqw/1.05 var(--titulo); overflow-wrap: anywhere; }
+.card-niver-baixo { font: 800 1.83cqw/1 var(--corpo); letter-spacing: .12em; padding: .67cqw 1.67cqw; background: var(--tinta); color: var(--mostarda); border-radius: 1cqw; }
 @media (max-width: 760px) { .tabela-niver-cabeca, .tabela-niver-linha { grid-template-columns: minmax(0, 1fr) 70px 90px 34px; } .tabela-niver-cabeca span:nth-child(3), .tabela-niver-linha > span:nth-child(3) { display: none; } }
 
 /* ---------- Cargos › Hierarquia ---------- */
