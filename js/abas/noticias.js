@@ -14,7 +14,7 @@ const FILTROS = [['tudo', 'Tudo'], ['NOVIDADE', 'Novidades'], ['MELHORIA', 'Melh
 const hoje = () => new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
 
 export function AbaNoticias() {
-  const { cfg, estado, ui, setUi, mudar, api } = useApp();
+  const { cfg, estado, ui, setUi } = useApp();
   const [filtro, setFiltro] = useState('tudo');
   const [pagina, setPagina] = useState(1);
   const lista = estado.noticias ?? [];
@@ -22,25 +22,6 @@ export function AbaNoticias() {
   const filtradas = lista.filter((n) => filtro === 'tudo' || n.tag === filtro);
   const [por, setPor] = usePorPagina('noticias', 6);
   const p = paginar(filtradas, pagina, por);
-  const n = cfg.noticias;
-  const muda = (patch) => mudar((x) => Object.assign(x.noticias, patch));
-  const s = estado.servidor;
-  const canal = s?.canais.find((c) => c.id === n.canalId);
-  const opCanais = [{ v: '', t: 'Escolha um canal' }, ...(s?.canais ?? []).map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }))];
-  const opMencao = [{ v: '', t: 'Ninguém' }, ...(s?.cargos ?? []).map((r) => ({ v: r.id, t: `@${r.nome}`, cor: r.cor !== '#000000' ? r.cor : undefined })), { v: 'everyone', t: '@everyone', nota: 'corajoso' }];
-  const ultima = (n.quais === 'grandes' ? lista.find((x) => x.grande) : lista[0]) ?? lista[0];
-  const temaN = aplicarTema('news', n.imgs, temaDaPrevia(cfg, estado, ui), cfg.temas.respeitar);
-  const P = PADROES.news, i = temaN?.imgs ?? n.imgs;
-  const msg = ultima && {
-    acima: n.mencao === 'everyone' ? '@everyone' : n.mencao ? `<@&${n.mencao}>` : '',
-    topo: urlImagem(i.topo, P.topo, api),
-    cor: temaN?.cor ?? '#f2c14e',
-    texto: `${temaN?.frase ? `**${temaN.frase}**\n\n` : ''}-# **Jornal do Campus · v${ultima.versao}**\n### ${ultima.titulo}\n${ultima.texto}`,
-    mini: urlImagem(i.mini, P.mini, api),
-    imagem: urlImagem(i.imagem, P.imagem, api),
-    rodape: 'Leia tudo no painel',
-    finais: i.finais.map((f) => urlImagem(f, P.final, api)).filter(Boolean),
-  };
   const filtrar = (f) => (setFiltro(f), setPagina(1));
 
   return html`
@@ -76,40 +57,66 @@ export function AbaNoticias() {
         </div>
       </div>
 
-      <aside class="col-lado" style="flex:1 1 380px">
-        <div class="cartao sombra" style="padding:18px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <h2 class="h2" style="flex:1">AVISAR NO DISCORD</h2>
-            <${Toggle} on=${n.on} onClick=${() => muda({ on: !n.on })} />
-          </div>
-          <p style="margin:0;font-size:14px;color:var(--cinza);text-wrap:pretty">Quando o bot ganha uma atualização, ele posta a notícia num canal do servidor.</p>
-          <div class="rotulo">Canal
-            <${ListaSuspensa} valor=${n.canalId ?? ''} opcoes=${opCanais} onChange=${(v) => muda({ canalId: v || null })} />
-          </div>
-          ${n.on && !n.canalId && html`<span class="sb-erro">Escolha o canal pro bot postar.</span>`}
-          <div class="rotulo">Mencionar
-            <${ListaSuspensa} valor=${n.mencao} opcoes=${opMencao} onChange=${(v) => muda({ mencao: v })} />
-          </div>
-          ${n.mencao === 'everyone' && s && !s.podeMencionarTodos && html`<span class="sb-erro">O cargo do bot precisa da permissão "Mencionar @everyone" pra isso marcar alguém.</span>`}
-          <div style="display:grid;gap:6px">
-            <span class="rotulo">Imagens do aviso</span>
-            <${ImagensEmbed} imgs=${n.imgs} padroes=${P} mensagem="news" onChange=${(imgs) => muda({ imgs })} />
-          </div>
-          <div style="display:grid;gap:6px">
-            <span class="rotulo">Quais atualizações</span>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              ${[['todas', 'Todas'], ['grandes', 'Só as grandes']].map(
-                ([id, nome]) => html`<button type="button" class=${`btn${n.quais === id ? ' navy' : ''}`} style="font:700 13px var(--corpo)" onClick=${() => muda({ quais: id })}>${nome}</button>`,
-              )}
-            </div>
-          </div>
-          <p class="dica">Na primeira vez, o bot posta só a notícia mais recente. Depois, cada versão nova sai sozinha.</p>
-        </div>
-        ${msg &&
-        html`<div style="display:grid;gap:10px">
-          <span style="font:400 16px var(--titulo)">PRÉVIA · #${canal?.nome ?? 'canal'}</span>
-          <${Previa} msg=${msg} ctx=${{ cargos: s?.cargos ?? [] }} />
-        </div>`}
-      </aside>
+      ${cfg && html`<${AvisarNoDiscord} lista=${lista} />`}
     </div>`;
+}
+
+/** Onde o bot avisa no Discord (só a staff vê: membro não mexe na config) */
+function AvisarNoDiscord({ lista }) {
+  const { cfg, estado, ui, mudar, api } = useApp();
+  const n = cfg.noticias;
+  const muda = (patch) => mudar((x) => Object.assign(x.noticias, patch));
+  const s = estado.servidor;
+  const canal = s?.canais.find((c) => c.id === n.canalId);
+  const opCanais = [{ v: '', t: 'Escolha um canal' }, ...(s?.canais ?? []).map((c) => ({ v: c.id, t: `#${c.nome}`, desabilitado: !c.podeEnviar, nota: c.podeEnviar ? c.categoria : 'sem permissão' }))];
+  const opMencao = [{ v: '', t: 'Ninguém' }, ...(s?.cargos ?? []).map((r) => ({ v: r.id, t: `@${r.nome}`, cor: r.cor !== '#000000' ? r.cor : undefined })), { v: 'everyone', t: '@everyone', nota: 'corajoso' }];
+  const ultima = (n.quais === 'grandes' ? lista.find((x) => x.grande) : lista[0]) ?? lista[0];
+  const temaN = aplicarTema('news', n.imgs, temaDaPrevia(cfg, estado, ui), cfg.temas.respeitar);
+  const P = PADROES.news, i = temaN?.imgs ?? n.imgs;
+  const msg = ultima && {
+    acima: n.mencao === 'everyone' ? '@everyone' : n.mencao ? `<@&${n.mencao}>` : '',
+    topo: urlImagem(i.topo, P.topo, api),
+    cor: temaN?.cor ?? '#f2c14e',
+    texto: `${temaN?.frase ? `**${temaN.frase}**\n\n` : ''}-# **Jornal do Campus · v${ultima.versao}**\n### ${ultima.titulo}\n${ultima.texto}`,
+    mini: urlImagem(i.mini, P.mini, api),
+    imagem: urlImagem(i.imagem, P.imagem, api),
+    rodape: 'Leia tudo no painel',
+    finais: i.finais.map((f) => urlImagem(f, P.final, api)).filter(Boolean),
+  };
+  return html`
+    <aside class="col-lado" style="flex:1 1 380px">
+    <div class="cartao sombra" style="padding:18px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <h2 class="h2" style="flex:1">AVISAR NO DISCORD</h2>
+        <${Toggle} on=${n.on} onClick=${() => muda({ on: !n.on })} />
+      </div>
+      <p style="margin:0;font-size:14px;color:var(--cinza);text-wrap:pretty">Quando o bot ganha uma atualização, ele posta a notícia num canal do servidor.</p>
+      <div class="rotulo">Canal
+        <${ListaSuspensa} valor=${n.canalId ?? ''} opcoes=${opCanais} onChange=${(v) => muda({ canalId: v || null })} />
+      </div>
+      ${n.on && !n.canalId && html`<span class="sb-erro">Escolha o canal pro bot postar.</span>`}
+      <div class="rotulo">Mencionar
+        <${ListaSuspensa} valor=${n.mencao} opcoes=${opMencao} onChange=${(v) => muda({ mencao: v })} />
+      </div>
+      ${n.mencao === 'everyone' && s && !s.podeMencionarTodos && html`<span class="sb-erro">O cargo do bot precisa da permissão "Mencionar @everyone" pra isso marcar alguém.</span>`}
+      <div style="display:grid;gap:6px">
+        <span class="rotulo">Imagens do aviso</span>
+        <${ImagensEmbed} imgs=${n.imgs} padroes=${P} mensagem="news" onChange=${(imgs) => muda({ imgs })} />
+      </div>
+      <div style="display:grid;gap:6px">
+        <span class="rotulo">Quais atualizações</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${[['todas', 'Todas'], ['grandes', 'Só as grandes']].map(
+            ([id, nome]) => html`<button type="button" class=${`btn${n.quais === id ? ' navy' : ''}`} style="font:700 13px var(--corpo)" onClick=${() => muda({ quais: id })}>${nome}</button>`,
+          )}
+        </div>
+      </div>
+      <p class="dica">Na primeira vez, o bot posta só a notícia mais recente. Depois, cada versão nova sai sozinha.</p>
+    </div>
+    ${msg &&
+    html`<div style="display:grid;gap:10px">
+      <span style="font:400 16px var(--titulo)">PRÉVIA · #${canal?.nome ?? 'canal'}</span>
+      <${Previa} msg=${msg} ctx=${{ cargos: s?.cargos ?? [] }} />
+    </div>`}
+  </aside>`;
 }
