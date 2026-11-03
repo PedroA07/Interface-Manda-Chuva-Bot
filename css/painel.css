@@ -496,3 +496,26 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
   .h1 { font-size: 30px; }
   .col-lado { position: static; }
 }
+
+/* Aba Tickets */
+.pilula-mostarda { padding: 3px 10px; background: var(--mostarda); border: var(--borda); border-radius: 99px; font: 800 13px var(--corpo); }
+.mono-pilula { font: 500 13px var(--mono); background: var(--fundo); padding: 1px 6px; border-radius: 5px; }
+.tk-motivo { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 2px dashed var(--tracejado); }
+.tk-emoji { flex: none; width: 44px; height: 44px; padding: 0; text-align: center; background: var(--fundo); border: var(--borda); border-radius: 10px; font-size: 20px; }
+.tk-emoji:focus { outline: none; box-shadow: 3px 3px 0 var(--vermelho); }
+.campo.tk-nome { padding: 5px 9px; font-weight: 800; box-shadow: none; }
+.campo.tk-desc { padding: 4px 9px; font-size: 13px; font-weight: 500; border-color: var(--tracejado); box-shadow: none; }
+.tk-fila { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-bottom: 2px dashed var(--tracejado); }
+.tk-num { flex: none; font: 500 13px var(--mono); padding: 3px 8px; background: var(--tinta); color: var(--mostarda); border-radius: 6px; }
+.tk-cmd { display: grid; gap: 4px; padding: 10px 12px; background: var(--fundo); border: var(--borda); border-radius: 10px; }
+.tk-cmd code { font: 500 14px var(--mono); color: var(--navy); }
+.tk-cmd span { font-size: 13px; color: var(--cinza); text-wrap: pretty; }
+.tk-cmd b { font-size: 11px; font-weight: 800; }
+.dc-menu { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; background: #1e1f22; border: 1px solid #111214; border-radius: 6px; color: #949ba4; }
+.dc-menu-lista { margin-top: 4px; display: grid; background: #2b2d31; border: 1px solid #111214; border-radius: 6px; overflow: hidden; }
+.dc-menu-op { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid #1e1f22; }
+.dc-menu-op:first-child { border-top: none; }
+.dc-menu-op b { color: #f2f3f5; font-weight: 600; }
+.dc-menu-op span span { font-size: 12px; color: #949ba4; }
+.dc-dm { margin-top: 14px; padding-top: 12px; border-top: 1px solid #3f4147; display: grid; gap: 8px; }
+.dc-estrela { width: 40px; height: 34px; padding: 0; background: var(--c); border: none; border-radius: 4px; font-size: 17px; cursor: pointer; }
