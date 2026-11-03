@@ -5,6 +5,7 @@ import { AbaCores } from './abas/cores.js';
 import { AbaNoticias } from './abas/noticias.js';
 import { AbaPortaria } from './abas/portaria.js';
 import { AbaTemas } from './abas/temas.js';
+import { AbaTickets } from './abas/tickets.js';
 import { AbaPainel } from './abas/painel.js';
 import { apiNestePc, chamar, conexao, ErroSenha, esquecerSenha, guardarAcesso } from './api.js';
 import { Ctx } from './estado.js';
@@ -20,6 +21,7 @@ const ABAS = [
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
   { id: 'boas', nome: 'Portaria', cor: '#b9dcb0', Tela: AbaPortaria },
   { id: 'temas', nome: 'Temas', cor: '#f2b880', Tela: AbaTemas },
+  { id: 'tickets', nome: 'Tickets', cor: '#c9e4f2', Tela: AbaTickets },
 ];
 
 const Marca = () => html`

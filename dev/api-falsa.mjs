@@ -52,6 +52,14 @@ let aniversarios = ['rafa_cringe:14/11:2004', 'marina.exe:03/12:2002', 'joao_sem
   // Os dois primeiros têm foto (no bot de verdade vem do Discord); o resto fica com a inicial
   .map((x, i) => { const [nome, d, ano] = x.split(':'); return { userId: id(500 + i), nome, d, ano: ano ? +ano : null, avatar: i < 2 ? `/banners/card-${i ? 'confete' : 'campus'}.gif` : null }; });
 config.moderacao = { silenciar: 3, expulsar: 5, canalId: id(15), automod: { palavrao: { on: true, acao: 'apagar' }, spam: { on: true, acao: 'silenciar' }, convites: { on: true, acao: 'avisar' }, mencoes: { on: false, acao: 'silenciar' }, links: { on: false, acao: 'apagar' } }, palavras: ['porra', 'caralho', 'merda', 'fdp', 'vsf', 'pqp'] };
+config.tickets = {
+  on: true, categoriaId: id(90), canalId: id(16), staffId: id(51), logsId: id(17), limite: 1, parado: '24h', apagar: '10s', transLog: true, transDm: true, avaliacao: true, mencionar: true,
+  titulo: '🎫 Precisa de ajuda?', desc: 'Abre um ticket aqui embaixo e a staff te chama num canal privado.\nNada de treta no #geral, combinado?', imagem: '',
+  motivos: [['❓', 'Dúvida', 'Pergunta sobre o servidor ou o bot'], ['🚨', 'Denúncia', 'Alguém passou dos limites'], ['🤝', 'Parceria', 'Divulgação, eventos, collab'], ['🐛', 'Bug do bot', 'O Manda Chuva fez besteira'], ['🎨', 'Cargo', 'Pedir ou trocar um cargo']].map(([emoji, nome, desc]) => ({ emoji, nome, desc, on: true })),
+};
+const MIN = 60_000;
+let tickets = [['0042', '🚨', 'pedrinho', 'Denúncia', 4, null], ['0041', '🎨', 'bia.ppt', 'Cargo', 25, 'marina.exe'], ['0040', '🐛', 'th3o', 'Bug do bot', 60, null], ['0039', '🤝', 'gui_monitor', 'Parceria', 1500, 'gabs']]
+  .map(([num, emoji, quem, motivo, min, resp], i) => ({ num, emoji, quem, userId: id(700 + i), motivo, aberto: Date.now() - min * MIN, quando: min < 60 ? `há ${min} min` : min < 1440 ? `há ${Math.floor(min / 60)} h` : 'ontem', resp, canalId: id(800 + i), link: 'https://discord.com/channels/1/2' }));
 // Membros do protótipo (cargos pelos ids da lista de cargos daqui de baixo)
 const NOMES_CARGO = { Dono: 50, Moderação: 51, VIP: 52, Calouro: 60, 'Notícias do bot': 61, Veterano: 62, Gamers: 63, Vermelho: 100, Laranja: 101, Amarelo: 102, Verde: 103, Azul: 104, Roxo: 105, Rosa: 106 };
 const CORES_CARGO = { 50: '#F1C40F', 51: '#E91E63', 52: '#F39C12', 100: '#E74C3C', 101: '#E67E22', 102: '#F1C40F', 103: '#2ECC71', 104: '#3498DB', 105: '#9B59B6', 106: '#FF6EC7' };
@@ -84,7 +92,7 @@ const NOTICIAS = [
 let paineis = [{ servidorId: id(1), canalId: id(11), mensagemId: id(900), v2: true }];
 const anexos = new Map();
 
-const canais = [['escolha-sua-cor', 'CAMPUS'], ['geral', 'CAMPUS'], ['cantina', 'CAMPUS'], ['portaria', 'ENTRADA'], ['registros-mod', 'STAFF']].map(([nome, categoria], i) => ({ id: id(11 + i), nome, categoria, podeEnviar: i !== 4 }));
+const canais = [['escolha-sua-cor', 'CAMPUS'], ['geral', 'CAMPUS'], ['cantina', 'CAMPUS'], ['portaria', 'ENTRADA'], ['registros-mod', 'STAFF'], ['abrir-ticket', 'SUPORTE'], ['registros-tickets', 'STAFF']].map(([nome, categoria], i) => ({ id: id(11 + i), nome, categoria, podeEnviar: i !== 4 }));
 const cargos = () => [
   { id: id(50), nome: 'Dono', cor: '#F1C40F', cor2: '', perigoso: true, acima: true, membros: 1 },
   { id: id(51), nome: 'Moderação', cor: '#E91E63', cor2: '', perigoso: true, acima: true, membros: 4 },
@@ -117,16 +125,18 @@ let hierarquia = [
 function estado() {
   return {
     config,
-    bot: { online: true, soPainel: false, versao: '3.0.0', recursos: { membros: true }, nome: 'Manda Chuva', avatar: null, convite: 'https://discord.com/oauth2/authorize?client_id=1' },
+    bot: { online: true, soPainel: false, versao: '3.0.0', recursos: { membros: true, conteudo: false }, nome: 'Manda Chuva', avatar: null, convite: 'https://discord.com/oauth2/authorize?client_id=1' },
     servidores: [{ id: id(1), nome: 'Servidor de Teste' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
-      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [],
+      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [], ticketsFaltando: ['Gerenciar canais (tickets)'],
+      categorias: [{ id: id(90), nome: '🎫 Tickets' }, { id: id(91), nome: 'Geral' }, { id: id(92), nome: 'Staff' }],
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length, lista: hierarquia, permsDoBot: ['cargos', 'mensagens'] },
     },
     noticias: NOTICIAS,
     aniversarios,
     ocorrencias,
+    tickets,
     paineis: paineis.map((p) => ({ ...p, canalNome: canais.find((c) => c.id === p.canalId)?.nome ?? 'canal apagado', link: 'https://discord.com/channels/1/2/3' })),
   };
 }
@@ -184,6 +194,13 @@ createServer(async (req, res) => {
     else if (c.acao === 'dessilenciar') { m.silenciadoAte = null; m.semPrazo = false; mensagem = `${m.nome} pode falar de novo.`; }
     else if (c.acao === 'expulsar') { membros = membros.filter((x) => x !== m); anotar({ tipo: 'EXPULSÃO', userId: m.id, nome: m.nome, oque: `foi expulso${motivo}`, por: 'pelo painel', desfazer: null }); return json(res, 200, { ok: true, mensagem: `${m.nome} foi expulso.`, membro: null }); }
     return json(res, 200, { ok: true, mensagem, membro: m });
+  }
+  if (rota === 'POST /api/tickets/acao') {
+    const c = await ler(req);
+    const t = tickets.find((x) => x.num === c.num);
+    if (!t) return json(res, 404, { erro: 'Esse ticket já foi fechado.' });
+    tickets = tickets.filter((x) => x !== t);
+    return json(res, 200, { ok: true, mensagem: `Ticket #${t.num} fechado. O canal some em 10 segundos.` });
   }
   if (rota === 'POST /api/ocorrencias/desfazer') {
     const { id: oid } = await ler(req);
