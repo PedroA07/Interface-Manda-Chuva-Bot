@@ -125,11 +125,11 @@ let hierarquia = [
 function estado() {
   return {
     config,
-    bot: { online: true, soPainel: false, versao: '3.0.0', recursos: { membros: true, conteudo: false }, nome: 'Manda Chuva', avatar: null, convite: 'https://discord.com/oauth2/authorize?client_id=1' },
+    bot: { online: true, soPainel: false, versao: '3.0.0', recursos: { membros: true, conteudo: !!process.env.DEMO }, nome: 'Manda Chuva', avatar: null, convite: 'https://discord.com/oauth2/authorize?client_id=1' },
     servidores: [{ id: id(1), nome: 'Servidor de Teste' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
-      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [], ticketsFaltando: ['Gerenciar canais (tickets)'],
+      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [], ticketsFaltando: process.env.DEMO ? [] : ['Gerenciar canais (tickets)'],
       categorias: [{ id: id(90), nome: '🎫 Tickets' }, { id: id(91), nome: 'Geral' }, { id: id(92), nome: 'Staff' }],
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length, lista: hierarquia, permsDoBot: ['cargos', 'mensagens'] },
     },
