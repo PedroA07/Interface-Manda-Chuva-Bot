@@ -3,17 +3,116 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Manda Chuva · Painel do Campus</title>
+<title>Manda Chuva · o bot oficial da resenha</title>
+<meta name="description" content="Bot brasileiro pra servidores de resenha e jogos: cargos de cor, portaria com card, festas automáticas, aniversários, tickets e perfil com medalhas.">
+<meta property="og:title" content="Manda Chuva · o bot oficial da resenha">
+<meta property="og:description" content="Cargos de cor, portaria com card, festas automáticas, aniversários, tickets e perfil com medalhas. Tudo num bot só.">
+<meta property="og:image" content="banners/bot/banner.png">
 <link rel="icon" href="banners/bot/mascote-64.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Graduate&family=JetBrains+Mono:wght@500&family=Permanent+Marker&display=swap">
-<link rel="stylesheet" href="css/painel.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Graduate&family=JetBrains+Mono:wght@500&family=Permanent+Marker&display=swap">
+<link rel="stylesheet" href="css/site.css">
 </head>
-<body>
-<div id="app"></div>
-<noscript>O painel precisa de JavaScript ligado.</noscript>
+<body class="landing">
+
+<nav class="ld-nav">
+  <a href="#topo" class="ld-logo"><img src="banners/bot/mascote-256.png" alt=""><span>MANDA CHUVA</span></a>
+  <div class="ld-links">
+    <a href="#recursos">Recursos</a>
+    <a href="#comandos">Comandos</a>
+    <a href="#medalhas">Medalhas</a>
+    <a href="central.html#suporte">Suporte</a>
+  </div>
+  <div style="display:flex;gap:10px">
+    <a href="painel.html" class="ld-btn-borda">Abrir painel</a>
+    <a href="#convite" class="ld-btn-mostarda">Adicionar ao Discord</a>
+  </div>
+</nav>
+
+<!-- Hero: 48 quadros desenhados no canvas conforme o scroll (seção de 340vh com a tela grudada) -->
+<section id="topo" class="ld-hero">
+  <div class="ld-hero-tela">
+    <canvas></canvas>
+    <div class="ld-hero-degrade"></div>
+    <div class="ld-hero-titulo">
+      <h1>MANDA CHUVA</h1>
+      <span class="ld-faixa">o bot oficial da resenha</span>
+    </div>
+    <div class="ld-hero-cap">
+      <span class="ld-sobre">CAPÍTULO 1 · A CHEGADA</span>
+      <h2>Chegou no campus com chuva e cores pra todo mundo.</h2>
+      <p>Cargos de cor, portaria com card, festas automáticas, tickets e perfil com medalhas. Tudo num bot só.</p>
+    </div>
+    <div class="ld-hero-fim">
+      <h2>BORA PRA RESENHA?</h2>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px">
+        <a href="#convite" class="ld-btn-grande mostarda">Adicionar ao Discord</a>
+        <a href="#recursos" class="ld-btn-grande creme">Ver o que ele faz ↓</a>
+      </div>
+    </div>
+    <div class="ld-role">ROLE PRA ENTRAR<span>↓</span></div>
+    <div class="ld-progresso"></div>
+  </div>
+</section>
+
+<!-- Recursos: o mascote 3D gira conforme o scroll -->
+<section id="recursos" class="ld-recursos" data-3d-track>
+  <div class="ld-caderno"></div>
+  <div class="ld-recursos-dentro">
+    <div style="flex:1 1 380px;min-width:0">
+      <div class="ld-palco">
+        <div class="ld-palco-bola"></div>
+        <mascote-3d src="banners/bot/mascote.glb" fallback="banners/bot/mascote-toy.png"></mascote-3d>
+        <span class="ld-palco-adesivo">em 3D, chefia</span>
+      </div>
+    </div>
+    <div class="ld-lista-recursos" id="lista-recursos"></div>
+  </div>
+</section>
+
+<section class="ld-faixa-banners"><div class="ld-marquee" id="faixa"></div></section>
+
+<section id="comandos" class="ld-secao">
+  <div style="display:grid;gap:10px"><span class="ld-sobre">COLA DA PROVA</span><h2 class="ld-h2">COMANDOS</h2><p class="ld-sub">Os principais. A lista completa (e quem pode usar cada um) fica na <a href="central.html#apresentacao">Central do Bot</a>.</p></div>
+  <div class="ld-grade-comandos" id="lista-comandos"></div>
+</section>
+
+<section id="medalhas" class="ld-medalhas">
+  <div class="ld-secao">
+    <div style="display:grid;gap:10px"><span class="ld-sobre" style="color:#c4363c">COLECIONE TODAS (OU QUASE)</span><h2 class="ld-h2">MEDALHAS DO CAMPUS</h2><p class="ld-sub" style="color:#5a5e6e">16 medalhas pra ganhar falando, aparecendo na call, indo nos eventos e ficando no servidor. Fixe até 3 no seu perfil do site.</p></div>
+    <div class="ld-grade-medalhas" id="lista-medalhas"></div>
+  </div>
+</section>
+
+<section id="convite" class="ld-convite">
+  <img src="banners/bot/banner.png" alt="" class="ld-convite-fundo">
+  <div class="ld-convite-dentro">
+    <img src="banners/bot/mascote-256.png" alt="" class="ld-convite-mascote">
+    <h2>MATRÍCULA ABERTA</h2>
+    <p>Coloca o Manda Chuva no seu servidor em dois cliques. É grátis, não pede senha e sai fácil se não curtir.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px">
+      <a href="central.html#apresentacao" class="ld-btn-grande discord js-convite"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Adicionar ao Discord</a>
+      <a href="painel.html" class="ld-btn-grande creme">Entrar no painel</a>
+    </div>
+  </div>
+</section>
+
+<footer class="ld-rodape">
+  <div class="ld-rodape-dentro">
+    <span class="ld-rodape-nome">MANDA CHUVA</span>
+    <span>Feito com café do RU · EST. 2026</span>
+    <div class="ld-rodape-links">
+      <a href="central.html#apresentacao">Sobre o bot</a>
+      <a href="central.html#termos">Termos de Uso</a>
+      <a href="central.html#privacidade">Política de Privacidade</a>
+      <a href="central.html#suporte">Suporte</a>
+    </div>
+  </div>
+</footer>
+
 <script src="config.js"></script>
-<script type="module" src="js/main.js"></script>
+<script src="js/mascote-3d.js"></script>
+<script type="module" src="js/landing.js"></script>
 </body>
 </html>
