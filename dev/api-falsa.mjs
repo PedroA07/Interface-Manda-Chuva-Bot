@@ -6,7 +6,7 @@ import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 
 const RAIZ = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
-const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.gif': 'image/gif', '.jpg': 'image/jpeg', '.png': 'image/png', '.json': 'application/json' };
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.gif': 'image/gif', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.json': 'application/json' };
 const id = (n) => `1${String(n).padStart(17, '0')}`; // ids do Discord não cabem num Number
 const CORES = [['Vermelho', '🔴', '#E74C3C', 31], ['Laranja', '🟠', '#E67E22', 12], ['Amarelo', '🟡', '#F1C40F', 6], ['Verde', '🟢', '#2ECC71', 18], ['Azul', '🔵', '#3498DB', 42], ['Roxo', '🟣', '#9B59B6', 27], ['Rosa', '🌸', '#FF6EC7', 23], ['Preto', '⚫', '#111111', 15], ['Branco', '⚪', '#FFFFFF', 11], ['Cinza', '🩶', '#95A5A6', 7], ['Marrom', '🟤', '#8B5A2B', 0]];
 
