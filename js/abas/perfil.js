@@ -1,23 +1,39 @@
-// Aba Meu perfil: banner (48 da galeria), medalhas (fixar até 3), bio e o cartão "como a galera te vê".
-// Cada mudança vale na hora (não espera o Salvar): vai direto pro bot.
+// Aba Meu perfil: banner e foto (do Discord, galeria, link ou anexo), medalhas (fixar até 3), bio, o cartão "como a galera
+// te vê" e a prévia da carteirinha que o /perfil manda no Discord. Cada mudança vale na hora (não espera o Salvar): vai direto pro bot.
 import { html, useState } from '../../vendor/preact-htm.js';
-import { chamar } from '../api.js';
+import { chamar, ErroSenha } from '../api.js';
 import { useApp } from '../estado.js';
+import { urlImagem } from '../logica.js';
 import { tempoRelativo } from '../moderacao.js';
-import { CATEGORIAS, imagemDaMedalha, numeroBonito, partesDoBanner, RARIDADE } from '../perfil.js';
-import { LogoDiscord } from '../ui/basicos.js';
+import { CATEGORIAS, COR_SEM_BANNER, erroDoArquivo, erroDoLink, imagemDaMedalha, nomeDaCarteirinha, numeroBonito, partesDoBanner, RARIDADE, TIPOS_DE_IMAGEM } from '../perfil.js';
+import { LogoDiscord, Segmentado } from '../ui/basicos.js';
+import { lerBase64 } from '../ui/seletor-banner.js';
 
 const MAX_BIO = 120;
 const FILTROS = [['todas', 'Todas'], ['ganhas', 'Conquistadas'], ['faltam', 'Faltando']];
+// k = 'b' (banner) ou 'a' (foto)
+const ORIGENS = {
+  b: [['discord', 'Do Discord'], ['galeria', 'Galeria'], ['link', 'Link'], ['anexo', 'Anexar']],
+  a: [['discord', 'Do Discord'], ['link', 'Link'], ['anexo', 'Anexar']],
+};
+const SOBRE_O_DISCORD = {
+  b: 'Usa o banner do seu perfil no Discord. Sem Nitro o Discord não tem banner, então entra a cor de destaque do seu perfil.',
+  a: 'Usa sua foto do Discord e troca sozinha quando você mudar lá.',
+};
+
+/** Imagem escolhida pela pessoa. Link quebrado ou anexo apagado somem e deixam aparecer o que está atrás. */
+const ImagemDoPerfil = ({ src }) => html`<img key=${src} src=${src} alt="" referrerpolicy="no-referrer" onError=${(e) => (e.target.style.display = 'none')} />`;
 
 /** Cartão do perfil (também usado na lista da turma, em tamanho menor) */
 export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true }) {
+  const { api } = useApp();
   const ini = (usuario.nome || '?').charAt(0).toUpperCase();
+  const banner = urlImagem(perfil.banner, '', api), foto = urlImagem(usuario.avatar, '', api);
   return html`<div class=${`perfil-cartao${grande ? '' : ' pequeno'}`}>
-    <div class="perfil-banner"><img src=${perfil.banner} alt="" /></div>
+    <div class="perfil-banner" style=${banner ? '' : `background:${perfil.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>
     <div class="perfil-corpo">
       <div class="perfil-linha-foto">
-        <span class="perfil-foto">${usuario.avatar ? html`<img src=${usuario.avatar} alt="" />` : ini}${grande && html`<i></i>`}</span>
+        <span class="perfil-foto">${ini}${foto && html`<${ImagemDoPerfil} src=${foto} />`}${grande && html`<i></i>`}</span>
         <div class="perfil-fixadas">${fixadas.map((id) => html`<img src=${imagemDaMedalha(id)} alt="" title=${id} />`)}</div>
       </div>
       <div style="display:grid;gap:2px;min-width:0">
@@ -29,6 +45,107 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
       ${stats && html`<div class="perfil-stats">${stats.map(([v, k]) => html`<div><b>${v}</b><span>${k}</span></div>`)}</div>`}
     </div>
   </div>`;
+}
+
+/** Como a carteirinha chega no Discord quando alguém usa /perfil */
+function PreviaCarteirinha({ usuario, visual, fixadas, stats }) {
+  const { api, estado } = useApp();
+  const banner = urlImagem(visual.banner, '', api), foto = urlImagem(visual.avatar, '', api);
+  const servidor = (estado.servidor?.nome ?? 'Servidor').toUpperCase();
+  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return html`<div class="dc" style="display:grid;gap:8px">
+    <div class="cart-comando"><b>@${usuario.usuario}</b>usou<span>/perfil</span></div>
+    <div class="dc-msg">
+      <img class="dc-avatar" src="banners/bot/mascote-64.png" alt="" />
+      <div class="dc-corpo" style="display:grid;gap:6px">
+        <div class="dc-autor">Manda Chuva<span class="dc-app">APP</span><span class="dc-hora">hoje às ${hora}</span></div>
+        <div class="cart">
+          <div class="cart-banner" style=${banner ? '' : `background:${visual.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>
+          <div class="cart-corpo">
+            <div class="cart-topo">
+              <span class="cart-foto">${(usuario.nome || '?').charAt(0).toUpperCase()}${foto && html`<${ImagemDoPerfil} src=${foto} />`}</span>
+              <span class="cart-nome"><b>${usuario.nome}</b><span>entrou ${usuario.entrou ? tempoRelativo(usuario.entrou) : '?'}</span></span>
+              <span class="cart-medalhas">${fixadas.map((id) => html`<img src=${imagemDaMedalha(id)} alt="" title=${id} />`)}</span>
+            </div>
+            <div class="cart-cargos">${usuario.cargos.map((c) => html`<span class="cart-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
+            <div class="cart-stats">${stats.map(([v, k]) => html`<span><b>${v}</b><small>${k}</small></span>`)}</div>
+            <span class="cart-rodape">${servidor} · CARTEIRINHA</span>
+          </div>
+        </div>
+        <span class="dc-hora">${nomeDaCarteirinha(usuario.nome, visual.gif)} · 1000×560</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** De onde vem o banner ou a foto. O erro aparece em vermelho embaixo do campo. galeria = conteúdo da aba Galeria. */
+function OrigemImagem({ k, galeria }) {
+  const { eu, setEu, aviso, tratar } = useApp();
+  const p = eu.perfil;
+  const [modo, setModo] = useState(p[`${k}Orig`]);
+  const [link, setLink] = useState(p[`${k}Link`]);
+  const [erro, setErro] = useState('');
+  const [ocupado, setOcupado] = useState(false);
+  const banner = k === 'b';
+
+  async function pedir(caminho, corpo, ok) {
+    setErro('');
+    setOcupado(true);
+    try {
+      const r = await chamar(caminho, corpo);
+      setEu((e) => ({ ...e, perfil: r.perfil, visual: r.visual }));
+      if (ok) aviso(ok, 'ficou chave');
+    } catch (e) {
+      if (e instanceof ErroSenha || !e.status) tratar(e);
+      else setErro(e.message);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  function escolher(m) {
+    setModo(m);
+    setErro('');
+    // Discord e galeria valem na hora; link e anexo só se já tiver um guardado (senão esperam a pessoa mandar)
+    const pronto = m === 'link' ? p[`${k}Link`] : m === 'anexo' ? p[`${k}Anexo`] : true;
+    if (pronto && m !== p[`${k}Orig`]) pedir('/api/eu/perfil', { [`${k}Orig`]: m });
+  }
+
+  function usarLink() {
+    const problema = erroDoLink(link);
+    if (problema) return setErro(problema);
+    pedir('/api/eu/perfil', { [`${k}Orig`]: 'link', [`${k}Link`]: link.trim() }, banner ? 'Banner trocado pelo link.' : 'Foto trocada pelo link.');
+  }
+
+  async function enviar(e) {
+    const f = e.target.files[0];
+    e.target.value = ''; // deixa escolher o mesmo arquivo de novo
+    if (!f) return;
+    const problema = erroDoArquivo(f);
+    if (problema) return setErro(problema);
+    pedir('/api/eu/anexo', { base64: await lerBase64(f), tipo: f.type, nome: f.name, alvo: banner ? 'banner' : 'foto' }, banner ? 'Banner anexado.' : 'Foto anexada.');
+  }
+
+  const nomeDoArquivo = p[`${k}ArqNome`];
+  return html`
+    <${Segmentado} classe="origens" opcoes=${ORIGENS[k]} valor=${modo} onChange=${escolher} />
+    ${modo === 'discord' && html`<div class="aviso-discord"><${LogoDiscord} tam=${20} /><span>${SOBRE_O_DISCORD[k]}</span></div>`}
+    ${modo === 'link' &&
+    html`<div style="display:grid;gap:6px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <input class="campo mono" style="flex:1 1 240px;min-width:0" value=${link} placeholder="https://…/imagem.gif" onInput=${(e) => (setLink(e.target.value), setErro(''))} onKeyDown=${(e) => e.key === 'Enter' && (e.preventDefault(), usarLink())} />
+        <button type="button" class="btn navy" disabled=${ocupado} onClick=${usarLink}>${ocupado ? 'Conferindo…' : 'Usar'}</button>
+      </div>
+      <span style="font-size:12px;color:var(--cinza)">Link direto da imagem (PNG, JPG, GIF ou WEBP). GIF animado funciona.</span>
+    </div>`}
+    ${modo === 'anexo' &&
+    html`<label class="sb-solta">
+      <input type="file" accept=${TIPOS_DE_IMAGEM.join(',')} style="display:none" disabled=${ocupado} onChange=${enviar} />
+      <b style="font-weight:800;overflow-wrap:anywhere">${ocupado ? 'Enviando…' : nomeDoArquivo ? `${nomeDoArquivo} · clique pra trocar` : 'Clique pra escolher uma imagem'}</b>
+      <span style="font-size:12px;color:var(--cinza)">PNG, JPG, GIF ou WEBP · até 8 MB</span>
+    </label>`}
+    ${erro && html`<span class="sb-erro">${erro}</span>`}
+    ${modo === 'galeria' && galeria}`;
 }
 
 export function AbaPerfil() {
@@ -44,10 +161,11 @@ export function AbaPerfil() {
 
   async function guardar(patch, ok, meme) {
     const antes = eu;
-    setEu({ ...eu, perfil: { ...eu.perfil, ...patch } }); // já mostra; volta atrás se o bot recusar
+    const visual = patch.banner ? { ...eu.visual, banner: patch.banner, cor: null } : eu.visual;
+    setEu({ ...eu, perfil: { ...eu.perfil, ...patch }, visual }); // já mostra; volta atrás se o bot recusar
     try {
       const r = await chamar('/api/eu/perfil', patch);
-      setEu((e) => ({ ...e, perfil: r.perfil }));
+      setEu((e) => ({ ...e, perfil: r.perfil, visual: r.visual }));
       if (ok) aviso(ok, meme);
     } catch (e) {
       setEu(antes);
@@ -62,6 +180,23 @@ export function AbaPerfil() {
   };
   const lista = eu.medalhas.filter((m) => filtro === 'todas' || (filtro === 'ganhas' ? m.ganha : !m.ganha));
   const stats = [[numeroBonito(eu.stats.mensagens), 'mensagens'], [`${numeroBonito(eu.stats.horas)} h`, 'em call'], [String(eu.stats.medalhas), 'medalhas']];
+  const usuario = { ...eu.usuario, avatar: eu.visual.avatar };
+
+  const galeria = html`<div style="display:grid;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+      ${CATEGORIAS.map(([id, nome]) => html`<button type="button" class=${`pilula${cat === id ? ' on' : ''}`} onClick=${() => setCat(id)}>${nome}</button>`)}
+      <span style="margin-left:auto;font-size:13px;color:var(--cinza)">${catAt[2].length} banners em ${catAt[1]}</span>
+    </div>
+    <div class="grade-banners">
+      ${catAt[2].map((nome, k) => {
+        const src = `banners/perfil/${catAt[0]}-${k + 1}.jpg`, ativo = p.banner === src;
+        return html`<button type="button" class=${`banner-opcao${ativo ? ' on' : ''}`} title=${nome} onClick=${() => !ativo && guardar({ bOrig: 'galeria', banner: src }, `Banner trocado: ${nome}.`, 'ficou chave')}>
+          <img src=${src} alt="" loading="lazy" /><span>${nome}</span>
+        </button>`;
+      })}
+    </div>
+    <span style="font-size:12px;color:var(--cinza)">Artes originais inspiradas em jogos, músicas e estilos. Nada de logo ou personagem oficial.</span>
+  </div>`;
 
   return html`<div class="colunas">
     <div class="col-editor" style="gap:24px">
@@ -71,17 +206,13 @@ export function AbaPerfil() {
       </div>
 
       <div class="cartao">
-        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h2 class="h2">BANNER DO PERFIL</h2><span style="margin-left:auto;font-size:13px;color:var(--cinza)">${catAt[2].length} banners em ${catAt[1]}</span></div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">${CATEGORIAS.map(([id, nome]) => html`<button type="button" class=${`pilula${cat === id ? ' on' : ''}`} onClick=${() => setCat(id)}>${nome}</button>`)}</div>
-        <div class="grade-banners">
-          ${catAt[2].map((nome, k) => {
-            const src = `banners/perfil/${catAt[0]}-${k + 1}.jpg`, ativo = p.banner === src;
-            return html`<button type="button" class=${`banner-opcao${ativo ? ' on' : ''}`} title=${nome} onClick=${() => !ativo && guardar({ banner: src }, `Banner trocado: ${nome}.`, 'ficou chave')}>
-              <img src=${src} alt="" loading="lazy" /><span>${nome}</span>
-            </button>`;
-          })}
-        </div>
-        <span style="font-size:12px;color:var(--cinza)">Artes originais inspiradas em jogos, músicas e estilos. Nada de logo ou personagem oficial.</span>
+        <h2 class="h2">BANNER DO PERFIL</h2>
+        <${OrigemImagem} k="b" galeria=${galeria} />
+      </div>
+
+      <div class="cartao">
+        <h2 class="h2">FOTO DE PERFIL</h2>
+        <${OrigemImagem} k="a" />
       </div>
 
       <div class="cartao">
@@ -116,7 +247,10 @@ export function AbaPerfil() {
 
     <aside class="col-lado" style="gap:14px">
       <span style="font:400 16px var(--titulo)">COMO A GALERA TE VÊ</span>
-      <${CartaoPerfil} usuario=${eu.usuario} perfil=${{ ...p, bio: bio.trim() || p.bio }} fixadas=${fixadas} stats=${stats} />
+      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio }} fixadas=${fixadas} stats=${stats} />
+      <span style="font:400 16px var(--titulo)">NO DISCORD · /perfil</span>
+      <${PreviaCarteirinha} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} />
+      <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot desenha a carteirinha e manda como imagem anexada, sem embed. Se o banner ou a foto for GIF, sai em GIF animado; senão, PNG.</span>
     </aside>
   </div>`;
 }

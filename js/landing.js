@@ -88,7 +88,7 @@ const RECURSOS = [
   ['FESTAS', 'Dezembro virou Natal sozinho.', 'Natal, Ano Novo, Carnaval, Junina, Halloween e mais: o bot troca banners e mensagens na data certa, sem ninguém lembrar.', 'banners/festas/junina-painel.gif', '3 / 1'],
   ['ANIVERSÁRIOS', 'Ninguém esquece o parabéns.', 'Cada um cadastra a data com /aniversario. No dia, o bot posta o card com foto, nome e idade, e dá um cargo especial por 24 horas.', 'banners/festas/card-niver.jpg', '600 / 260'],
   ['TICKETS', 'Treta resolvida no privado.', 'Menu de abrir ticket com motivos, canal privado com a staff, fila, transcrição e avaliação. Fechou, o canal some sozinho.', 'banners/eventos/fundo-news.jpg', '3 / 1'],
-  ['PERFIL', 'Banner, bio e medalhas.', 'Cada membro monta a carteirinha no site: 48 banners de jogos, música, animais, desenhos e código, mais as medalhas que ganhou.', 'banners/perfil/jogos-2.jpg', '21 / 9'],
+  ['PERFIL', 'Banner, foto e medalhas.', 'Cada membro monta a carteirinha no site: 48 banners de jogos, música, animais, desenhos e código (ou o banner do Discord, um link, um GIF seu), mais as medalhas que ganhou.', 'banners/perfil/jogos-2.jpg', '21 / 9'],
 ];
 document.getElementById('lista-recursos').innerHTML = RECURSOS.map(([tag, titulo, texto, img, prop], i) => `
   <article class="ld-recurso">

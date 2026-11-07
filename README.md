@@ -34,7 +34,7 @@ Visual "college" (papel de caderno, adesivos, sombras duras), login com o Discor
 <td><img src="docs/telas/tickets.webp" width="100%" alt="Aba Tickets"></td>
 <td><img src="docs/telas/perfil.webp" width="100%" alt="Meu perfil"></td>
 </tr>
-<tr><td align="center"><b>Tickets</b> com prévia do Discord</td><td align="center"><b>Meu perfil</b>: banner, bio e medalhas</td></tr>
+<tr><td align="center"><b>Tickets</b> com prévia do Discord</td><td align="center"><b>Meu perfil</b>: banner, foto, bio e medalhas</td></tr>
 <tr>
 <td><img src="docs/telas/membros.webp" width="100%" alt="Membros"></td>
 <td><img src="docs/telas/mascote.webp" width="100%" alt="Mascote em 3D"></td>
@@ -50,7 +50,7 @@ Visual "college" (papel de caderno, adesivos, sombras duras), login com o Discor
 - **Temas**: as datas festivas (Natal, Ano Novo, Carnaval e Páscoa calculados, Junina, Halloween...), calendário, avisos personalizados, imagem do tema pra cada mensagem e "Simular uma data" pra ver as outras abas naquele dia.
 - **Aniversários** (dentro de Temas): canal, horário, modelos, card do aniversariante, cargo de 24 h, DM, botão de cadastro no painel de cores, próximos aniversários e a lista completa (buscar, filtrar por mês, adicionar e tirar).
 - **Tickets**: categoria, canal do menu e de transcrições (escolher ou mandar o bot criar), motivos, regras, fila de abertos e prévia em 3 etapas.
-- **Meu perfil** e **Membros** (com login do Discord): banner, bio e medalhas fixadas; a turma toda com os cartões de perfil.
+- **Meu perfil** e **Membros** (com login do Discord): banner e foto (do Discord, galeria, link ou anexo), bio, medalhas fixadas e a prévia da carteirinha do `/perfil`; a turma toda com os cartões de perfil.
 - **Notícias**: o Jornal do Campus com tudo que mudou no bot (filtros, não lidas) e onde o bot anuncia cada versão nova no Discord (canal, menção, imagens, "só as grandes").
 - **Endereço do bot**: o endereço do serviço na Render (ex.: `https://manda-chuva-bot.onrender.com`), ou `http://localhost:3000` se o bot está rodando no seu PC.
 - **Senha**: a `PAINEL_SENHA` configurada no bot. Se o bot roda no seu PC sem senha, deixe vazio.

@@ -10,7 +10,7 @@ const MAX = 8 * 1024 * 1024;
 const TIPOS = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 const PROPORCAO = { mini: '1 / 1', card: '600 / 260', rodape: 'auto', banner: '3 / 1' };
 
-const lerBase64 = (arquivo) =>
+export const lerBase64 = (arquivo) =>
   new Promise((ok, falha) => {
     const r = new FileReader();
     r.onload = () => ok(String(r.result).split(',')[1] ?? '');

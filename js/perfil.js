@@ -29,3 +29,29 @@ export const imagemDaMedalha = (id) => `banners/medalhas/${id}.png`;
 
 /** "1.284", "32 h" */
 export const numeroBonito = (n) => Number(n || 0).toLocaleString('pt-BR');
+
+// ---------- Banner e foto: de onde vêm ----------
+export const COR_SEM_BANNER = '#4a63c9';
+export const TIPOS_DE_IMAGEM = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const MAX_ARQUIVO = 8 * 1024 * 1024;
+
+/** Mensagem do que está errado no link, ou '' se ele serve */
+export const erroDoLink = (texto) => (/^https:\/\/\S+$/i.test(texto.trim()) ? '' : 'O link tem que começar com https://');
+
+/** Mensagem do que está errado no arquivo, ou '' se ele serve */
+export function erroDoArquivo(arquivo) {
+  if (!TIPOS_DE_IMAGEM.includes(arquivo.type)) return 'Formato não rola. Usa PNG, JPG, GIF ou WEBP.';
+  return arquivo.size > MAX_ARQUIVO ? 'Passou de 8 MB. O Discord não deixa.' : '';
+}
+
+/** Nome do arquivo que o /perfil manda (a mesma regra do bot) */
+export function nomeDaCarteirinha(nome, gif) {
+  const limpo = String(nome ?? '')
+    .normalize('NFKC')
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}‍️⃣]/gu, '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-');
+  return `perfil-${limpo.slice(0, 40).replace(/^-+|-+$/g, '') || 'membro'}.${gif ? 'gif' : 'png'}`;
+}

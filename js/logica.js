@@ -52,6 +52,7 @@ export function urlImagem(ref, padrao, api) {
   const r = ref || padrao;
   if (!r || r === 'none') return null;
   if (r.startsWith('anexo:')) return `${api}/anexos/${r.slice(6)}`;
+  if (r.startsWith('/')) return api + r; // imagem que passa pelo bot (perfil com link de fora)
   const placa = PLACA.exec(r);
   if (placa) return `${api}/placas/${placa[1]}.jpg`;
   return r;

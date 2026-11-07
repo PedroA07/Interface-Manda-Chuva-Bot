@@ -147,8 +147,19 @@ const json = (res, status, dados) => (res.writeHead(status, { 'Content-Type': 'a
 // ---------- Login e perfil ----------
 const MEDALHAS = [['calouro', 'Calouro', 'Entrou no servidor.', 'COMUM', 1, 1, ''], ['veterano', 'Veterano', '6 meses de casa.', 'RARA', 3, 6, 'meses'], ['lenda', 'Lenda do Campus', '2 anos de casa sem trancar.', 'LENDÁRIA', 3, 24, 'meses'], ['tagarela', 'Tagarela', 'Mandou 1.000 mensagens na resenha.', 'COMUM', 1000, 1000, ''], ['rei-resenha', 'Rei da Resenha', 'Top 1 de mensagens de um mês.', 'ÉPICA', 0, 1, ''], ['rato-call', 'Rato de Call', '50 horas em call de voz.', 'RARA', 32, 50, 'h'], ['construtor', 'Mestre dos Blocos', 'Foi em 10 noites de Minecraft do servidor.', 'RARA', 10, 10, '', 'evento'], ['detetive', 'Detetive Espacial', 'Achou o impostor 5 vezes nas noites de Among.', 'RARA', 3, 5, '', 'evento'], ['mira-ouro', 'Mira de Ouro', 'Ganhou um campeonato de CS ou Valorant do servidor.', 'ÉPICA', 0, 1, '', 'evento'], ['sobrevivente', 'Último de Pé', 'Venceu uma partida no evento de Free Fire.', 'RARA', 1, 1, '', 'evento'], ['foliao', 'Folião', 'Participou de 3 festas do servidor.', 'COMUM', 2, 3, '', 'evento'], ['aniversario', 'Parabéns!', 'Cadastrou o aniversário com /aniversario.', 'COMUM', 1, 1, ''], ['moderador', 'Guardião', 'Faz parte da staff.', 'ÉPICA', 1, 1, ''], ['coruja', 'Coruja da Madrugada', 'Mandou mensagem entre 3h e 5h da manhã.', 'SECRETA', 1, 1, ''], ['capivara', 'Capivara Zen', 'Ficou 6 horas seguidas numa call, de boa.', 'SECRETA', 0, 1, ''], ['pintor', 'Pintor de Nomes', 'Trocou de cor 10 vezes no painel.', 'COMUM', 7, 10, '']]
   .map(([id, nome, desc, rar, v, max, un, origem = 'auto']) => ({ id, nome, desc, rar, v, max, un, origem, ganha: v >= max }));
-let meuPerfil = { banner: 'banners/perfil/jogos-1.jpg', bio: 'Main suporte no Valorant, construtor no Minecraft e o primeiro a chegar na call. Calouro, mas já sei onde fica o RU.', fixadas: ['calouro', 'sobrevivente'] };
+let meuPerfil = {
+  bOrig: 'galeria', banner: 'banners/perfil/jogos-1.jpg', bLink: '', bLinkGif: false, bAnexo: '', bArqNome: '',
+  aOrig: 'discord', aLink: '', aLinkGif: false, aAnexo: '', aArqNome: '',
+  bio: 'Main suporte no Valorant, construtor no Minecraft e o primeiro a chegar na call. Calouro, mas já sei onde fica o RU.', fixadas: ['calouro', 'sobrevivente'],
+};
 const CATS = ['jogos', 'musica', 'diversos', 'animais', 'desenhos', 'codigo'];
+/** O que o site mostra do perfil. Aqui o Discord não tem banner nem foto: entra a cor de destaque e a inicial. */
+function visual(p = meuPerfil) {
+  const ver = (k) => ({ link: p[`${k}Link`], anexo: p[`${k}Anexo`], discord: null, galeria: p.banner })[p[`${k}Orig`]];
+  const banner = ver('b'), avatar = ver('a');
+  const gif = [banner, avatar].some((x) => /\.gif/i.test(x ?? '') || anexos.get(String(x).slice(6))?.tipo === 'image/gif');
+  return { banner, cor: banner ? null : '#7a4fd0', avatar, gif };
+}
 function quem(req) {
   const t = /^Sessao (.+)$/.exec(req.headers.authorization ?? '')?.[1];
   return t === 'membro' || t === 'staff' ? t : t ? null : 'admin';
@@ -158,7 +169,7 @@ function eu(papel) {
   return {
     papel, papelTxt: papel === 'staff' ? 'Staff · Moderação' : 'Membro',
     usuario: { id: id(501), nome: 'pedrinho', usuario: 'pedrinho', avatar: null, entrou: Date.now() - 3 * DIA, cargos: [...(papel === 'staff' ? [{ nome: 'Moderação', cor: '#E91E63' }] : []), { nome: 'Azul', cor: '#3498DB' }, { nome: 'Calouro', cor: '#99AAB5' }] },
-    perfil: meuPerfil, medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
+    perfil: meuPerfil, visual: visual(), medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
     stats: { mensagens: 1284, horas: 32, medalhas: MEDALHAS.filter((m) => m.ganha).length },
   };
 }
@@ -177,8 +188,18 @@ createServer(async (req, res) => {
     if (rota === 'POST /api/eu/perfil') {
       const c = await ler(req);
       if (c.fixadas?.some((x) => !MEDALHAS.find((m) => m.id === x)?.ganha)) return json(res, 400, { erro: 'Só dá pra fixar medalha que você já ganhou.' });
+      if (/quebrado/.test(c.bLink ?? c.aLink ?? '')) return json(res, 400, { erro: 'Não consegui abrir essa imagem. Confere se é o link direto de um PNG, JPG, GIF ou WEBP de até 8 MB.' });
       meuPerfil = { ...meuPerfil, ...c };
-      return json(res, 200, { ok: true, perfil: meuPerfil });
+      return json(res, 200, { ok: true, perfil: meuPerfil, visual: visual() });
+    }
+    if (rota === 'POST /api/eu/anexo') {
+      const { base64, tipo, nome, alvo } = await ler(req);
+      const buf = Buffer.from(base64, 'base64');
+      const a = createHash('sha256').update(buf).digest('hex').slice(0, 16);
+      anexos.set(a, { buf, tipo });
+      const k = alvo === 'foto' ? 'a' : 'b';
+      meuPerfil = { ...meuPerfil, [`${k}Orig`]: 'anexo', [`${k}Anexo`]: `anexo:${a}`, [`${k}ArqNome`]: nome };
+      return json(res, 200, { ok: true, perfil: meuPerfil, visual: visual() });
     }
     if (rota === 'GET /api/turma') {
       const q = (url.searchParams.get('q') ?? '').toLowerCase();
