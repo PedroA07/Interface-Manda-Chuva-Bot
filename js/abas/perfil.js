@@ -1,6 +1,6 @@
 // Aba Meu perfil: banner e foto (do Discord, galeria, link ou anexo), medalhas (fixar até 3), bio, o cartão "como a galera
 // te vê" e a prévia da carteirinha que o /perfil manda no Discord. Cada mudança vale na hora (não espera o Salvar): vai direto pro bot.
-import { html, useEffect, useState } from '../../vendor/preact-htm.js';
+import { html, useEffect, useRef, useState } from '../../vendor/preact-htm.js';
 import { chamar, ErroSenha } from '../api.js';
 import { useApp } from '../estado.js';
 import { hexEntrada, urlImagem } from '../logica.js';
@@ -233,13 +233,101 @@ function CampoHex({ valor, onSalvar }) {
   return html`<input class="campo mono ap-hex" value=${t} placeholder="#hex" maxlength="7" onInput=${(e) => setT(e.target.value)} onBlur=${salvar} onKeyDown=${(e) => e.key === 'Enter' && salvar()} />`;
 }
 
-/** Uma lista de favoritos em Meu perfil: até 5, com a capa que o bot procura, e o "Mostrar". Vale na hora. */
+// Sugestões já vistas nesta visita (não pergunta de novo ao bot): "tipo:texto" -> itens
+const SUGESTOES = new Map();
+const simples = (t) => String(t ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+/** Campo de um favorito com as sugestões do bot enquanto digita (nome certo e capa). Setas escolhem, Enter adiciona, Esc fecha. */
+function CampoFavorito({ tipo, nome, exemplo, ocupado, onAdd }) {
+  const [txt, setTxt] = useState('');
+  const [sug, setSug] = useState({ itens: [], carregando: false, falhou: false });
+  const [aberta, setAberta] = useState(false);
+  const [ativo, setAtivo] = useState(-1);
+  const vez = useRef(0);
+  const id = `fav-sug-${tipo}`;
+  const q = txt.trim();
+  const mostrar = aberta && q.length >= 2;
+
+  useEffect(() => {
+    const minha = ++vez.current;
+    setAtivo(-1);
+    if (q.length < 2) return setSug({ itens: [], carregando: false, falhou: false });
+    const chave = `${tipo}:${simples(q)}`;
+    if (SUGESTOES.has(chave)) return setSug({ itens: SUGESTOES.get(chave), carregando: false, falhou: false });
+    setSug((s) => ({ ...s, carregando: true }));
+    // Espera a pessoa parar de digitar um instante antes de perguntar
+    const espera = setTimeout(async () => {
+      try {
+        const r = await chamar(`/api/favoritos/sugestoes?tipo=${tipo}&q=${encodeURIComponent(q)}`);
+        const itens = Array.isArray(r.itens) ? r.itens : [];
+        SUGESTOES.set(chave, itens);
+        if (SUGESTOES.size > 200) SUGESTOES.delete(SUGESTOES.keys().next().value);
+        if (minha === vez.current) setSug({ itens, carregando: false, falhou: false });
+      } catch {
+        if (minha === vez.current) setSug({ itens: [], carregando: false, falhou: true });
+      }
+    }, 280);
+    return () => clearTimeout(espera);
+  }, [q, tipo]);
+
+  async function escolher(item) {
+    if (ocupado || !q) return;
+    // Escreveu igualzinho a uma sugestão: fica o nome certo e a capa dela
+    const s = item ?? sug.itens.find((x) => simples(x.t) === simples(q));
+    if (await onAdd(s ? { t: s.t, capa: s.capa } : { t: q })) {
+      setTxt('');
+      setAberta(false);
+    }
+  }
+  function tecla(e) {
+    const n = mostrar ? sug.itens.length : 0;
+    if (e.key === 'ArrowDown' && n) {
+      e.preventDefault();
+      setAtivo((a) => (a + 1) % n);
+    } else if (e.key === 'ArrowUp' && n) {
+      e.preventDefault();
+      setAtivo((a) => (a <= 0 ? n - 1 : a - 1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      escolher(ativo >= 0 && ativo < n ? sug.itens[ativo] : null);
+    } else if (e.key === 'Escape' && mostrar) {
+      e.preventDefault();
+      setAberta(false);
+    }
+  }
+  const galeria = (e, t) => {
+    if (e.target.dataset.g) return;
+    e.target.dataset.g = '1';
+    e.target.src = capaDaGaleria(tipo, t);
+  };
+  const aviso = sug.carregando ? 'Procurando…' : sug.falhou ? 'Não deu pra buscar agora. Enter adiciona do jeito que está.' : 'Nada achado. Enter adiciona do jeito que você escreveu.';
+
+  return html`<div class="fav-add">
+    <input
+      class="campo" role="combobox" aria-expanded=${mostrar} aria-controls=${id} aria-autocomplete="list" aria-activedescendant=${ativo >= 0 ? `${id}-${ativo}` : undefined}
+      maxlength="60" placeholder=${exemplo} value=${txt} autocomplete="off" spellcheck="false"
+      onInput=${(e) => (setTxt(e.target.value), setAberta(true))} onFocus=${() => setAberta(true)} onBlur=${() => setAberta(false)} onKeyDown=${tecla}
+    />
+    <button type="button" class="btn" title="Adicionar" disabled=${ocupado || !q} onClick=${() => escolher(null)}>${ocupado ? '…' : '+'}</button>
+    ${mostrar &&
+    html`<ul class="fav-sug" id=${id} role="listbox" aria-label=${`Sugestões de ${nome.toLowerCase()}`}>
+      ${sug.itens.map(
+        (s, i) => html`<li id=${`${id}-${i}`} role="option" aria-selected=${i === ativo} class=${`fav-sug-item${i === ativo ? ' on' : ''}`} onMouseDown=${(e) => (e.preventDefault(), escolher(s))} onMouseEnter=${() => setAtivo(i)}>
+          <span class="fav-sug-capa" style=${`aspect-ratio:${PROPORCAO_CAPA[tipo]}`}><img src=${s.capa || capaDaGaleria(tipo, s.t)} alt="" loading="lazy" referrerpolicy="no-referrer" onError=${(e) => galeria(e, s.t)} /></span>
+          <span class="fav-sug-txt"><b>${s.t}</b>${s.sub && html`<small>${s.sub}</small>`}</span>
+        </li>`,
+      )}
+      ${sug.itens.length ? html`<li class="fav-sug-rodape" role="presentation">${sug.carregando ? 'Procurando…' : '↑↓ escolhe · Enter adiciona · Esc fecha'}</li>` : html`<li class="fav-sug-vazio" role="presentation">${aviso}</li>`}
+    </ul>`}
+  </div>`;
+}
+
+/** Uma lista de favoritos em Meu perfil: até 5, com a capa da sugestão (ou a que o bot procura), e o "Mostrar". Vale na hora. */
 function ListaFavoritos({ tipo, nome, exemplo }) {
   const { eu, setEu, aviso, tratar } = useApp();
   const fav = eu.perfil.fav ?? {};
   const itens = fav[tipo] ?? [];
   const mostrar = fav.mostrar?.[tipo] !== false;
-  const [txt, setTxt] = useState('');
   const [ocupado, setOcupado] = useState(false);
 
   async function pedir(corpo, ok) {
@@ -256,11 +344,10 @@ function ListaFavoritos({ tipo, nome, exemplo }) {
       setOcupado(false);
     }
   }
-  async function add() {
-    const t = txt.trim();
-    if (!t || ocupado) return;
-    if (itens.length >= MAX_FAVORITOS) return aviso(`Máximo de ${MAX_FAVORITOS} em ${nome.toLowerCase()}.`, 'escolhe os melhores');
-    if (await pedir({ acao: 'add', tipo, t }, `${t} nos favoritos.`)) setTxt('');
+  async function add({ t, capa }) {
+    if (ocupado) return false;
+    if (itens.length >= MAX_FAVORITOS) return (aviso(`Máximo de ${MAX_FAVORITOS} em ${nome.toLowerCase()}.`, 'escolhe os melhores'), false);
+    return pedir({ acao: 'add', tipo, t, ...(capa && { capa }) }, `${t} nos favoritos.`);
   }
 
   return html`<div class="fav-lista">
@@ -275,10 +362,7 @@ function ListaFavoritos({ tipo, nome, exemplo }) {
       </span>`)}
       ${!itens.length && html`<span class="fav-nada">Nada ainda.</span>`}
     </div>
-    <div class="fav-add">
-      <input class="campo" maxlength="60" placeholder=${exemplo} value=${txt} disabled=${ocupado} onInput=${(e) => setTxt(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && (e.preventDefault(), add())} />
-      <button type="button" class="btn" title="Adicionar" disabled=${ocupado || !txt.trim()} onClick=${add}>${ocupado ? '…' : '+'}</button>
-    </div>
+    <${CampoFavorito} tipo=${tipo} nome=${nome} exemplo=${exemplo} ocupado=${ocupado} onAdd=${add} />
   </div>`;
 }
 
@@ -473,7 +557,7 @@ export function AbaPerfil() {
       <div class="cartao">
         <h2 class="h2">FAVORITOS</h2>
         <div class="fav-listas">${FAVORITOS.map(([tipo, nome, exemplo]) => html`<${ListaFavoritos} key=${tipo} tipo=${tipo} nome=${nome} exemplo=${exemplo} />`)}</div>
-        <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot procura a capa sozinho, só pelo nome (Steam, Wikipédia, Apple e Open Library). Não achou? Entra uma arte da galeria.</span>
+        <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">Comece a digitar e escolha uma sugestão: o nome e a capa já vêm certinhos (Wikipédia, Steam, App Store, Apple Books, Open Library e Deezer). Não achou? Escreva do seu jeito e aperte Enter; sem capa, entra uma arte da galeria.</span>
       </div>
 
       <div class="cartao">

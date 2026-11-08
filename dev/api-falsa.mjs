@@ -235,16 +235,31 @@ createServer(async (req, res) => {
       meuPerfil = { ...meuPerfil, ...c };
       return json(res, 200, { ok: true, perfil: meuPerfil, visual: visual() });
     }
+    if (rota === 'GET /api/favoritos/sugestoes') {
+      // Sem internet aqui: nomes de exemplo com os banners da galeria no lugar das capas (o bot de verdade procura nas fontes)
+      const tipo = url.searchParams.get('tipo');
+      const q = String(url.searchParams.get('q') ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+      const NOMES = {
+        jogos: [['Minecraft', 'jogo eletrônico de 2011 desenvolvido pela Mojang'], ['Minecraft Dungeons', 'jogo eletrônico de 2020'], ['Minecraft Legends', 'jogo eletrônico de 2023'], ['Among Us', 'jogo eletrônico de 2018 desenvolvido por InnerSloth'], ['Roblox', 'plataforma de criação de jogos'], ['Valorant', 'jogo eletrônico de 2020 desenvolvido pela Riot Games'], ['Free Fire', 'jogo eletrônico de 2017'], ['Counter-Strike 2', 'jogo eletrônico de 2023'], ['Grand Theft Auto V', 'jogo eletrônico de 2013 desenvolvido pela Rockstar North']],
+        filmes: [['Vingadores: Ultimato', 'filme de 2019 dirigido por Anthony e Joe Russo'], ['Vingadores: Guerra Infinita', 'filme de 2018'], ['Interestelar', 'filme de ficção científica de 2014'], ['Cidade de Deus', 'filme brasileiro de 2002'], ['Shrek', 'filme de 2001']],
+        livros: [['Harry Potter e a Pedra Filosofal', 'primeiro livro da série de fantasia Harry Potter'], ['Harry Potter e as Relíquias da Morte', 'sétimo livro da série'], ['Dom Casmurro', 'livro de romance brasileiro'], ['Diário de um Banana', 'romance por Jeff Kinney']],
+        musicas: [['Evidências — Chitãozinho & Xororó', 'Do Tamanho do Nosso Amor'], ['Vampiro — Matuê', 'Vampiro'], ['Máquina do Tempo — Matuê', 'Máquina do Tempo'], ['Sweater Weather — The Neighbourhood', 'I Love You.']],
+      }[tipo] ?? [];
+      const sem = (t) => t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+      await new Promise((r) => setTimeout(r, 350));
+      const itens = NOMES.filter(([t]) => sem(t).includes(q)).slice(0, 6).map(([t, sub], i) => ({ t, sub, capa: `banners/perfil/${{ jogos: 'jogos', filmes: 'diversos', livros: 'desenhos', musicas: 'musica' }[tipo]}-${(i % 8) + 1}.jpg` }));
+      return json(res, 200, { itens });
+    }
     if (rota === 'POST /api/eu/favoritos') {
-      // Sem internet aqui: a capa fica vazia e o site usa a arte da galeria (o bot de verdade procura)
-      const { acao, tipo, t, on } = await ler(req);
+      // Sem internet aqui: escrito à mão fica sem capa e o site usa a arte da galeria (o bot de verdade procura)
+      const { acao, tipo, t, on, capa } = await ler(req);
       const fav = structuredClone(meuPerfil.fav);
       const nome = String(t ?? '').trim();
       if (acao === 'add') {
         if (fav[tipo].length >= 5) return json(res, 400, { erro: 'Máximo de 5. Escolhe os melhores.' });
         if (fav[tipo].some((x) => x.t.toLowerCase() === nome.toLowerCase())) return json(res, 400, { erro: 'Esse já está na lista.' });
         await new Promise((r) => setTimeout(r, 600));
-        fav[tipo].push({ t: nome, capa: '' });
+        fav[tipo].push({ t: nome, capa: capa ?? '' });
       } else if (acao === 'tirar') fav[tipo] = fav[tipo].filter((x) => x.t !== nome);
       else fav.mostrar[tipo] = on !== false;
       meuPerfil = { ...meuPerfil, fav };
