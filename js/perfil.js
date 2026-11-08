@@ -114,7 +114,31 @@ export function corDeDestaque(ap) {
 /** Comandos do perfil que respondem com imagem: [id, como aparece, o que mostra] */
 export const COMANDOS_PERFIL = [
   ['perfil', '/perfil', 'Carteirinha resumida'],
-  ['completo', '/perfil completo', 'Tudo: aniversário e troféus'],
+  ['completo', '/perfil completo', 'Tudo: aniversário, favoritos e troféus'],
+  ['favoritos', '/favoritos', 'Jogos, filmes, livros e músicas'],
   ['trofeus', '/trofeus', 'Medalhas e troféus do servidor'],
   ['niver', '/aniversario ver', 'Data e idade, se for público'],
 ];
+
+// ---------- Favoritos (v12): as mesmas regras do bot (lib/perfil.js e lib/capas.js) ----------
+/** [tipo, nome, exemplo] */
+export const FAVORITOS = [['jogos', 'Jogos', 'Ex.: Minecraft'], ['filmes', 'Filmes', 'Ex.: Interestelar'], ['livros', 'Livros', 'Ex.: Dom Casmurro'], ['musicas', 'Músicas', 'Ex.: Música — Artista']];
+export const MAX_FAVORITOS = 5;
+export const PROPORCAO_CAPA = { jogos: '3 / 4', filmes: '2 / 3', livros: '2 / 3', musicas: '1 / 1' };
+const GALERIA_FAV = { jogos: ['jogos'], filmes: ['diversos', 'desenhos'], livros: ['desenhos', 'animais'], musicas: ['musica'] };
+
+/** Banner da galeria no lugar da capa que o bot não achou (o mesmo que o bot usa) */
+export function capaDaGaleria(tipo, nome) {
+  let x = 0;
+  for (const ch of String(nome)) x = (x * 31 + ch.charCodeAt(0)) >>> 0;
+  const cats = GALERIA_FAV[tipo] ?? GALERIA_FAV.jogos;
+  return `banners/perfil/${cats[x % cats.length]}-${(x % 8) + 1}.jpg`;
+}
+export const capaDe = (tipo, item) => item.capa || capaDaGaleria(tipo, item.t);
+
+/** Listas de alguém que aparecem (as do próprio perfil vêm completas, com "mostrar"; as da turma já vêm filtradas pelo bot) */
+export function favoritosVisiveis(fav) {
+  if (Array.isArray(fav)) return fav.filter((f) => f.itens?.length);
+  if (!fav) return [];
+  return FAVORITOS.map(([tipo]) => ({ tipo, itens: fav[tipo] ?? [] })).filter((f) => f.itens.length && fav.mostrar?.[f.tipo] !== false);
+}

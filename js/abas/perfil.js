@@ -6,10 +6,11 @@ import { useApp } from '../estado.js';
 import { hexEntrada, urlImagem } from '../logica.js';
 import { tempoRelativo } from '../moderacao.js';
 import {
-  AP_PADRAO, CATEGORIAS, COMANDOS_PERFIL, COR_SEM_BANNER, corDeDestaque, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, estiloDoNome, FONTES_NOME, FUNDOS, imagemDaMedalha,
-  nomeDaCarteirinha, numeroBonito, partesDoBanner, RARIDADE, textoDoAniversario, textoSobre, TIPOS_DE_IMAGEM, VISIBILIDADES,
+  AP_PADRAO, capaDaGaleria, capaDe, CATEGORIAS, COMANDOS_PERFIL, COR_SEM_BANNER, corDeDestaque, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, estiloDoNome,
+  FAVORITOS, favoritosVisiveis, FONTES_NOME, FUNDOS, imagemDaMedalha, MAX_FAVORITOS, nomeDaCarteirinha, numeroBonito, partesDoBanner, PROPORCAO_CAPA, RARIDADE,
+  textoDoAniversario, textoSobre, TIPOS_DE_IMAGEM, VISIBILIDADES,
 } from '../perfil.js';
-import { Amostras, LogoDiscord, Segmentado } from '../ui/basicos.js';
+import { Amostras, LogoDiscord, Segmentado, Toggle } from '../ui/basicos.js';
 import { lerBase64 } from '../ui/seletor-banner.js';
 
 const MAX_BIO = 120;
@@ -29,6 +30,17 @@ const ImagemDoPerfil = ({ src }) => html`<img key=${src} src=${src} alt="" refer
 
 /** Variáveis de cor do cartão: fundo e texto (claro ou escuro, conforme o fundo) */
 const coresDoCartao = (ap, t) => `--ap-fundo:${ap.fundo};--ap-txt:${t.txt};--ap-sub:${t.sub}`;
+
+/** Favoritos que aparecem: rótulo na cor de destaque e até 5 capas com o nome embaixo */
+function SecoesFavoritos({ listas, cor }) {
+  return html`<div class="fav-secoes">${listas.map((f) => html`<div class="fav-secao">
+    <span style=${`color:${cor}`}>${(FAVORITOS.find((x) => x[0] === f.tipo)?.[1] ?? f.tipo).toUpperCase()}</span>
+    <div class="fav-grade">${f.itens.map((it) => html`<div class="fav-item" title=${it.t}>
+      <span class="fav-capa" style=${`aspect-ratio:${PROPORCAO_CAPA[f.tipo]}`}><img src=${capaDe(f.tipo, it)} alt="" loading="lazy" referrerpolicy="no-referrer" onError=${(e) => (e.target.src = capaDaGaleria(f.tipo, it.t))} /></span>
+      <span class="fav-nome">${it.t}</span>
+    </div>`)}</div>
+  </div>`)}</div>`;
+}
 
 /** Cartão do perfil (também usado na lista da turma, em tamanho menor). perfil.niver = texto pronto do aniversário (ou nada). */
 export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true }) {
@@ -50,6 +62,7 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
       <div class="perfil-cargos">${usuario.cargos.map((c) => html`<span class="perfil-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
       ${grande && html`<p class="perfil-bio">${perfil.bio || 'Ainda sem bio. Escreve alguma coisa aí!'}</p>`}
       ${grande && perfil.niver && html`<div class="perfil-niver"><span style=${`background:${ap.destaque}`}>ANIVERSÁRIO</span>${perfil.niver}</div>`}
+      ${grande && favoritosVisiveis(perfil.fav).length > 0 && html`<${SecoesFavoritos} listas=${favoritosVisiveis(perfil.fav)} cor=${corDeDestaque(ap)} />`}
       ${stats && html`<div class="perfil-stats">${stats.map(([v, k]) => html`<div><b>${v}</b><span>${k}</span></div>`)}</div>`}
     </div>
   </div>`;
@@ -59,7 +72,7 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
  * Como a resposta chega no Discord pra cada comando do perfil (o bot desenha a mesma coisa em imagem).
  * cmd: 'perfil' (carteirinha), 'completo' (carteirinha + seções), 'trofeus' ou 'niver' (foto pequena, nome e título).
  */
-function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeus, total }) {
+function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeus, total, favs }) {
   const { api, estado } = useApp();
   const t = textoSobre(ap.fundo), destaque = corDeDestaque(ap);
   const banner = urlImagem(visual.banner, '', api), foto = urlImagem(visual.avatar, '', api);
@@ -67,8 +80,8 @@ function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeu
   const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const nomeCmd = (COMANDOS_PERFIL.find((c) => c[0] === cmd) ?? COMANDOS_PERFIL[0])[1];
   const comCarteirinha = cmd === 'perfil' || cmd === 'completo';
-  const titulo = { trofeus: 'TROFÉUS', niver: 'ANIVERSÁRIO' }[cmd];
-  const prefixo = { trofeus: 'trofeus-', niver: 'aniversario-' }[cmd] ?? 'perfil-';
+  const titulo = { trofeus: 'TROFÉUS', niver: 'ANIVERSÁRIO', favoritos: 'FAVORITOS' }[cmd];
+  const prefixo = { trofeus: 'trofeus-', niver: 'aniversario-', favoritos: 'favoritos-' }[cmd] ?? 'perfil-';
   const arquivo = cmd === 'perfil' ? `${nomeDaCarteirinha(usuario.nome, visual.gif)} · 1000×560` : nomeDaCarteirinha(usuario.nome, false).replace(/^perfil-/, prefixo);
   const ini = (usuario.nome || '?').charAt(0).toUpperCase();
   const nome = html`<b style=${estiloDoNome(ap, t.txt, 0.72, 'var(--u)')}>${usuario.nome}</b>`;
@@ -94,6 +107,8 @@ function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeu
                   <span class="cart-nome">${nome}<span class="cart-titulo" style=${`color:${destaque}`}>${titulo}</span></span>
                 </div>`}
             ${(cmd === 'completo' || cmd === 'niver') && html`<div class="cart-secao"><span style=${`color:${destaque}`}>ANIVERSÁRIO</span><b>${niver}</b></div>`}
+            ${(cmd === 'completo' || cmd === 'favoritos') &&
+            (favs.length ? html`<${SecoesFavoritos} listas=${favs} cor=${destaque} />` : html`<div class="cart-secao"><span style=${`color:${destaque}`}>FAVORITOS</span><small class="cart-vazio">Nenhum favorito público.</small></div>`)}
             ${(cmd === 'completo' || cmd === 'trofeus') && html`<div class="cart-secao"><span style=${`color:${destaque}`}>TROFÉUS · ${trofeus.length} DE ${total}</span>
               <div class="cart-trofeus">${trofeus.map((m) => html`<img src=${imagemDaMedalha(m.id)} alt="" title=${m.nome} />`)}</div></div>`}
             <span class="cart-rodape">${servidor} · CARTEIRINHA</span>
@@ -114,6 +129,55 @@ function CampoHex({ valor, onSalvar }) {
     if (/^#[0-9A-F]{6}$/.test(v) && v !== valor) onSalvar(v);
   };
   return html`<input class="campo mono ap-hex" value=${t} placeholder="#hex" maxlength="7" onInput=${(e) => setT(e.target.value)} onBlur=${salvar} onKeyDown=${(e) => e.key === 'Enter' && salvar()} />`;
+}
+
+/** Uma lista de favoritos em Meu perfil: até 5, com a capa que o bot procura, e o "Mostrar". Vale na hora. */
+function ListaFavoritos({ tipo, nome, exemplo }) {
+  const { eu, setEu, aviso, tratar } = useApp();
+  const fav = eu.perfil.fav ?? {};
+  const itens = fav[tipo] ?? [];
+  const mostrar = fav.mostrar?.[tipo] !== false;
+  const [txt, setTxt] = useState('');
+  const [ocupado, setOcupado] = useState(false);
+
+  async function pedir(corpo, ok) {
+    setOcupado(true);
+    try {
+      const r = await chamar('/api/eu/favoritos', corpo);
+      setEu((e) => ({ ...e, perfil: r.perfil }));
+      if (ok) aviso(ok, 'gosto não se discute');
+      return true;
+    } catch (e) {
+      tratar(e);
+      return false;
+    } finally {
+      setOcupado(false);
+    }
+  }
+  async function add() {
+    const t = txt.trim();
+    if (!t || ocupado) return;
+    if (itens.length >= MAX_FAVORITOS) return aviso(`Máximo de ${MAX_FAVORITOS} em ${nome.toLowerCase()}.`, 'escolhe os melhores');
+    if (await pedir({ acao: 'add', tipo, t }, `${t} nos favoritos.`)) setTxt('');
+  }
+
+  return html`<div class="fav-lista">
+    <div class="fav-topo">
+      <b>${nome}</b><span class="fav-conta">${itens.length}/${MAX_FAVORITOS}</span>
+      <span class="fav-mostrar">Mostrar</span><${Toggle} on=${mostrar} titulo=${mostrar ? 'Aparece no perfil' : 'Escondido do perfil'} onClick=${() => !ocupado && pedir({ acao: 'mostrar', tipo, on: !mostrar })} />
+    </div>
+    <div class="fav-chips">
+      ${itens.map((it) => html`<span class="fav-chip">
+        <span><img src=${capaDe(tipo, it)} alt="" referrerpolicy="no-referrer" onError=${(e) => (e.target.src = capaDaGaleria(tipo, it.t))} /></span>${it.t}
+        <button type="button" title="Tirar" disabled=${ocupado} onClick=${() => pedir({ acao: 'tirar', tipo, t: it.t })}>×</button>
+      </span>`)}
+      ${!itens.length && html`<span class="fav-nada">Nada ainda.</span>`}
+    </div>
+    <div class="fav-add">
+      <input class="campo" maxlength="60" placeholder=${exemplo} value=${txt} disabled=${ocupado} onInput=${(e) => setTxt(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && (e.preventDefault(), add())} />
+      <button type="button" class="btn" title="Adicionar" disabled=${ocupado || !txt.trim()} onClick=${add}>${ocupado ? '…' : '+'}</button>
+    </div>
+  </div>`;
 }
 
 const VIS_TXT = {
@@ -291,6 +355,12 @@ export function AbaPerfil() {
       </div>
 
       <div class="cartao">
+        <h2 class="h2">FAVORITOS</h2>
+        <div class="fav-listas">${FAVORITOS.map(([tipo, nome, exemplo]) => html`<${ListaFavoritos} key=${tipo} tipo=${tipo} nome=${nome} exemplo=${exemplo} />`)}</div>
+        <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot procura a capa sozinho, só pelo nome (Steam, Wikipédia, Apple e Open Library). Não achou? Entra uma arte da galeria.</span>
+      </div>
+
+      <div class="cartao">
         <h2 class="h2">ANIVERSÁRIO</h2>
         ${eu.niver
           ? html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><span class="ap-data">${eu.niver.d}${eu.niver.ano ? `/${eu.niver.ano}` : ''}</span><span style="font-size:13px;color:var(--cinza)">cadastrado com /aniversario</span></div>`
@@ -339,9 +409,9 @@ export function AbaPerfil() {
 
     <aside class="col-lado" style="gap:14px">
       <span style="font:400 16px var(--titulo)">COMO A GALERA TE VÊ</span>
-      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio, ap, niver: niverTxt }} fixadas=${fixadas} stats=${stats} />
+      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio, ap, niver: niverTxt, fav: p.fav }} fixadas=${fixadas} stats=${stats} />
       <span style="font:400 16px var(--titulo)">NO DISCORD · ${(COMANDOS_PERFIL.find((c) => c[0] === cmd) ?? COMANDOS_PERFIL[0])[1]}</span>
-      <${PreviaComando} cmd=${cmd} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} niver=${niverDaFicha} trofeus=${ganhas} total=${eu.medalhas.length} />
+      <${PreviaComando} cmd=${cmd} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} niver=${niverDaFicha} trofeus=${ganhas} total=${eu.medalhas.length} favs=${favoritosVisiveis(p.fav)} />
       <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot desenha e manda como imagem anexada, sem embed. No /perfil, banner ou foto em GIF sai em GIF animado; os outros comandos saem em PNG.</span>
     </aside>
   </div>`;

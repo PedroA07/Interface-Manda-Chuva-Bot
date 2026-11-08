@@ -160,6 +160,10 @@ let meuPerfil = {
   aOrig: 'discord', aLink: '', aLinkGif: false, aAnexo: '', aArqNome: '',
   bio: 'Main suporte no Valorant, construtor no Minecraft e o primeiro a chegar na call. Calouro, mas já sei onde fica o RU.', fixadas: ['calouro', 'sobrevivente'],
   ap: { fundo: '#FFFCF4', nome: '', nomeTipo: 'solida', grad: 0, fonte: 'Graduate', destaque: '#C4363C' }, niverVis: 'data',
+  fav: {
+    jogos: [{ t: 'Minecraft', capa: '' }, { t: 'Among Us', capa: '' }, { t: 'Valorant', capa: '' }], filmes: [{ t: 'Interestelar', capa: '' }], livros: [], musicas: [{ t: 'Evidências — Chitãozinho & Xororó', capa: '' }],
+    mostrar: { jogos: true, filmes: true, livros: true, musicas: true },
+  },
 };
 // Aparência de exemplo dos colegas na lista da turma (o bot manda a de cada um)
 const APS = [
@@ -208,6 +212,21 @@ createServer(async (req, res) => {
       meuPerfil = { ...meuPerfil, ...c };
       return json(res, 200, { ok: true, perfil: meuPerfil, visual: visual() });
     }
+    if (rota === 'POST /api/eu/favoritos') {
+      // Sem internet aqui: a capa fica vazia e o site usa a arte da galeria (o bot de verdade procura)
+      const { acao, tipo, t, on } = await ler(req);
+      const fav = structuredClone(meuPerfil.fav);
+      const nome = String(t ?? '').trim();
+      if (acao === 'add') {
+        if (fav[tipo].length >= 5) return json(res, 400, { erro: 'Máximo de 5. Escolhe os melhores.' });
+        if (fav[tipo].some((x) => x.t.toLowerCase() === nome.toLowerCase())) return json(res, 400, { erro: 'Esse já está na lista.' });
+        await new Promise((r) => setTimeout(r, 600));
+        fav[tipo].push({ t: nome, capa: '' });
+      } else if (acao === 'tirar') fav[tipo] = fav[tipo].filter((x) => x.t !== nome);
+      else fav.mostrar[tipo] = on !== false;
+      meuPerfil = { ...meuPerfil, fav };
+      return json(res, 200, { ok: true, perfil: meuPerfil });
+    }
     if (rota === 'POST /api/eu/anexo') {
       const { base64, tipo, nome, alvo } = await ler(req);
       const buf = Buffer.from(base64, 'base64');
@@ -222,7 +241,7 @@ createServer(async (req, res) => {
       const lista = membros.filter((m) => !q || m.nome.toLowerCase().includes(q));
       const por = 9, pg = Math.max(1, Math.min(Math.ceil(lista.length / por) || 1, Number(url.searchParams.get('pagina')) || 1));
       const ids = MEDALHAS.map((m) => m.id);
-      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), ap: APS[i % APS.length], niver: ['14/05 · 22 anos', '03/12', null][i % 3], cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
+      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), ap: APS[i % APS.length], niver: ['14/05 · 22 anos', '03/12', null][i % 3], fav: i % 2 ? [] : [{ tipo: 'jogos', itens: [{ t: 'Roblox', capa: '' }, { t: 'Free Fire', capa: '' }] }, { tipo: 'musicas', itens: [{ t: 'Numb — Linkin Park', capa: '' }] }], cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
       return json(res, 200, { itens, pagina: pg, paginas: Math.ceil(lista.length / por) || 1, total: lista.length, completa: true });
     }
     if (papel === 'membro') return json(res, 403, { erro: 'Essa parte é só pra staff.' });

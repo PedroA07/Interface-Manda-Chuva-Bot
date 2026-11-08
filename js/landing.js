@@ -108,6 +108,7 @@ const COMANDOS = [
   ['/aniversario cadastrar', 'Cadastra seu aniversário (o ano é opcional).'],
   ['/perfil @membro', 'Mostra a carteirinha com banner, medalhas e as cores da pessoa.'],
   ['/trofeus @membro', 'Os troféus da pessoa, em imagem.'],
+  ['/favoritos @membro', 'Jogos, filmes, livros e músicas favoritos, com capa.'],
   ['/medalhas', 'Lista as suas medalhas e o que falta.'],
   ['/ticket abrir', 'Abre um ticket com a staff.'],
   ['/ticket fechar', 'Fecha o ticket, salva a transcrição e apaga o canal.'],

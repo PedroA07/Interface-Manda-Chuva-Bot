@@ -52,3 +52,18 @@ test('destaque que some no fundo vira a cor do texto (igual ao bot)', async () =
   assert.equal(corDeDestaque({ fundo: '#1F2A5C', destaque: '#1F2A5C' }), '#FFFCF4');
   assert.equal(corDeDestaque({ fundo: '#F3D48A', destaque: '#F2C14E' }), '#1B1F33');
 });
+
+test('favoritos: a arte da galeria é a mesma do bot; só aparecem as listas com coisa e liberadas', async () => {
+  const { capaDaGaleria, capaDe, favoritosVisiveis } = await import('../js/perfil.js');
+  // Valores tirados do lib/capas.js do bot
+  assert.equal(capaDaGaleria('jogos', 'Valorant'), 'banners/perfil/jogos-4.jpg');
+  assert.equal(capaDaGaleria('filmes', 'Shrek'), 'banners/perfil/desenhos-4.jpg');
+  assert.equal(capaDaGaleria('livros', 'Dom Casmurro'), 'banners/perfil/desenhos-1.jpg');
+  assert.equal(capaDaGaleria('musicas', 'Evidências'), 'banners/perfil/musica-1.jpg');
+  assert.equal(capaDe('jogos', { t: 'Valorant', capa: '' }), 'banners/perfil/jogos-4.jpg');
+  assert.equal(capaDe('jogos', { t: 'X', capa: 'https://upload.wikimedia.org/x.png' }), 'https://upload.wikimedia.org/x.png');
+  const meu = { jogos: [{ t: 'A', capa: '' }], filmes: [], livros: [{ t: 'B', capa: '' }], musicas: [{ t: 'C', capa: '' }], mostrar: { jogos: true, filmes: true, livros: false, musicas: true } };
+  assert.deepEqual(favoritosVisiveis(meu).map((f) => f.tipo), ['jogos', 'musicas']);
+  assert.deepEqual(favoritosVisiveis([{ tipo: 'filmes', itens: [{ t: 'X' }] }, { tipo: 'jogos', itens: [] }]).map((f) => f.tipo), ['filmes']);
+  assert.deepEqual(favoritosVisiveis(undefined), []);
+});

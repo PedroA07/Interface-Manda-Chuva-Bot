@@ -684,3 +684,34 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .cmd-perfil.on { background: var(--aviso); box-shadow: var(--sombra); }
 .cmd-perfil code { padding: 3px 8px; background: var(--tinta); color: var(--mostarda); border-radius: 6px; font: 500 13px var(--mono); }
 .cmd-perfil span { font-size: 14px; }
+/* ===== Meu perfil › Favoritos ===== */
+.fav-listas { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.fav-lista { display: grid; gap: 10px; align-content: start; padding: 12px; background: var(--papel); border: var(--borda); border-radius: 12px; }
+.fav-topo { display: flex; align-items: center; gap: 8px; }
+.fav-topo b { font-weight: 800; }
+.fav-conta { font: 500 12px var(--mono); color: var(--cinza); }
+.fav-mostrar { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--cinza); }
+.fav-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fav-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 3px; background: #fff; border: var(--borda); border-radius: 99px; font-size: 13px; font-weight: 700; max-width: 100%; }
+.fav-chip > span { flex: none; width: 24px; height: 24px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--tinta); background: #e4dccb; }
+.fav-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fav-chip button { width: 22px; height: 22px; padding: 0; background: transparent; border: none; font: 800 15px sans-serif; color: var(--vermelho); cursor: pointer; }
+.fav-nada { font-size: 13px; color: var(--cinza); }
+.fav-add { display: flex; gap: 6px; }
+.fav-add .campo { flex: 1; min-width: 0; }
+.fav-add .btn { padding: 8px 14px; }
+/* Favoritos no cartão (px) e na prévia do Discord (encolhe junto, var(--u)) */
+.fav-secoes { display: grid; gap: 12px; }
+.fav-secao { display: grid; gap: 6px; min-width: 0; }
+.fav-secao > span { font: 800 11px var(--corpo); letter-spacing: .1em; }
+.fav-grade { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.fav-item { display: grid; gap: 3px; align-content: start; min-width: 0; }
+.fav-capa { display: block; overflow: hidden; border: 2px solid var(--tinta); border-radius: 6px; background: #e4dccb; }
+.fav-capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fav-nome { font: 700 12px/1.2 var(--corpo); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; hyphens: auto; }
+.cart .fav-secoes { gap: calc(10 * var(--u)); }
+.cart .fav-secao > span { font-size: calc(10 * var(--u)); letter-spacing: .14em; }
+.cart .fav-grade { gap: calc(6 * var(--u)); }
+.cart .fav-capa { border-width: calc(2 * var(--u)); border-radius: calc(6 * var(--u)); }
+.cart .fav-nome { font-size: calc(10 * var(--u)); }
+.cart-vazio { font: 600 calc(12 * var(--u)) var(--corpo); color: var(--ap-sub, var(--cinza)); }
