@@ -145,13 +145,16 @@ export function favoritosVisiveis(fav) {
 }
 
 // ---------- Redes (v12): o bot monta os cartões (lib/redes.js); o site só mostra ----------
-/** [id, nome, sigla, cor do selo, cor da sigla, como liga: 'steam' (login da Steam), 'user' (nome) ou 'app' (precisa do app do dono)] */
+/**
+ * [id, nome, sigla, cor do selo, cor da sigla, como liga]: 'login' (login da própria rede: Steam e Twitch), 'user' (nome),
+ * 'link' (link do perfil: Spotify). Spotify e Twitch só ligam quando o dono pôs as chaves do app (eu.redesApp).
+ */
 export const REDES = [
-  ['steam', 'Steam', 'ST', '#1b2838', '#c7d5e0', 'steam'],
-  ['spotify', 'Spotify', 'SP', '#1db954', '#0b2e17', 'app'],
+  ['steam', 'Steam', 'ST', '#1b2838', '#c7d5e0', 'login'],
+  ['spotify', 'Spotify', 'SP', '#1db954', '#0b2e17', 'link'],
   ['letterboxd', 'Letterboxd', 'LB', '#ff8000', '#1b1f33', 'user'],
   ['instagram', 'Instagram', 'IG', '#e1306c', '#ffffff', 'user'],
-  ['twitch', 'Twitch', 'TW', '#9146ff', '#ffffff', 'app'],
+  ['twitch', 'Twitch', 'TW', '#9146ff', '#ffffff', 'login'],
 ];
 /** Cores do cartão: [fundo, texto, caixinha, fundo do status, texto do status] (as mesmas do bot) */
 export const ESTILO_REDE = {

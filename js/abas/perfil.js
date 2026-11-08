@@ -67,14 +67,17 @@ function CartoesRedes({ cartoes, cor, links = true }) {
           <span class="rede-poster">${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><small>${it.s}</small>
         </div>`)}</div>`}
         ${c.itens?.length > 0 && c.rede !== 'letterboxd' && c.itens.map((it) => html`<div class="rede-jogo">
-          <span class="rede-capsula">${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><span class="rede-jogo-nome">${it.t}</span><span>${it.s}</span>
+          <span class=${`rede-capsula${c.rede === 'spotify' ? ' quadrada' : ''}`}>${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><span class="rede-jogo-nome">${it.t}</span><span>${it.s}</span>
         </div>`)}
       </${Caixa}>`;
     })}</div>
   </div>`;
 }
 
-/** Uma rede em Meu perfil: vincular (pelo nome ou pelo login da Steam), mostrar/esconder e desvincular. Vale na hora. */
+/**
+ * Uma rede em Meu perfil: vincular (pelo nome, pelo link do perfil ou pelo login da própria rede), mostrar/esconder e
+ * desvincular. Vale na hora.
+ */
 function LinhaRede({ id, nome, ab, cor, corSigla, modo, cartao }) {
   const { eu, setEu, aviso, tratar } = useApp();
   const conta = eu.perfil.redes?.[id];
@@ -93,10 +96,11 @@ function LinhaRede({ id, nome, ab, cor, corSigla, modo, cartao }) {
       setOcupado(false);
     }
   }
-  async function conectarSteam() {
+  // Login da própria rede (Steam, Twitch): o bot devolve o link, a pessoa autoriza lá e volta pra cá com #redes=<id>-ok
+  async function conectar() {
     setOcupado(true);
     try {
-      const r = await chamar('/api/eu/redes/steam', { volta: location.href.split('#')[0] });
+      const r = await chamar(`/api/eu/redes/${id}`, { volta: location.href.split('#')[0] });
       location.href = r.link;
     } catch (e) {
       tratar(e);
@@ -105,25 +109,34 @@ function LinhaRede({ id, nome, ab, cor, corSigla, modo, cartao }) {
   }
   const vincular = () => {
     const u = txt.trim().replace(/^@/, '');
-    if (!USUARIO_REDE.test(u)) return aviso('Esse usuário não parece válido.', 'confere aí', { erro: true });
+    if (modo === 'user' && !USUARIO_REDE.test(u)) return aviso('Esse usuário não parece válido.', 'confere aí', { erro: true });
     pedir({ acao: 'ligar', rede: id, user: u }, `${nome} vinculado.`);
   };
+  // Spotify e Twitch dependem das chaves do app do dono (bot antigo não diz: só a Steam e os por nome funcionam)
+  const semApp = (id === 'spotify' || id === 'twitch') && !eu.redesApp?.[id];
   const mostrar = conta?.mostrar !== false;
   const linha = conta
-    ? `${conta.user ? `@${conta.user}` : cartao?.user || 'conta vinculada'} · ${mostrar ? 'aparece no perfil' : 'escondido do perfil'}`
-    : { user: 'Só o nome de usuário. O perfil precisa ser público.', steam: 'Abre a página da Steam pra você autorizar.', app: 'Ainda não: o dono do bot precisa registrar um app do ' + nome + '.' }[modo];
+    ? `${conta.user ? `@${conta.user}` : cartao?.user || conta.nome || 'conta vinculada'} · ${mostrar ? 'aparece no perfil' : 'escondido do perfil'}`
+    : semApp
+      ? `Ainda não: falta ligar o ${nome} no bot.`
+      : {
+          user: 'Só o nome de usuário. O perfil precisa ser público.',
+          login: `Abre a página ${id === 'twitch' ? 'da Twitch' : 'da Steam'} pra você autorizar.`,
+          link: 'Cole o link do seu perfil (no app: seu perfil › ⋯ › Compartilhar › Copiar link do perfil).',
+        }[modo];
   return html`<div class="rede-linha">
     <span class="rede-selo grande" style=${`background:${cor};color:${corSigla}`}>${ab}</span>
-    <span class="rede-info"><b>${nome}</b><span>${linha}</span></span>
+    <span class="rede-info"><b>${nome}</b><span>${linha}</span>
+      ${conta && id === 'spotify' && html`<small class="rede-dica">Pra aparecer o que você está ouvindo: no Discord, Configurações › Conexões › Spotify › ligue "Exibir no perfil" e "Exibir Spotify como seu status".</small>`}</span>
     ${conta
       ? html`<div class="rede-acoes"><span>Mostrar</span><${Toggle} on=${mostrar} titulo="Mostrar no perfil" onClick=${() => !ocupado && pedir({ acao: 'mostrar', rede: id, on: !mostrar })} />
           <button type="button" class="btn pequeno" disabled=${ocupado} onClick=${() => confirm(`Desvincular ${nome}?`) && pedir({ acao: 'desligar', rede: id }, `${nome} desvinculado.`)}>Desvincular</button></div>`
-      : modo === 'user'
-        ? html`<div class="rede-acoes cresce"><input class="campo" placeholder="seu_usuario" maxlength="31" value=${txt} disabled=${ocupado} onInput=${(e) => setTxt(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && vincular()} />
-            <button type="button" class="btn" disabled=${ocupado || !txt.trim()} onClick=${vincular}>Vincular</button></div>`
-        : modo === 'steam'
-          ? html`<button type="button" class="btn" disabled=${ocupado} onClick=${conectarSteam}>${ocupado ? 'Abrindo…' : 'Conectar com Steam'}</button>`
-          : html`<button type="button" class="btn" disabled title="Precisa de um app registrado pelo dono do bot">Em breve</button>`}
+      : semApp
+        ? html`<button type="button" class="btn" disabled title="Falta o dono pôr as chaves do app na hospedagem">Em breve</button>`
+        : modo === 'user' || modo === 'link'
+          ? html`<div class="rede-acoes cresce"><input class="campo" placeholder=${modo === 'link' ? 'https://open.spotify.com/user/…' : 'seu_usuario'} maxlength=${modo === 'link' ? 200 : 31} value=${txt} disabled=${ocupado} onInput=${(e) => setTxt(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && txt.trim() && vincular()} />
+              <button type="button" class="btn" disabled=${ocupado || !txt.trim()} onClick=${vincular}>${ocupado ? '…' : 'Vincular'}</button></div>`
+          : html`<button type="button" class="btn" disabled=${ocupado} onClick=${conectar}>${ocupado ? 'Abrindo…' : `Conectar com ${nome}`}</button>`}
   </div>`;
 }
 
@@ -489,13 +502,14 @@ export function AbaPerfil() {
   const [filtro, setFiltro] = useState('todas');
   const [cmd, setCmd] = useState('perfil');
   const cartoes = useCartoesDe(eu.usuario?.id, !!eu.usuario, JSON.stringify(eu.perfil?.redes ?? {}));
-  // Volta do login da Steam: avisa e limpa o endereço
+  // Volta do login da Steam ou da Twitch: avisa e limpa o endereço
   useEffect(() => {
-    const m = /redes=steam-(ok|erro)/.exec(location.hash);
+    const m = /redes=(steam|twitch)-(ok|erro)/.exec(location.hash);
     if (!m) return;
     history.replaceState(null, '', location.pathname + location.search);
-    if (m[1] === 'ok') aviso('Steam vinculada.', 'agora a turma te stalkeia');
-    else aviso('A Steam não confirmou o login. Tenta de novo.', 'deu ruim', { erro: true });
+    const rede = m[1] === 'steam' ? 'Steam' : 'Twitch';
+    if (m[2] === 'ok') aviso(`${rede} vinculada.`, 'agora a turma te stalkeia');
+    else aviso(`A ${rede} não confirmou o login. Tenta de novo.`, 'deu ruim', { erro: true });
   }, []);
   const [bio, setBio] = useState(eu.perfil.bio);
   if (!eu.usuario) return html`<p class="sub">Entre com o Discord pra ter perfil.</p>`;

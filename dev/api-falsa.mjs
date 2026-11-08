@@ -220,6 +220,7 @@ function eu(papel) {
     papel, papelTxt: papel === 'staff' ? 'Staff · Moderação' : 'Membro',
     usuario: { id: id(501), nome: 'pedrinho', usuario: 'pedrinho', avatar: null, entrou: Date.now() - 3 * DIA, cargos: [...(papel === 'staff' ? [{ nome: 'Moderação', cor: '#E91E63' }] : []), { nome: 'Azul', cor: '#3498DB' }, { nome: 'Calouro', cor: '#99AAB5' }] },
     // Vincular: o mesmo perfil na Toca do Creeper
+    redesApp: { spotify: true, twitch: true },
     vinculo: { on: vinculado, existe: vinculado, servidores: vinculado ? ['Toca do Creeper'] : [] },
     perfil: meuPerfil, visual: visual(), niver: { d: '14/05', ano: 2004 }, medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
     stats: { mensagens: 1284, horas: 32, medalhas: MEDALHAS.filter((m) => m.ganha).length },
@@ -294,11 +295,17 @@ createServer(async (req, res) => {
     if (rota === 'POST /api/eu/redes') {
       const { acao, rede, user, on } = await ler(req);
       const redes = structuredClone(meuPerfil.redes ?? {});
-      if (acao === 'ligar') redes[rede] = { user: String(user).replace(/^@/, ''), mostrar: true };
+      if (acao === 'ligar') redes[rede] = rede === 'spotify' ? { id: 'pedrinho123', nome: 'Pedrinho', mostrar: true } : { user: String(user).replace(/^@/, ''), mostrar: true };
       else if (acao === 'desligar') delete redes[rede];
       else if (redes[rede]) redes[rede].mostrar = on !== false;
       meuPerfil = { ...meuPerfil, redes };
       return json(res, 200, { ok: true, perfil: meuPerfil });
+    }
+    if (rota === 'POST /api/eu/redes/twitch') {
+      // Sem Twitch aqui: finge que a pessoa voltou do login
+      const { volta } = await ler(req);
+      meuPerfil = { ...meuPerfil, redes: { ...meuPerfil.redes, twitch: { id: '77', user: 'pedrinho', mostrar: true } } };
+      return json(res, 200, { link: `${volta}#redes=twitch-ok` });
     }
     if (rota === 'POST /api/eu/redes/steam') {
       // Sem Steam aqui: finge que a pessoa voltou do login
@@ -313,6 +320,8 @@ createServer(async (req, res) => {
       const cartoes = [];
       if (redes.steam && redes.steam.mostrar !== false) cartoes.push({ rede: 'steam', nome: 'Steam', user: 'Pedrinho', link: 'https://steamcommunity.com/', status: 'JOGANDO', stats: [['27', 'nível'], ['84', 'jogos'], ['1.240 h', 'total']], itens: [['Counter-Strike 2', 'jogos-4', '312 h'], ['Among Us', 'jogos-2', '96 h'], ['Terraria', 'jogos-1', '41 h']].map(([t, b, s]) => ({ t, src: `banners/perfil/${b}.jpg`, s })), rotulo: 'JOGADOS RECENTEMENTE' });
       if (redes.letterboxd && redes.letterboxd.mostrar !== false) cartoes.push({ rede: 'letterboxd', nome: 'Letterboxd', user: `@${redes.letterboxd.user}`, link: 'https://letterboxd.com/', status: '50+ FILMES', stats: [['50+', 'no diário'], ['38', 'este ano'], ['4,1', 'nota média']], itens: [['Interestelar', 'diversos-1', '★★★★★'], ['Aranhaverso', 'desenhos-1', '★★★★½'], ['Cidade de Deus', 'diversos-3', '★★★★★'], ['Shrek 2', 'desenhos-3', '★★★★']].map(([t, b, s]) => ({ t, src: `banners/perfil/${b}.jpg`, s })) });
+      if (redes.spotify && redes.spotify.mostrar !== false) cartoes.push({ rede: 'spotify', nome: 'Spotify', user: 'Pedrinho', link: 'https://open.spotify.com/', status: 'OUVINDO AGORA', stats: [['312', 'seguidores'], ['14', 'playlists']], itens: [['Vampiro — Matuê', 'musica-1', 'tocando agora'], ['Evidências — Chitãozinho & Xororó', 'musica-2', 'há 12 min'], ['Sweater Weather — The Neighbourhood', 'musica-3', 'há 1 h']].map(([t, b, s]) => ({ t, src: `banners/perfil/${b}.jpg`, s })), rotulo: 'OUVINDO AGORA' });
+      if (redes.twitch && redes.twitch.mostrar !== false) cartoes.push({ rede: 'twitch', nome: 'Twitch', user: '@pedrinho', link: 'https://twitch.tv/', status: 'AO VIVO', stats: [['4.321', 'seguidores'], ['153', 'assistindo']], itens: [['Ranked no Valorant até o Radiante', 'jogos-5', 'VALORANT'], ['Live de ontem', 'jogos-6', '98 views']].map(([t, b, s]) => ({ t, src: `banners/perfil/${b}.jpg`, s })), rotulo: 'AO VIVO AGORA' });
       if (redes.instagram && redes.instagram.mostrar !== false) cartoes.push({ rede: 'instagram', nome: 'Instagram', user: `@${redes.instagram.user}`, link: 'https://instagram.com/', status: 'INSTAGRAM', stats: [], itens: [] });
       return json(res, 200, { redes: cartoes });
     }

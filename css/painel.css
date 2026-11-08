@@ -771,6 +771,7 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .rede-info { flex: 1 1 180px; min-width: 0; display: grid; gap: 1px; }
 .rede-info b { font-weight: 800; }
 .rede-info span { font-size: 13px; color: var(--cinza); overflow-wrap: anywhere; }
+.rede-dica { font-size: 12px; line-height: 1.35; color: var(--cinza); text-wrap: pretty; }
 .rede-acoes { display: flex; align-items: center; gap: 10px; }
 .rede-acoes > span { font-size: 12px; font-weight: 700; color: var(--cinza); }
 .rede-acoes.cresce { flex: 1 1 220px; gap: 6px; }
@@ -797,5 +798,6 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .rede-posters small { color: #00e054; font-size: 10px; letter-spacing: .05em; }
 .rede-jogo { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .rede-capsula { display: block; overflow: hidden; flex: none; width: 52px; aspect-ratio: 46 / 21; border-radius: 3px; background: #ffffff1a; }
+.rede-capsula.quadrada { width: 24px; aspect-ratio: 1; }
 .rede-jogo-nome { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart .rede-secao > span { font-size: calc(10 * var(--u)); letter-spacing: .14em; }
