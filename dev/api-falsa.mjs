@@ -182,6 +182,7 @@ let meuPerfil = {
   aOrig: 'discord', aLink: '', aLinkGif: false, aAnexo: '', aArqNome: '',
   bio: 'Main suporte no Valorant, construtor no Minecraft e o primeiro a chegar na call. Calouro, mas já sei onde fica o RU.', fixadas: ['calouro', 'sobrevivente'],
   ap: { fundo: '#FFFCF4', nome: '', nomeTipo: 'solida', grad: 0, fonte: 'Graduate', destaque: '#C4363C' }, niverVis: 'data',
+  redes: { letterboxd: { user: 'pedrinho.filmes', mostrar: true }, steam: { id: '76561197960287930', mostrar: true } },
   fav: {
     jogos: [{ t: 'Minecraft', capa: '' }, { t: 'Among Us', capa: '' }, { t: 'Valorant', capa: '' }], filmes: [{ t: 'Interestelar', capa: '' }], livros: [], musicas: [{ t: 'Evidências — Chitãozinho & Xororó', capa: '' }],
     mostrar: { jogos: true, filmes: true, livros: true, musicas: true },
@@ -249,6 +250,31 @@ createServer(async (req, res) => {
       meuPerfil = { ...meuPerfil, fav };
       return json(res, 200, { ok: true, perfil: meuPerfil });
     }
+    if (rota === 'POST /api/eu/redes') {
+      const { acao, rede, user, on } = await ler(req);
+      const redes = structuredClone(meuPerfil.redes ?? {});
+      if (acao === 'ligar') redes[rede] = { user: String(user).replace(/^@/, ''), mostrar: true };
+      else if (acao === 'desligar') delete redes[rede];
+      else if (redes[rede]) redes[rede].mostrar = on !== false;
+      meuPerfil = { ...meuPerfil, redes };
+      return json(res, 200, { ok: true, perfil: meuPerfil });
+    }
+    if (rota === 'POST /api/eu/redes/steam') {
+      // Sem Steam aqui: finge que a pessoa voltou do login
+      const { volta } = await ler(req);
+      meuPerfil = { ...meuPerfil, redes: { ...meuPerfil.redes, steam: { id: '76561197960287930', mostrar: true } } };
+      return json(res, 200, { link: `${volta}#redes=steam-ok` });
+    }
+    if (rota === 'GET /api/redes') {
+      // Cartões de exemplo, com os banners da galeria no lugar dos pôsteres e capas
+      const quemId = url.searchParams.get('id');
+      const redes = quemId === id(501) ? meuPerfil.redes ?? {} : { letterboxd: { user: 'colega', mostrar: true }, instagram: { user: 'colega.ig', mostrar: true } };
+      const cartoes = [];
+      if (redes.steam && redes.steam.mostrar !== false) cartoes.push({ rede: 'steam', nome: 'Steam', user: 'Pedrinho', link: 'https://steamcommunity.com/', status: 'JOGANDO', stats: [['27', 'nível'], ['84', 'jogos'], ['1.240 h', 'total']], itens: [['Counter-Strike 2', 'jogos-4', '312 h'], ['Among Us', 'jogos-2', '96 h'], ['Terraria', 'jogos-1', '41 h']].map(([t, b, s]) => ({ t, src: `banners/perfil/${b}.jpg`, s })), rotulo: 'JOGADOS RECENTEMENTE' });
+      if (redes.letterboxd && redes.letterboxd.mostrar !== false) cartoes.push({ rede: 'letterboxd', nome: 'Letterboxd', user: `@${redes.letterboxd.user}`, link: 'https://letterboxd.com/', status: '50+ FILMES', stats: [['50+', 'no diário'], ['38', 'este ano'], ['4,1', 'nota média']], itens: [['Interestelar', 'diversos-1', '★★★★★'], ['Aranhaverso', 'desenhos-1', '★★★★½'], ['Cidade de Deus', 'diversos-3', '★★★★★'], ['Shrek 2', 'desenhos-3', '★★★★']].map(([t, b, s]) => ({ t, src: `banners/perfil/${b}.jpg`, s })) });
+      if (redes.instagram && redes.instagram.mostrar !== false) cartoes.push({ rede: 'instagram', nome: 'Instagram', user: `@${redes.instagram.user}`, link: 'https://instagram.com/', status: 'INSTAGRAM', stats: [], itens: [] });
+      return json(res, 200, { redes: cartoes });
+    }
     if (rota === 'POST /api/eu/anexo') {
       const { base64, tipo, nome, alvo } = await ler(req);
       const buf = Buffer.from(base64, 'base64');
@@ -263,7 +289,7 @@ createServer(async (req, res) => {
       const lista = membros.filter((m) => !q || m.nome.toLowerCase().includes(q));
       const por = 9, pg = Math.max(1, Math.min(Math.ceil(lista.length / por) || 1, Number(url.searchParams.get('pagina')) || 1));
       const ids = MEDALHAS.map((m) => m.id);
-      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), ap: APS[i % APS.length], niver: ['14/05 · 22 anos', '03/12', null][i % 3], fav: i % 2 ? [] : [{ tipo: 'jogos', itens: [{ t: 'Roblox', capa: '' }, { t: 'Free Fire', capa: '' }] }, { tipo: 'musicas', itens: [{ t: 'Numb — Linkin Park', capa: '' }] }], cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
+      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), ap: APS[i % APS.length], niver: ['14/05 · 22 anos', '03/12', null][i % 3], redes: i % 2 ? [] : ['letterboxd', 'instagram'], fav: i % 2 ? [] : [{ tipo: 'jogos', itens: [{ t: 'Roblox', capa: '' }, { t: 'Free Fire', capa: '' }] }, { tipo: 'musicas', itens: [{ t: 'Numb — Linkin Park', capa: '' }] }], cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
       return json(res, 200, { itens, pagina: pg, paginas: Math.ceil(lista.length / por) || 1, total: lista.length, completa: true });
     }
     if (papel === 'membro') return json(res, 403, { erro: 'Essa parte é só pra staff.' });

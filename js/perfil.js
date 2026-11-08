@@ -114,7 +114,8 @@ export function corDeDestaque(ap) {
 /** Comandos do perfil que respondem com imagem: [id, como aparece, o que mostra] */
 export const COMANDOS_PERFIL = [
   ['perfil', '/perfil', 'Carteirinha resumida'],
-  ['completo', '/perfil completo', 'Tudo: aniversário, favoritos e troféus'],
+  ['completo', '/perfil completo', 'Tudo: aniversário, redes, favoritos e troféus'],
+  ['redes', '/redes', 'Só as redes vinculadas'],
   ['favoritos', '/favoritos', 'Jogos, filmes, livros e músicas'],
   ['trofeus', '/trofeus', 'Medalhas e troféus do servidor'],
   ['niver', '/aniversario ver', 'Data e idade, se for público'],
@@ -142,3 +143,22 @@ export function favoritosVisiveis(fav) {
   if (!fav) return [];
   return FAVORITOS.map(([tipo]) => ({ tipo, itens: fav[tipo] ?? [] })).filter((f) => f.itens.length && fav.mostrar?.[f.tipo] !== false);
 }
+
+// ---------- Redes (v12): o bot monta os cartões (lib/redes.js); o site só mostra ----------
+/** [id, nome, sigla, cor do selo, cor da sigla, como liga: 'steam' (login da Steam), 'user' (nome) ou 'app' (precisa do app do dono)] */
+export const REDES = [
+  ['steam', 'Steam', 'ST', '#1b2838', '#c7d5e0', 'steam'],
+  ['spotify', 'Spotify', 'SP', '#1db954', '#0b2e17', 'app'],
+  ['letterboxd', 'Letterboxd', 'LB', '#ff8000', '#1b1f33', 'user'],
+  ['instagram', 'Instagram', 'IG', '#e1306c', '#ffffff', 'user'],
+  ['twitch', 'Twitch', 'TW', '#9146ff', '#ffffff', 'app'],
+];
+/** Cores do cartão: [fundo, texto, caixinha, fundo do status, texto do status] (as mesmas do bot) */
+export const ESTILO_REDE = {
+  steam: ['#1b2838', '#c7d5e0', '#ffffff12', '#a3cf06', '#1b2838'],
+  spotify: ['#121212', '#ffffff', '#ffffff12', '#1db954', '#0b2e17'],
+  letterboxd: ['#14181c', '#d8e0e8', '#ffffff12', '#ff8000', '#14181c'],
+  instagram: ['#ffffff', '#1b1f33', '#f5c6d6', '#e1306c', '#ffffff'],
+  twitch: ['#18181b', '#efeff1', '#ffffff12', '#9146ff', '#ffffff'],
+};
+export const USUARIO_REDE = /^[A-Za-z0-9_.]{2,30}$/;

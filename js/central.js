@@ -25,6 +25,7 @@ const COMANDOS = [
   ['/perfil [@membro] [completo]', 'Mostra a carteirinha em imagem (GIF se o banner ou a foto for animado). Com completo, vem também aniversário e troféus.', 'todos'],
   ['/trofeus [@membro]', 'Os troféus (medalhas ganhas) em imagem.', 'todos'],
   ['/favoritos [@membro]', 'Jogos, filmes, livros e músicas favoritos, com capa, em imagem.', 'todos'],
+  ['/redes [@membro]', 'As redes vinculadas (Steam, Letterboxd, Instagram), em imagem.', 'todos'],
   ['/medalhas', 'Lista suas medalhas e o progresso.', 'todos'],
   ['/ticket abrir | fechar', 'Abre ou fecha um ticket com a staff.', 'todos'],
   ['/ticket add | remover | assumir | renomear', 'Gerencia o ticket atual.', 'staff'],

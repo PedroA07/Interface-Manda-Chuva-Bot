@@ -6,9 +6,9 @@ import { useApp } from '../estado.js';
 import { hexEntrada, urlImagem } from '../logica.js';
 import { tempoRelativo } from '../moderacao.js';
 import {
-  AP_PADRAO, capaDaGaleria, capaDe, CATEGORIAS, COMANDOS_PERFIL, COR_SEM_BANNER, corDeDestaque, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, estiloDoNome,
-  FAVORITOS, favoritosVisiveis, FONTES_NOME, FUNDOS, imagemDaMedalha, MAX_FAVORITOS, nomeDaCarteirinha, numeroBonito, partesDoBanner, PROPORCAO_CAPA, RARIDADE,
-  textoDoAniversario, textoSobre, TIPOS_DE_IMAGEM, VISIBILIDADES,
+  AP_PADRAO, capaDaGaleria, capaDe, CATEGORIAS, COMANDOS_PERFIL, COR_SEM_BANNER, corDeDestaque, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, ESTILO_REDE,
+  estiloDoNome, FAVORITOS, favoritosVisiveis, FONTES_NOME, FUNDOS, imagemDaMedalha, MAX_FAVORITOS, nomeDaCarteirinha, numeroBonito, partesDoBanner, PROPORCAO_CAPA, RARIDADE,
+  REDES, textoDoAniversario, textoSobre, TIPOS_DE_IMAGEM, USUARIO_REDE, VISIBILIDADES,
 } from '../perfil.js';
 import { Amostras, LogoDiscord, Segmentado, Toggle } from '../ui/basicos.js';
 import { lerBase64 } from '../ui/seletor-banner.js';
@@ -31,6 +31,102 @@ const ImagemDoPerfil = ({ src }) => html`<img key=${src} src=${src} alt="" refer
 /** Variáveis de cor do cartão: fundo e texto (claro ou escuro, conforme o fundo) */
 const coresDoCartao = (ap, t) => `--ap-fundo:${ap.fundo};--ap-txt:${t.txt};--ap-sub:${t.sub}`;
 
+/** Cartões das redes de alguém (o bot monta e guarda por 30 min). ligado = só pergunta quando vai mostrar. */
+function useCartoesDe(id, ligado, versao) {
+  const [cartoes, setCartoes] = useState([]);
+  useEffect(() => {
+    if (!ligado || !id) return setCartoes([]);
+    let vivo = true;
+    chamar(`/api/redes?id=${encodeURIComponent(id)}`)
+      .then((r) => vivo && setCartoes(r.redes ?? []))
+      .catch(() => vivo && setCartoes([]));
+    return () => (vivo = false);
+  }, [id, ligado, versao]);
+  return cartoes;
+}
+
+/** Um cartão por rede, nas cores dela: números, pôsteres (Letterboxd) ou capas dos jogos (Steam). Abre o perfil na rede. */
+function CartoesRedes({ cartoes, cor, links = true }) {
+  const Caixa = links ? 'a' : 'div';
+  return html`<div class="rede-secao">
+    <span style=${`color:${cor}`}>REDES</span>
+    <div class="rede-lista">${cartoes.map((c) => {
+      const [bg, fg, box, stBg, stFg] = ESTILO_REDE[c.rede] ?? ESTILO_REDE.instagram;
+      const [, , ab, corSelo, corSigla] = REDES.find((r) => r[0] === c.rede) ?? [];
+      return html`<${Caixa} class="rede-cartao" href=${links ? c.link || undefined : undefined} target=${links ? '_blank' : undefined} rel=${links ? 'noopener noreferrer' : undefined} style=${`--bg:${bg};--fg:${fg};--box:${box}`}>
+        <div class="rede-cab">
+          <span class="rede-selo" style=${`background:${corSelo};color:${corSigla}`}>${ab}</span>
+          <span class="rede-nome"><b>${c.nome}</b><span>${c.user}</span></span>
+          ${c.status && html`<span class="rede-status" style=${`background:${stBg};color:${stFg}`}>${c.status}</span>`}
+        </div>
+        ${c.stats?.length > 0 && html`<div class="rede-stats">${c.stats.map(([v, k]) => html`<span><b>${v}</b><small>${k}</small></span>`)}</div>`}
+        ${c.aviso && html`<span class="rede-aviso">${c.aviso}</span>`}
+        ${c.rede === 'instagram' && !c.aviso && html`<span class="rede-aviso">instagram.com/${String(c.user).replace(/^@/, '')}</span>`}
+        ${c.itens?.length > 0 && html`<span class="rede-rotulo">${c.rotulo ?? (c.rede === 'letterboxd' ? 'VISTOS POR ÚLTIMO' : 'MAIS JOGADOS')}</span>`}
+        ${c.itens?.length > 0 && c.rede === 'letterboxd' && html`<div class="rede-posters">${c.itens.map((it) => html`<div title=${it.t}>
+          <span class="rede-poster">${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><small>${it.s}</small>
+        </div>`)}</div>`}
+        ${c.itens?.length > 0 && c.rede !== 'letterboxd' && c.itens.map((it) => html`<div class="rede-jogo">
+          <span class="rede-capsula">${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><span class="rede-jogo-nome">${it.t}</span><span>${it.s}</span>
+        </div>`)}
+      </${Caixa}>`;
+    })}</div>
+  </div>`;
+}
+
+/** Uma rede em Meu perfil: vincular (pelo nome ou pelo login da Steam), mostrar/esconder e desvincular. Vale na hora. */
+function LinhaRede({ id, nome, ab, cor, corSigla, modo, cartao }) {
+  const { eu, setEu, aviso, tratar } = useApp();
+  const conta = eu.perfil.redes?.[id];
+  const [txt, setTxt] = useState('');
+  const [ocupado, setOcupado] = useState(false);
+  async function pedir(corpo, ok) {
+    setOcupado(true);
+    try {
+      const r = await chamar('/api/eu/redes', corpo);
+      setEu((e) => ({ ...e, perfil: r.perfil }));
+      if (ok) aviso(ok, 'agora a turma te stalkeia');
+      setTxt('');
+    } catch (e) {
+      tratar(e);
+    } finally {
+      setOcupado(false);
+    }
+  }
+  async function conectarSteam() {
+    setOcupado(true);
+    try {
+      const r = await chamar('/api/eu/redes/steam', { volta: location.href.split('#')[0] });
+      location.href = r.link;
+    } catch (e) {
+      tratar(e);
+      setOcupado(false);
+    }
+  }
+  const vincular = () => {
+    const u = txt.trim().replace(/^@/, '');
+    if (!USUARIO_REDE.test(u)) return aviso('Esse usuário não parece válido.', 'confere aí', { erro: true });
+    pedir({ acao: 'ligar', rede: id, user: u }, `${nome} vinculado.`);
+  };
+  const mostrar = conta?.mostrar !== false;
+  const linha = conta
+    ? `${conta.user ? `@${conta.user}` : cartao?.user || 'conta vinculada'} · ${mostrar ? 'aparece no perfil' : 'escondido do perfil'}`
+    : { user: 'Só o nome de usuário. O perfil precisa ser público.', steam: 'Abre a página da Steam pra você autorizar.', app: 'Ainda não: o dono do bot precisa registrar um app do ' + nome + '.' }[modo];
+  return html`<div class="rede-linha">
+    <span class="rede-selo grande" style=${`background:${cor};color:${corSigla}`}>${ab}</span>
+    <span class="rede-info"><b>${nome}</b><span>${linha}</span></span>
+    ${conta
+      ? html`<div class="rede-acoes"><span>Mostrar</span><${Toggle} on=${mostrar} titulo="Mostrar no perfil" onClick=${() => !ocupado && pedir({ acao: 'mostrar', rede: id, on: !mostrar })} />
+          <button type="button" class="btn pequeno" disabled=${ocupado} onClick=${() => confirm(`Desvincular ${nome}?`) && pedir({ acao: 'desligar', rede: id }, `${nome} desvinculado.`)}>Desvincular</button></div>`
+      : modo === 'user'
+        ? html`<div class="rede-acoes cresce"><input class="campo" placeholder="seu_usuario" maxlength="31" value=${txt} disabled=${ocupado} onInput=${(e) => setTxt(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && vincular()} />
+            <button type="button" class="btn" disabled=${ocupado || !txt.trim()} onClick=${vincular}>Vincular</button></div>`
+        : modo === 'steam'
+          ? html`<button type="button" class="btn" disabled=${ocupado} onClick=${conectarSteam}>${ocupado ? 'Abrindo…' : 'Conectar com Steam'}</button>`
+          : html`<button type="button" class="btn" disabled title="Precisa de um app registrado pelo dono do bot">Em breve</button>`}
+  </div>`;
+}
+
 /** Favoritos que aparecem: rótulo na cor de destaque e até 5 capas com o nome embaixo */
 function SecoesFavoritos({ listas, cor }) {
   return html`<div class="fav-secoes">${listas.map((f) => html`<div class="fav-secao">
@@ -43,11 +139,14 @@ function SecoesFavoritos({ listas, cor }) {
 }
 
 /** Cartão do perfil (também usado na lista da turma, em tamanho menor). perfil.niver = texto pronto do aniversário (ou nada). */
-export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true }) {
+export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true, cartoes, semLinks = false }) {
   const { api } = useApp();
   const ini = (usuario.nome || '?').charAt(0).toUpperCase();
   const banner = urlImagem(perfil.banner, '', api), foto = urlImagem(usuario.avatar, '', api);
   const ap = { ...AP_PADRAO, ...perfil.ap }, t = textoSobre(ap.fundo);
+  // Na turma, os cartões das redes só vêm quando o perfil abre (o Meu perfil manda os dele prontos)
+  const buscados = useCartoesDe(usuario.id, grande && !cartoes && (perfil.redes?.length ?? 0) > 0, (perfil.redes ?? []).join());
+  const redes = cartoes ?? buscados;
   return html`<div class=${`perfil-cartao${grande ? '' : ' pequeno'}`} style=${coresDoCartao(ap, t)}>
     <div class="perfil-banner" style=${banner ? '' : `background:${perfil.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>
     <div class="perfil-corpo">
@@ -62,6 +161,7 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
       <div class="perfil-cargos">${usuario.cargos.map((c) => html`<span class="perfil-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
       ${grande && html`<p class="perfil-bio">${perfil.bio || 'Ainda sem bio. Escreve alguma coisa aí!'}</p>`}
       ${grande && perfil.niver && html`<div class="perfil-niver"><span style=${`background:${ap.destaque}`}>ANIVERSÁRIO</span>${perfil.niver}</div>`}
+      ${grande && redes.length > 0 && html`<${CartoesRedes} cartoes=${redes} cor=${corDeDestaque(ap)} links=${!semLinks} />`}
       ${grande && favoritosVisiveis(perfil.fav).length > 0 && html`<${SecoesFavoritos} listas=${favoritosVisiveis(perfil.fav)} cor=${corDeDestaque(ap)} />`}
       ${stats && html`<div class="perfil-stats">${stats.map(([v, k]) => html`<div><b>${v}</b><span>${k}</span></div>`)}</div>`}
     </div>
@@ -72,7 +172,7 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
  * Como a resposta chega no Discord pra cada comando do perfil (o bot desenha a mesma coisa em imagem).
  * cmd: 'perfil' (carteirinha), 'completo' (carteirinha + seções), 'trofeus' ou 'niver' (foto pequena, nome e título).
  */
-function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeus, total, favs }) {
+function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeus, total, favs, redes }) {
   const { api, estado } = useApp();
   const t = textoSobre(ap.fundo), destaque = corDeDestaque(ap);
   const banner = urlImagem(visual.banner, '', api), foto = urlImagem(visual.avatar, '', api);
@@ -80,8 +180,8 @@ function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeu
   const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const nomeCmd = (COMANDOS_PERFIL.find((c) => c[0] === cmd) ?? COMANDOS_PERFIL[0])[1];
   const comCarteirinha = cmd === 'perfil' || cmd === 'completo';
-  const titulo = { trofeus: 'TROFÉUS', niver: 'ANIVERSÁRIO', favoritos: 'FAVORITOS' }[cmd];
-  const prefixo = { trofeus: 'trofeus-', niver: 'aniversario-', favoritos: 'favoritos-' }[cmd] ?? 'perfil-';
+  const titulo = { trofeus: 'TROFÉUS', niver: 'ANIVERSÁRIO', favoritos: 'FAVORITOS', redes: 'REDES' }[cmd];
+  const prefixo = { trofeus: 'trofeus-', niver: 'aniversario-', favoritos: 'favoritos-', redes: 'redes-' }[cmd] ?? 'perfil-';
   const arquivo = cmd === 'perfil' ? `${nomeDaCarteirinha(usuario.nome, visual.gif)} · 1000×560` : nomeDaCarteirinha(usuario.nome, false).replace(/^perfil-/, prefixo);
   const ini = (usuario.nome || '?').charAt(0).toUpperCase();
   const nome = html`<b style=${estiloDoNome(ap, t.txt, 0.72, 'var(--u)')}>${usuario.nome}</b>`;
@@ -107,6 +207,8 @@ function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeu
                   <span class="cart-nome">${nome}<span class="cart-titulo" style=${`color:${destaque}`}>${titulo}</span></span>
                 </div>`}
             ${(cmd === 'completo' || cmd === 'niver') && html`<div class="cart-secao"><span style=${`color:${destaque}`}>ANIVERSÁRIO</span><b>${niver}</b></div>`}
+            ${(cmd === 'completo' || cmd === 'redes') &&
+            (redes.length ? html`<${CartoesRedes} cartoes=${redes} cor=${destaque} />` : html`<div class="cart-secao"><span style=${`color:${destaque}`}>REDES</span><small class="cart-vazio">Nenhuma rede vinculada.</small></div>`)}
             ${(cmd === 'completo' || cmd === 'favoritos') &&
             (favs.length ? html`<${SecoesFavoritos} listas=${favs} cor=${destaque} />` : html`<div class="cart-secao"><span style=${`color:${destaque}`}>FAVORITOS</span><small class="cart-vazio">Nenhum favorito público.</small></div>`)}
             ${(cmd === 'completo' || cmd === 'trofeus') && html`<div class="cart-secao"><span style=${`color:${destaque}`}>TROFÉUS · ${trofeus.length} DE ${total}</span>
@@ -260,6 +362,15 @@ export function AbaPerfil() {
   const [cat, setCat] = useState(() => partesDoBanner(eu.perfil.banner)[0]);
   const [filtro, setFiltro] = useState('todas');
   const [cmd, setCmd] = useState('perfil');
+  const cartoes = useCartoesDe(eu.usuario?.id, !!eu.usuario, JSON.stringify(eu.perfil?.redes ?? {}));
+  // Volta do login da Steam: avisa e limpa o endereço
+  useEffect(() => {
+    const m = /redes=steam-(ok|erro)/.exec(location.hash);
+    if (!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    if (m[1] === 'ok') aviso('Steam vinculada.', 'agora a turma te stalkeia');
+    else aviso('A Steam não confirmou o login. Tenta de novo.', 'deu ruim', { erro: true });
+  }, []);
   const [bio, setBio] = useState(eu.perfil.bio);
   if (!eu.usuario) return html`<p class="sub">Entre com o Discord pra ter perfil.</p>`;
   const p = eu.perfil;
@@ -355,6 +466,11 @@ export function AbaPerfil() {
       </div>
 
       <div class="cartao">
+        <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:10px"><h2 class="h2">REDES</h2><span style="font-size:13px;color:var(--cinza)">${REDES.filter(([id]) => p.redes?.[id]).length} de ${REDES.length} vinculadas</span></div>
+        <div style="display:grid">${REDES.map(([id, nome, ab, cor, corSigla, modo]) => html`<${LinhaRede} key=${id} id=${id} nome=${nome} ab=${ab} cor=${cor} corSigla=${corSigla} modo=${modo} cartao=${cartoes.find((c) => c.rede === id)} />`)}</div>
+      </div>
+
+      <div class="cartao">
         <h2 class="h2">FAVORITOS</h2>
         <div class="fav-listas">${FAVORITOS.map(([tipo, nome, exemplo]) => html`<${ListaFavoritos} key=${tipo} tipo=${tipo} nome=${nome} exemplo=${exemplo} />`)}</div>
         <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot procura a capa sozinho, só pelo nome (Steam, Wikipédia, Apple e Open Library). Não achou? Entra uma arte da galeria.</span>
@@ -409,9 +525,9 @@ export function AbaPerfil() {
 
     <aside class="col-lado" style="gap:14px">
       <span style="font:400 16px var(--titulo)">COMO A GALERA TE VÊ</span>
-      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio, ap, niver: niverTxt, fav: p.fav }} fixadas=${fixadas} stats=${stats} />
+      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio, ap, niver: niverTxt, fav: p.fav }} fixadas=${fixadas} stats=${stats} cartoes=${cartoes} />
       <span style="font:400 16px var(--titulo)">NO DISCORD · ${(COMANDOS_PERFIL.find((c) => c[0] === cmd) ?? COMANDOS_PERFIL[0])[1]}</span>
-      <${PreviaComando} cmd=${cmd} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} niver=${niverDaFicha} trofeus=${ganhas} total=${eu.medalhas.length} favs=${favoritosVisiveis(p.fav)} />
+      <${PreviaComando} cmd=${cmd} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} niver=${niverDaFicha} trofeus=${ganhas} total=${eu.medalhas.length} favs=${favoritosVisiveis(p.fav)} redes=${cartoes} />
       <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot desenha e manda como imagem anexada, sem embed. No /perfil, banner ou foto em GIF sai em GIF animado; os outros comandos saem em PNG.</span>
     </aside>
   </div>`;

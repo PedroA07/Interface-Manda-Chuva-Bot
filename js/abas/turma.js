@@ -41,7 +41,7 @@ export function AbaTurma() {
     ${!r && html`<p class="sub">Chamando a turma…</p>`}
     ${p && html`<div class="grade-turma">
       ${p.itens.map((m) => html`<button type="button" class="turma-item" onClick=${() => setAberto(aberto === m.id ? null : m.id)}>
-        <${CartaoPerfil} grande=${aberto === m.id} usuario=${m} perfil=${{ banner: m.banner, cor: m.cor, bio: m.bio, ap: m.ap, niver: m.niver, fav: m.fav }} fixadas=${m.medalhas} />
+        <${CartaoPerfil} grande=${aberto === m.id} usuario=${m} perfil=${{ banner: m.banner, cor: m.cor, bio: m.bio, ap: m.ap, niver: m.niver, fav: m.fav, redes: m.redes }} fixadas=${m.medalhas} semLinks />
       </button>`)}
     </div>`}
     ${p && !p.itens.length && html`<div class="vazio-tracejado">Ninguém com esse nome. Talvez tenha trancado.</div>`}

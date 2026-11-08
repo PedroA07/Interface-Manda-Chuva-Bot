@@ -752,3 +752,39 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .sv-modal-fundo { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 20px; background: #1b1f33b3; }
 .sv-modal { width: min(460px, 100%); display: grid; gap: 16px; padding: 22px; background: var(--papel); border: 3px solid var(--tinta); border-radius: 18px; box-shadow: 8px 8px 0 var(--tinta); color: var(--tinta); }
 .sv-perigo { margin: 0; padding: 10px 12px; background: #f9d3cc; border: var(--borda); border-radius: 10px; font-size: 14px; font-weight: 700; text-wrap: pretty; }
+/* ===== Meu perfil › Redes ===== */
+.rede-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-top: 2px dashed var(--tracejado); }
+.rede-linha:first-child { border-top: none; }
+.rede-selo { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid var(--tinta); font: 800 10px var(--corpo); }
+.rede-selo.grande { width: 40px; height: 40px; border-radius: 10px; border-width: 2px; font-size: 13px; }
+.rede-info { flex: 1 1 180px; min-width: 0; display: grid; gap: 1px; }
+.rede-info b { font-weight: 800; }
+.rede-info span { font-size: 13px; color: var(--cinza); overflow-wrap: anywhere; }
+.rede-acoes { display: flex; align-items: center; gap: 10px; }
+.rede-acoes > span { font-size: 12px; font-weight: 700; color: var(--cinza); }
+.rede-acoes.cresce { flex: 1 1 220px; gap: 6px; }
+.rede-acoes.cresce .campo { flex: 1; min-width: 0; }
+.rede-secao { display: grid; gap: 8px; }
+.rede-secao > span { font: 800 11px var(--corpo); letter-spacing: .1em; }
+.rede-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.rede-cartao { display: grid; gap: 9px; align-content: start; padding: 11px; background: var(--bg); color: var(--fg); border: var(--borda); border-radius: 12px; box-shadow: 3px 3px 0 var(--tinta); font: 500 12px/1.35 var(--corpo); min-width: 0; text-decoration: none; }
+.rede-cab { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.rede-nome { flex: 1; min-width: 0; display: grid; }
+.rede-nome b { font: 800 13px/1.15 var(--corpo); }
+.rede-nome span { font-size: 11px; opacity: .75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rede-status { flex: none; padding: 2px 7px; border-radius: 99px; font: 800 9px/1.4 var(--corpo); letter-spacing: .06em; white-space: nowrap; }
+.rede-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 4px; }
+.rede-stats span { display: grid; gap: 1px; padding: 5px 4px; text-align: center; background: var(--box); border-radius: 6px; }
+.rede-stats b { font: 800 14px/1.1 var(--corpo); }
+.rede-stats small { font: 700 9px var(--corpo); text-transform: uppercase; opacity: .75; }
+.rede-aviso { font-size: 12px; font-weight: 600; opacity: .9; }
+.rede-rotulo { font: 800 9px var(--corpo); letter-spacing: .12em; opacity: .75; }
+.rede-posters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.rede-posters > div { display: grid; gap: 2px; min-width: 0; }
+.rede-poster { display: block; overflow: hidden; aspect-ratio: 2 / 3; border-radius: 3px; background: #2c3440; }
+.rede-poster img, .rede-capsula img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rede-posters small { color: #00e054; font-size: 10px; letter-spacing: .05em; }
+.rede-jogo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.rede-capsula { display: block; overflow: hidden; flex: none; width: 52px; aspect-ratio: 46 / 21; border-radius: 3px; background: #ffffff1a; }
+.rede-jogo-nome { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart .rede-secao > span { font-size: calc(10 * var(--u)); letter-spacing: .14em; }
