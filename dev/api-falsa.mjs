@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { MODELOS_REGRAS } from '../js/regras.js';
+import { PADRAO_SRV, planoDoModelo } from '../js/servidor.js';
 
 const RAIZ = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.gif': 'image/gif', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.json': 'application/json' };
@@ -97,6 +98,25 @@ config.regras = {
   regras: MODELOS_REGRAS[0][1].map(([t, d]) => ({ t, d })), escada: true, botao: true, botaoTxt: 'Li e aceito', cargoId: null, fixar: true, cmd: true,
 };
 let regrasMsg = null;
+// Aba Servidor: config e uma obra de mentira que anda sozinha
+config.srv = structuredClone(PADRAO_SRV);
+let obra = null, srvMontado = null;
+function comecarObra(tipo) {
+  const total = tipo === 'montar' ? (() => { const p = planoDoModelo(config.srv); return p.cargos.length + p.cats.reduce((a, c) => a + 1 + c.canais.length, 0); })() : 12;
+  obra = { tipo, status: 'andando', passo: 'Começando…', feitos: 0, total, rel: [], inicio: Date.now(), fim: null };
+  const t = setInterval(() => {
+    obra.feitos = Math.min(obra.total, obra.feitos + 4);
+    obra.passo = obra.feitos < obra.total ? `Criando peça ${obra.feitos + 1}` : '';
+    if (obra.feitos >= obra.total) {
+      clearInterval(t);
+      obra.status = 'pronto';
+      obra.fim = Date.now();
+      obra.rel = [tipo === 'montar' ? `(API falsa) Montado: ${planoDoModelo(config.srv).resumo}.` : '(API falsa) 12 nome(s) trocado(s).'];
+      if (tipo === 'montar') srvMontado = obra.fim;
+    }
+  }, 400);
+  return obra;
+}
 const anexos = new Map();
 
 const canais = [['escolha-sua-cor', 'CAMPUS'], ['geral', 'CAMPUS'], ['cantina', 'CAMPUS'], ['portaria', 'ENTRADA'], ['registros-mod', 'STAFF'], ['abrir-ticket', 'SUPORTE'], ['registros-tickets', 'STAFF']].map(([nome, categoria], i) => ({ id: id(11 + i), nome, categoria, podeEnviar: i !== 4 }));
@@ -145,6 +165,8 @@ function estado() {
     ocorrencias,
     tickets,
     regrasMsg,
+    obra,
+    srvMontado,
     paineis: paineis.map((p) => ({ ...p, canalNome: canais.find((c) => c.id === p.canalId)?.nome ?? 'canal apagado', link: 'https://discord.com/channels/1/2/3' })),
   };
 }
@@ -267,6 +289,9 @@ createServer(async (req, res) => {
     paineis.push({ servidorId: id(1), canalId, mensagemId: id(901 + paineis.length), v2: true });
     return json(res, 200, { link: 'https://discord.com/channels/1/2/3', relatorio: [] });
   }
+  if (rota === 'POST /api/servidor/montar') return json(res, 200, { obra: comecarObra('montar') });
+  if (rota === 'POST /api/servidor/renomear') return json(res, 200, { obra: comecarObra('renomear') });
+  if (rota === 'GET /api/servidor/andamento') return json(res, 200, { obra, montado: srvMontado });
   if (rota === 'POST /api/regras/enviar') {
     const r = config.regras;
     const nome = canais.find((c) => c.id === r.canalId)?.nome ?? 'canal';

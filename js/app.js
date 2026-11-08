@@ -6,6 +6,7 @@ import { AbaNoticias } from './abas/noticias.js';
 import { AbaPerfil } from './abas/perfil.js';
 import { AbaPortaria } from './abas/portaria.js';
 import { AbaRegras } from './abas/regras.js';
+import { AbaServidor } from './abas/servidor.js';
 import { AbaTemas } from './abas/temas.js';
 import { AbaTickets } from './abas/tickets.js';
 import { AbaTurma } from './abas/turma.js';
@@ -21,6 +22,7 @@ const NOTICIAS = { id: 'news', nome: 'Notícias', cor: '#b6c8ee', Tela: AbaNotic
 const PERFIL = { id: 'perfil', nome: 'Meu perfil', cor: '#f5c6d6', Tela: AbaPerfil };
 const ABAS_STAFF = [
   NOTICIAS,
+  { id: 'servidor', nome: 'Servidor', cor: '#e6d2b5', Tela: AbaServidor },
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
   { id: 'cargos', nome: 'Cargos', cor: '#d9c2ec', Tela: AbaCargos },
   { id: 'regras', nome: 'Regras', cor: '#a8d8cf', Tela: AbaRegras },

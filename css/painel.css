@@ -715,3 +715,40 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .cart .fav-capa { border-width: calc(2 * var(--u)); border-radius: calc(6 * var(--u)); }
 .cart .fav-nome { font-size: calc(10 * var(--u)); }
 .cart-vazio { font: 600 calc(12 * var(--u)) var(--corpo); color: var(--ap-sub, var(--cinza)); }
+/* ===== Servidor ===== */
+.sv-view { font-size: 15px; padding: 9px 16px; border-radius: 12px; }
+.sv-modelos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.sv-modelo { display: grid; gap: 4px; padding: 14px; text-align: left; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 12px; cursor: pointer; font: inherit; }
+.sv-modelo b { font: 400 17px/1.1 var(--titulo); }
+.sv-modelo span { font-size: 14px; }
+.sv-modelo small { font: 500 12px var(--mono); color: var(--cinza); }
+.sv-modelo.on { background: var(--aviso); box-shadow: 4px 4px 0 var(--vermelho); outline: 3px solid var(--vermelho); outline-offset: 2px; }
+.sv-cat { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 2px dashed var(--tracejado); }
+.sv-cat-emoji { flex: none; display: grid; place-items: center; width: 40px; height: 40px; background: var(--fundo); border: var(--borda); border-radius: 10px; font-size: 20px; }
+.sv-canais { font: 500 13px/1.5 var(--mono); color: var(--cinza); text-wrap: pretty; }
+.sv-cargo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 6px; background: #fff; border: var(--borda); border-radius: 99px; font-size: 14px; font-weight: 800; }
+.sv-cargo i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--tinta); }
+.sv-cargo small { font-weight: 600; font-size: 12px; color: var(--cinza); }
+.sv-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.sv-decos { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.sv-decos .ap-fonte { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sv-obra { gap: 10px; }
+.sv-barra { display: block; width: 100%; height: 12px; }
+.sv-rel { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; text-wrap: pretty; }
+.sv-previa { display: grid; background: #2b2d31; border: var(--borda); border-radius: 14px; box-shadow: 5px 5px 0 var(--tinta); overflow: hidden; color: #949ba4; font: 14px/1.3 'gg sans', 'Segoe UI', system-ui, sans-serif; }
+.sv-previa-topo { padding: 12px 14px; border-bottom: 2px solid #1f2023; color: #f2f3f5; font-weight: 700; }
+.sv-previa-lista { max-height: min(56vh, 500px); overflow: auto; padding: 4px 8px 12px; }
+.sv-previa-cat { display: grid; gap: 1px; padding-top: 14px; }
+.sv-previa-nome { padding: 0 6px 4px; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sv-previa-canal { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 4px; font-weight: 500; white-space: nowrap; overflow: hidden; }
+.sv-previa-canal > span:first-child { flex: none; width: 18px; text-align: center; }
+.sv-previa-canal > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.sv-previa-canal.on { background: #404249; color: #f2f3f5; }
+.sv-previa-cargos { gap: 4px; padding: 12px 14px; }
+.sv-previa-cargos > span { font-size: 12px; font-weight: 700; }
+.sv-previa-cargos > div { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; }
+.sv-previa-cargos > div span { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 6px; background: #1e1f22; border-radius: 4px; color: #dbdee1; font-size: 13px; }
+.sv-previa-cargos i { width: 10px; height: 10px; border-radius: 50%; }
+.sv-modal-fundo { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 20px; background: #1b1f33b3; }
+.sv-modal { width: min(460px, 100%); display: grid; gap: 16px; padding: 22px; background: var(--papel); border: 3px solid var(--tinta); border-radius: 18px; box-shadow: 8px 8px 0 var(--tinta); color: var(--tinta); }
+.sv-perigo { margin: 0; padding: 10px 12px; background: #f9d3cc; border: var(--borda); border-radius: 10px; font-size: 14px; font-weight: 700; text-wrap: pretty; }
