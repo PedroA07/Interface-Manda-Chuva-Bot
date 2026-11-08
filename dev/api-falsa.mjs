@@ -205,6 +205,7 @@ function visual(p = meuPerfil) {
 }
 // Dois servidores de exemplo: na Toca do Creeper, quem é staff no outro é só membro (o papel vale por servidor)
 const SERVIDORES = [{ id: id(1), nome: 'Servidor de Teste', icone: '/banners/bot/mascote-64.png', sigla: 'SdT' }, { id: id(2), nome: 'Toca do Creeper', icone: null, sigla: 'TdC' }];
+let vinculado = false;
 function papelNoServidor(papel, servidor) {
   return servidor === id(2) && papel === 'staff' ? 'membro' : papel;
 }
@@ -218,6 +219,8 @@ function eu(papel) {
   return {
     papel, papelTxt: papel === 'staff' ? 'Staff · Moderação' : 'Membro',
     usuario: { id: id(501), nome: 'pedrinho', usuario: 'pedrinho', avatar: null, entrou: Date.now() - 3 * DIA, cargos: [...(papel === 'staff' ? [{ nome: 'Moderação', cor: '#E91E63' }] : []), { nome: 'Azul', cor: '#3498DB' }, { nome: 'Calouro', cor: '#99AAB5' }] },
+    // Vincular: o mesmo perfil na Toca do Creeper
+    vinculo: { on: vinculado, existe: vinculado, servidores: vinculado ? ['Toca do Creeper'] : [] },
     perfil: meuPerfil, visual: visual(), niver: { d: '14/05', ano: 2004 }, medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
     stats: { mensagens: 1284, horas: 32, medalhas: MEDALHAS.filter((m) => m.ganha).length },
   };
@@ -240,6 +243,10 @@ createServer(async (req, res) => {
     if (rota === 'GET /api/publico') {
       const s = SERVIDORES.find((x) => x.id === req.headers['x-servidor']) ?? SERVIDORES[0];
       return json(res, 200, { bot: { online: true, nome: 'Manda Chuva', avatar: null, versao: '3.11.0' }, servidor: { id: s.id, nome: s.nome, membros: 128 }, noticias: NOTICIAS });
+    }
+    if (rota === 'POST /api/eu/vinculo') {
+      vinculado = (await ler(req)).on === true;
+      return json(res, 200, { ok: true, perfil: meuPerfil, visual: visual(), vinculo: { on: vinculado, existe: vinculado, servidores: vinculado ? ['Toca do Creeper'] : [] } });
     }
     if (rota === 'POST /api/servidor/copiar') {
       const { de } = await ler(req);

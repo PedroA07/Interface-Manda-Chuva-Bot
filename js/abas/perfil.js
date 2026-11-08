@@ -441,6 +441,48 @@ function OrigemImagem({ k, galeria }) {
     ${modo === 'galeria' && galeria}`;
 }
 
+/**
+ * Perfil em vários servidores: cada servidor tem o seu, a não ser que a pessoa vincule. Vinculado, banner, foto, bio,
+ * cores, favoritos e redes são os mesmos em todos os servidores vinculados; as medalhas fixadas são de cada servidor.
+ */
+function CartaoVinculo() {
+  const { eu, setEu, servidores, servidor, aviso, tratar } = useApp();
+  const [ocupado, setOcupado] = useState(false);
+  const v = eu.vinculo;
+  // Bot antigo (sem vínculo) ou a pessoa só está num servidor com o bot: nada pra vincular
+  if (!v || (servidores.length < 2 && !v.on)) return null;
+  const aqui = servidores.find((s) => s.id === servidor)?.nome ?? 'este servidor';
+  const outros = v.servidores.length ? v.servidores.join(', ') : '';
+
+  async function trocar() {
+    if (ocupado) return;
+    const on = !v.on;
+    if (on && v.existe && !confirm(`${aqui} vai mostrar o seu perfil compartilhado${outros ? ` (o mesmo de ${outros})` : ''}. O perfil que você tem aqui sai do lugar dele. Continuar?`)) return;
+    setOcupado(true);
+    try {
+      const r = await chamar('/api/eu/vinculo', { on });
+      setEu((e) => ({ ...e, perfil: r.perfil, visual: r.visual, vinculo: r.vinculo }));
+      aviso(on ? 'Vinculado: o que mudar aqui muda nos outros servidores vinculados.' : `Desvinculado: daqui pra frente o perfil de ${aqui} é só dele.`, on ? 'um perfil pra todos governar' : 'cada um no seu quadrado');
+    } catch (e) {
+      tratar(e);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return html`<div class="cartao">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="flex:1;display:grid;gap:4px">
+        <h2 class="h2">PERFIL EM VÁRIOS SERVIDORES</h2>
+        <span style="font-size:14px;text-wrap:pretty">${v.on
+          ? `Vinculado. Banner, foto, bio, cores, favoritos e redes são os mesmos ${outros ? `de ${outros}` : 'dos servidores que você vincular'}. As medalhas fixadas são de cada servidor.`
+          : `Cada servidor tem o seu perfil. Ligue pra ${aqui} usar o mesmo perfil dos outros servidores vinculados.`}</span>
+      </div>
+      <${Toggle} on=${v.on} titulo=${v.on ? 'Desvincular' : 'Vincular'} onClick=${trocar} />
+    </div>
+  </div>`;
+}
+
 export function AbaPerfil() {
   const { eu, setEu, aviso, tratar } = useApp();
   const [cat, setCat] = useState(() => partesDoBanner(eu.perfil.banner)[0]);
@@ -514,6 +556,8 @@ export function AbaPerfil() {
         <div class="cabeca-linha"><h1 class="h1">MEU PERFIL</h1><span class="rabisco">a carteirinha da resenha</span></div>
         <p class="sub">É assim que a galera te vê no site. Escolha um banner, fixe até 3 medalhas e escreva uma bio.</p>
       </div>
+
+      <${CartaoVinculo} />
 
       <div class="cartao">
         <h2 class="h2">BANNER DO PERFIL</h2>

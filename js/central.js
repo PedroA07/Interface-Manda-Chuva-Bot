@@ -42,7 +42,7 @@ document.getElementById('comandos').innerHTML = COMANDOS.map(([cmd, desc, quem])
 const DADOS = [
   ['Configurações do servidor', 'Fazer o bot funcionar no servidor', 'Enquanto o bot estiver no servidor'],
   ['Aniversário', 'Mensagem automática no dia', 'Até você apagar'],
-  ['Perfil e medalhas', 'Mostrar no site e no /perfil', 'Até você apagar'],
+  ['Perfil e medalhas (um por servidor, ou o mesmo em vários se você vincular)', 'Mostrar no site e no /perfil', 'Até você apagar'],
   ['Imagens enviadas pro perfil', 'Mostrar no site e no /perfil', 'Até você trocar ou apagar; a staff pode tirar antes'],
   ['Transcrição de ticket', 'Comprovante pra staff e pra você', 'Só no canal de logs e na sua DM (o bot guarda o resumo dos últimos 200)'],
   ['Livro de ocorrências', 'Histórico de moderação', 'As últimas 300; avisos valem 30 dias'],
