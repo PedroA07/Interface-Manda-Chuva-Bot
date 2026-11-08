@@ -105,8 +105,9 @@ document.getElementById('faixa').innerHTML = [...FAIXA, ...FAIXA].map((src) => `
 // ---------- Comandos ----------
 const COMANDOS = [
   ['/cor', 'Escolhe (ou tira) a cor do seu nome.'],
-  ['/aniversario dia mes ano', 'Cadastra seu aniversário (o ano é opcional).'],
-  ['/perfil @membro', 'Mostra o perfil com banner e medalhas.'],
+  ['/aniversario cadastrar', 'Cadastra seu aniversário (o ano é opcional).'],
+  ['/perfil @membro', 'Mostra a carteirinha com banner, medalhas e as cores da pessoa.'],
+  ['/trofeus @membro', 'Os troféus da pessoa, em imagem.'],
   ['/medalhas', 'Lista as suas medalhas e o que falta.'],
   ['/ticket abrir', 'Abre um ticket com a staff.'],
   ['/ticket fechar', 'Fecha o ticket, salva a transcrição e apaga o canal.'],

@@ -19,9 +19,11 @@ mostrarAba();
 const QUEM = { todos: '#b9dcb0', staff: '#b6c8ee', admin: '#f5b5a8' };
 const COMANDOS = [
   ['/cor', 'Escolhe (ou tira) a cor do seu nome.', 'todos'],
-  ['/aniversario dia mes [ano]', 'Cadastra seu aniversário. Ano opcional.', 'todos'],
-  ['/aniversario-apagar', 'Tira seu aniversário da lista.', 'todos'],
-  ['/perfil [@membro]', 'Mostra a carteirinha em imagem (GIF se o banner ou a foto for animado).', 'todos'],
+  ['/aniversario cadastrar dia mes [ano]', 'Cadastra seu aniversário. Ano opcional.', 'todos'],
+  ['/aniversario ver [@membro]', 'Mostra o aniversário em imagem, do jeito que a pessoa deixou ver.', 'todos'],
+  ['/aniversario apagar', 'Tira seu aniversário da lista.', 'todos'],
+  ['/perfil [@membro] [completo]', 'Mostra a carteirinha em imagem (GIF se o banner ou a foto for animado). Com completo, vem também aniversário e troféus.', 'todos'],
+  ['/trofeus [@membro]', 'Os troféus (medalhas ganhas) em imagem.', 'todos'],
   ['/medalhas', 'Lista suas medalhas e o progresso.', 'todos'],
   ['/ticket abrir | fechar', 'Abre ou fecha um ticket com a staff.', 'todos'],
   ['/ticket add | remover | assumir | renomear', 'Gerencia o ticket atual.', 'staff'],

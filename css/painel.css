@@ -670,3 +670,17 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .ap-data { padding: 6px 10px; background: var(--fundo); border: var(--borda); border-radius: 8px; font: 500 15px var(--mono); }
 .perfil-niver { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
 .perfil-niver span { padding: 2px 8px; color: #fffcf4; border: var(--borda); border-radius: 6px; font: 800 11px var(--corpo); letter-spacing: .08em; }
+/* Prévia dos comandos do perfil: ficha com título (sem banner), seções e troféus */
+.cart-corpo.sem-banner { border-top: none; padding-top: calc(12 * var(--u)); }
+.cart-cab { display: flex; align-items: center; gap: calc(10 * var(--u)); }
+.cart-foto.pequena { width: calc(42 * var(--u)); height: calc(42 * var(--u)); font-size: calc(18 * var(--u)); }
+.cart-nome .cart-titulo { font: 800 calc(10 * var(--u)) var(--corpo); letter-spacing: .14em; }
+.cart-secao { display: grid; gap: calc(4 * var(--u)); }
+.cart-secao > span { font: 800 calc(10 * var(--u)) var(--corpo); letter-spacing: .14em; }
+.cart-secao > b { font: 700 calc(14 * var(--u)) var(--corpo); }
+.cart-trofeus { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(38 * var(--u)), 1fr)); gap: calc(4 * var(--u)); }
+.cart-trofeus img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.cmd-perfil { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 9px 12px; text-align: left; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 10px; cursor: pointer; font: inherit; }
+.cmd-perfil.on { background: var(--aviso); box-shadow: var(--sombra); }
+.cmd-perfil code { padding: 3px 8px; background: var(--tinta); color: var(--mostarda); border-radius: 6px; font: 500 13px var(--mono); }
+.cmd-perfil span { font-size: 14px; }

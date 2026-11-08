@@ -45,3 +45,10 @@ test('aparência: texto claro no fundo escuro e nome em degradê recortado', asy
   assert.equal(textoDoAniversario({ d: '14/05', ano: 2004 }, 'data', hoje), '14/05');
   assert.equal(textoDoAniversario({ d: '14/05', ano: 2004 }, 'oculto', hoje), null);
 });
+
+test('destaque que some no fundo vira a cor do texto (igual ao bot)', async () => {
+  const { corDeDestaque } = await import('../js/perfil.js');
+  assert.equal(corDeDestaque({ fundo: '#FFFCF4', destaque: '#C4363C' }), '#C4363C');
+  assert.equal(corDeDestaque({ fundo: '#1F2A5C', destaque: '#1F2A5C' }), '#FFFCF4');
+  assert.equal(corDeDestaque({ fundo: '#F3D48A', destaque: '#F2C14E' }), '#1B1F33');
+});

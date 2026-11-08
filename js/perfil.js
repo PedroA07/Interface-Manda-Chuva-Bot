@@ -102,3 +102,19 @@ export function textoDoAniversario(niver, vis, hoje = new Date()) {
   const m = hoje.getMonth() + 1, d = hoje.getDate();
   return `${niver.d} · ${hoje.getFullYear() - niver.ano - (m < mes || (m === mes && d < dia) ? 1 : 0)} anos`;
 }
+
+/** Cor dos rótulos (ANIVERSÁRIO, TROFÉUS…): o destaque, ou a cor do texto se o destaque some no fundo (a mesma regra do bot) */
+export function corDeDestaque(ap) {
+  const canal = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const lum = (h) => (/^#[0-9a-f]{6}$/i.test(h ?? '') ? [1, 3, 5].reduce((a, i, k) => a + canal(parseInt(h.slice(i, i + 2), 16) / 255) * [0.2126, 0.7152, 0.0722][k], 0) : 1);
+  const a = lum(ap.destaque), b = lum(ap.fundo);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) < 3 ? textoSobre(ap.fundo).txt : ap.destaque;
+}
+
+/** Comandos do perfil que respondem com imagem: [id, como aparece, o que mostra] */
+export const COMANDOS_PERFIL = [
+  ['perfil', '/perfil', 'Carteirinha resumida'],
+  ['completo', '/perfil completo', 'Tudo: aniversário e troféus'],
+  ['trofeus', '/trofeus', 'Medalhas e troféus do servidor'],
+  ['niver', '/aniversario ver', 'Data e idade, se for público'],
+];

@@ -70,7 +70,7 @@ export function TelaAniversarios() {
         <div class="cartao" style="background:var(--aviso);gap:10px;padding:16px 18px">
           <b style="font:400 17px/1.1 var(--titulo)">COMO O BOT SABE A DATA?</b>
           <p style="margin:0;font-size:14px;text-wrap:pretty">O Discord não mostra idade nem aniversário de ninguém. Cada membro cadastra o seu, e o ano é opcional: sem ano, a mensagem sai sem idade.</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><code class="comando">/aniversario dia:14 mes:05 ano:2003</code><span style="font-size:13px;color:var(--cinza)">ou sem o ano</span><code class="comando">/aniversario dia:14 mes:05</code></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><code class="comando">/aniversario cadastrar dia:14 mes:05 ano:2003</code><span style="font-size:13px;color:var(--cinza)">ou sem o ano</span><code class="comando">/aniversario cadastrar dia:14 mes:05</code></div>
         </div>
         <div class="cartao">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">

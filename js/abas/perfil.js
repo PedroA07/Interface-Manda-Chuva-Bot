@@ -6,7 +6,7 @@ import { useApp } from '../estado.js';
 import { hexEntrada, urlImagem } from '../logica.js';
 import { tempoRelativo } from '../moderacao.js';
 import {
-  AP_PADRAO, CATEGORIAS, COR_SEM_BANNER, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, estiloDoNome, FONTES_NOME, FUNDOS, imagemDaMedalha,
+  AP_PADRAO, CATEGORIAS, COMANDOS_PERFIL, COR_SEM_BANNER, corDeDestaque, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, estiloDoNome, FONTES_NOME, FUNDOS, imagemDaMedalha,
   nomeDaCarteirinha, numeroBonito, partesDoBanner, RARIDADE, textoDoAniversario, textoSobre, TIPOS_DE_IMAGEM, VISIBILIDADES,
 } from '../perfil.js';
 import { Amostras, LogoDiscord, Segmentado } from '../ui/basicos.js';
@@ -55,33 +55,51 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
   </div>`;
 }
 
-/** Como a carteirinha chega no Discord quando alguém usa /perfil */
-function PreviaCarteirinha({ usuario, visual, fixadas, stats, ap }) {
+/**
+ * Como a resposta chega no Discord pra cada comando do perfil (o bot desenha a mesma coisa em imagem).
+ * cmd: 'perfil' (carteirinha), 'completo' (carteirinha + seções), 'trofeus' ou 'niver' (foto pequena, nome e título).
+ */
+function PreviaComando({ cmd, usuario, visual, fixadas, stats, ap, niver, trofeus, total }) {
   const { api, estado } = useApp();
-  const t = textoSobre(ap.fundo);
+  const t = textoSobre(ap.fundo), destaque = corDeDestaque(ap);
   const banner = urlImagem(visual.banner, '', api), foto = urlImagem(visual.avatar, '', api);
   const servidor = (estado.servidor?.nome ?? 'Servidor').toUpperCase();
   const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const nomeCmd = (COMANDOS_PERFIL.find((c) => c[0] === cmd) ?? COMANDOS_PERFIL[0])[1];
+  const comCarteirinha = cmd === 'perfil' || cmd === 'completo';
+  const titulo = { trofeus: 'TROFÉUS', niver: 'ANIVERSÁRIO' }[cmd];
+  const prefixo = { trofeus: 'trofeus-', niver: 'aniversario-' }[cmd] ?? 'perfil-';
+  const arquivo = cmd === 'perfil' ? `${nomeDaCarteirinha(usuario.nome, visual.gif)} · 1000×560` : nomeDaCarteirinha(usuario.nome, false).replace(/^perfil-/, prefixo);
+  const ini = (usuario.nome || '?').charAt(0).toUpperCase();
+  const nome = html`<b style=${estiloDoNome(ap, t.txt, 0.72, 'var(--u)')}>${usuario.nome}</b>`;
   return html`<div class="dc" style="display:grid;gap:8px">
-    <div class="cart-comando"><b>@${usuario.usuario}</b>usou<span>/perfil</span></div>
+    <div class="cart-comando"><b>@${usuario.usuario}</b>usou<span>${nomeCmd}</span></div>
     <div class="dc-msg">
       <img class="dc-avatar" src="banners/bot/mascote-64.png" alt="" />
       <div class="dc-corpo" style="display:grid;gap:6px">
         <div class="dc-autor">Manda Chuva<span class="dc-app">APP</span><span class="dc-hora">hoje às ${hora}</span></div>
         <div class="cart" style=${coresDoCartao(ap, t)}>
-          <div class="cart-banner" style=${banner ? '' : `background:${visual.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>
-          <div class="cart-corpo">
-            <div class="cart-topo">
-              <span class="cart-foto">${(usuario.nome || '?').charAt(0).toUpperCase()}${foto && html`<${ImagemDoPerfil} src=${foto} />`}</span>
-              <span class="cart-nome"><b style=${estiloDoNome(ap, t.txt, 0.72, 'var(--u)')}>${usuario.nome}</b><span>entrou ${usuario.entrou ? tempoRelativo(usuario.entrou) : '?'}</span></span>
-              <span class="cart-medalhas">${fixadas.map((id) => html`<img src=${imagemDaMedalha(id)} alt="" title=${id} />`)}</span>
-            </div>
-            <div class="cart-cargos">${usuario.cargos.map((c) => html`<span class="cart-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
-            <div class="cart-stats">${stats.map(([v, k]) => html`<span><b>${v}</b><small>${k}</small></span>`)}</div>
+          ${comCarteirinha && html`<div class="cart-banner" style=${banner ? '' : `background:${visual.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>`}
+          <div class=${`cart-corpo${comCarteirinha ? '' : ' sem-banner'}`}>
+            ${comCarteirinha
+              ? html`<div class="cart-topo">
+                    <span class="cart-foto">${ini}${foto && html`<${ImagemDoPerfil} src=${foto} />`}</span>
+                    <span class="cart-nome">${nome}<span>entrou ${usuario.entrou ? tempoRelativo(usuario.entrou) : '?'}</span></span>
+                    <span class="cart-medalhas">${fixadas.map((id) => html`<img src=${imagemDaMedalha(id)} alt="" title=${id} />`)}</span>
+                  </div>
+                  <div class="cart-cargos">${usuario.cargos.map((c) => html`<span class="cart-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
+                  <div class="cart-stats">${stats.map(([v, k]) => html`<span><b>${v}</b><small>${k}</small></span>`)}</div>`
+              : html`<div class="cart-cab">
+                  <span class="cart-foto pequena">${ini}${foto && html`<${ImagemDoPerfil} src=${foto} />`}</span>
+                  <span class="cart-nome">${nome}<span class="cart-titulo" style=${`color:${destaque}`}>${titulo}</span></span>
+                </div>`}
+            ${(cmd === 'completo' || cmd === 'niver') && html`<div class="cart-secao"><span style=${`color:${destaque}`}>ANIVERSÁRIO</span><b>${niver}</b></div>`}
+            ${(cmd === 'completo' || cmd === 'trofeus') && html`<div class="cart-secao"><span style=${`color:${destaque}`}>TROFÉUS · ${trofeus.length} DE ${total}</span>
+              <div class="cart-trofeus">${trofeus.map((m) => html`<img src=${imagemDaMedalha(m.id)} alt="" title=${m.nome} />`)}</div></div>`}
             <span class="cart-rodape">${servidor} · CARTEIRINHA</span>
           </div>
         </div>
-        <span class="dc-hora">${nomeDaCarteirinha(usuario.nome, visual.gif)} · 1000×560</span>
+        <span class="dc-hora">${arquivo}</span>
       </div>
     </div>
   </div>`;
@@ -177,6 +195,7 @@ export function AbaPerfil() {
   const { eu, setEu, aviso, tratar } = useApp();
   const [cat, setCat] = useState(() => partesDoBanner(eu.perfil.banner)[0]);
   const [filtro, setFiltro] = useState('todas');
+  const [cmd, setCmd] = useState('perfil');
   const [bio, setBio] = useState(eu.perfil.bio);
   if (!eu.usuario) return html`<p class="sub">Entre com o Discord pra ter perfil.</p>`;
   const p = eu.perfil;
@@ -210,7 +229,9 @@ export function AbaPerfil() {
   const mudaAp = (patch) => guardar({ ap: { ...ap, ...patch } });
   const vis = p.niverVis ?? 'data';
   const niverTxt = textoDoAniversario(eu.niver, vis);
-  const textoVis = vis === 'idade' ? (eu.niver && !eu.niver.ano ? 'Sem o ano no cadastro, a idade não tem como aparecer: fica só o dia e o mês.' : `Aparece ${niverTxt ?? 'a data e a idade'} no perfil.`) : VIS_TXT[vis];
+  const textoVis = vis === 'idade' ? (eu.niver && !eu.niver.ano ? 'Sem o ano no cadastro, a idade não tem como aparecer: fica só o dia e o mês.' : `Aparece ${niverTxt ?? 'a data e a idade'} no perfil e nos comandos.`) : VIS_TXT[vis];
+  // O que os comandos mostram do aniversário (o mesmo texto que o bot desenha)
+  const niverDaFicha = niverTxt ?? (eu.niver ? 'Escondido pelo dono do perfil.' : 'Ainda não cadastrou (é com /aniversario cadastrar).');
 
   const galeria = html`<div style="display:grid;gap:14px">
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
@@ -273,7 +294,7 @@ export function AbaPerfil() {
         <h2 class="h2">ANIVERSÁRIO</h2>
         ${eu.niver
           ? html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><span class="ap-data">${eu.niver.d}${eu.niver.ano ? `/${eu.niver.ano}` : ''}</span><span style="font-size:13px;color:var(--cinza)">cadastrado com /aniversario</span></div>`
-          : html`<p class="dica">Você ainda não cadastrou. No Discord, use <code>/aniversario</code> com o dia e o mês (o ano é opcional).</p>`}
+          : html`<p class="dica">Você ainda não cadastrou. No Discord, use <code>/aniversario cadastrar</code> com o dia e o mês (o ano é opcional).</p>`}
         <${Segmentado} classe="origens" opcoes=${VISIBILIDADES} valor=${vis} onChange=${(v) => v !== vis && guardar({ niverVis: v }, 'Visibilidade do aniversário salva.', 'segredo guardado')} />
         <span style="font-size:13px;color:var(--cinza);text-wrap:pretty">${textoVis}</span>
       </div>
@@ -306,14 +327,22 @@ export function AbaPerfil() {
         </label>
         <span style="font-size:12px;color:var(--cinza)">${bio.length}/${MAX_BIO} · salva quando você sai do campo</span>
       </div>
+
+      <div class="cartao">
+        <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:10px"><h2 class="h2">COMANDOS DO PERFIL</h2><span style="font-size:13px;color:var(--cinza)">Clique pra ver a resposta na prévia</span></div>
+        <div style="display:grid;gap:6px">
+          ${COMANDOS_PERFIL.map(([id, nome, desc]) => html`<button type="button" class=${`cmd-perfil${cmd === id ? ' on' : ''}`} onClick=${() => setCmd(id)}><code>${nome} [membro]</code><span>${desc}</span></button>`)}
+        </div>
+        <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">Sem [membro], mostra o seu. Tudo sai como imagem, e o que você escondeu não aparece pra ninguém. No Discord, o completo é a opção <code>completo</code> do /perfil.</span>
+      </div>
     </div>
 
     <aside class="col-lado" style="gap:14px">
       <span style="font:400 16px var(--titulo)">COMO A GALERA TE VÊ</span>
       <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio, ap, niver: niverTxt }} fixadas=${fixadas} stats=${stats} />
-      <span style="font:400 16px var(--titulo)">NO DISCORD · /perfil</span>
-      <${PreviaCarteirinha} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} />
-      <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot desenha a carteirinha e manda como imagem anexada, sem embed. Se o banner ou a foto for GIF, sai em GIF animado; senão, PNG.</span>
+      <span style="font:400 16px var(--titulo)">NO DISCORD · ${(COMANDOS_PERFIL.find((c) => c[0] === cmd) ?? COMANDOS_PERFIL[0])[1]}</span>
+      <${PreviaComando} cmd=${cmd} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} niver=${niverDaFicha} trofeus=${ganhas} total=${eu.medalhas.length} />
+      <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot desenha e manda como imagem anexada, sem embed. No /perfil, banner ou foto em GIF sai em GIF animado; os outros comandos saem em PNG.</span>
     </aside>
   </div>`;
 }
