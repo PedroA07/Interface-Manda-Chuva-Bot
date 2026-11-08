@@ -1,5 +1,14 @@
-// Lista suspensa do design (select próprio). opcoes: [{ v, t, cor?, nota?, desabilitado? }]
+// Lista suspensa do design (select próprio). opcoes: [{ v, t, cor?, nota?, desabilitado?, img?, sigla? }]
 import { html, useEffect, useRef, useState } from '../../vendor/preact-htm.js';
+
+/** Ícone redondo à esquerda do texto (ex.: servidor). Sem imagem, ou se ela não carregar, mostra a sigla. */
+function Icone({ img, sigla }) {
+  const [falhou, setFalhou] = useState(false);
+  useEffect(() => setFalhou(false), [img]);
+  if (img && !falhou) return html`<img class="ls-ico" src=${img} alt="" onError=${() => setFalhou(true)} />`;
+  return html`<span class="ls-ico ls-sigla" aria-hidden="true">${String(sigla ?? '').slice(0, 3)}</span>`;
+}
+const temIcone = (o) => !!(o?.img || o?.sigla);
 
 export function ListaSuspensa({ valor = '', opcoes = [], onChange, variante = 'padrao', placeholder = 'Escolha…', desabilitada = false, estilo = '' }) {
   const [pos, setPos] = useState(null);
@@ -42,6 +51,7 @@ export function ListaSuspensa({ valor = '', opcoes = [], onChange, variante = 'p
     <div ref=${caixa} class=${`ls ${variante}${pos ? ' aberta' : ''}`} style=${estilo}>
       <button ref=${botao} type="button" class="ls-botao" onClick=${abrir} disabled=${desabilitada}>
         ${sel?.cor && html`<span class="ls-bola" style=${`--c:${sel.cor}`}></span>`}
+        ${temIcone(sel) && html`<${Icone} img=${sel.img} sigla=${sel.sigla} />`}
         <span class="ls-rotulo">${sel ? sel.t : placeholder}</span>
         <span class="ls-seta">▼</span>
       </button>
@@ -51,6 +61,7 @@ export function ListaSuspensa({ valor = '', opcoes = [], onChange, variante = 'p
           (o) => html`<button type="button" role="option" aria-selected=${sel === o} class=${`ls-item${sel === o ? ' on' : ''}${o.desabilitado ? ' off' : ''}`} onClick=${() => escolher(o)}>
             <span class="ls-check">${sel === o ? '✓' : ''}</span>
             ${o.cor && html`<span class="ls-bola" style=${`--c:${o.cor}`}></span>`}
+            ${temIcone(o) && html`<${Icone} img=${o.img} sigla=${o.sigla} />`}
             <span style="flex:1;min-width:0">${o.t}</span>
             ${o.nota && html`<span class="ls-nota">${o.nota}</span>`}
           </button>`,

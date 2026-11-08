@@ -139,7 +139,7 @@ function Topo({ estado, cfg, eu, trocarServidor, sair }) {
             variante="destaque"
             estilo="min-width:220px;width:auto"
             valor=${cfg.servidorId ?? ''}
-            opcoes=${estado.servidores.map((s) => ({ v: s.id, t: s.nome }))}
+            opcoes=${estado.servidores.map((s) => ({ v: s.id, t: s.nome, img: s.icone, sigla: s.sigla || s.nome.split(/\s+/).map((p) => p[0]).join('') }))}
             placeholder=${estado.servidores.length ? 'Escolha o servidor' : 'O bot não está em nenhum servidor'}
             desabilitada=${!estado.servidores.length || eu.papel !== 'admin'}
             onChange=${trocarServidor}

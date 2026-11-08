@@ -126,7 +126,7 @@ function estado() {
   return {
     config,
     bot: { online: true, soPainel: false, versao: '3.0.0', recursos: { membros: true, conteudo: !!process.env.DEMO }, nome: 'Manda Chuva', avatar: null, convite: 'https://discord.com/oauth2/authorize?client_id=1' },
-    servidores: [{ id: id(1), nome: 'Servidor de Teste' }],
+    servidores: [{ id: id(1), nome: 'Servidor de Teste', icone: '/banners/bot/mascote-64.png', sigla: 'SdT' }, { id: id(2), nome: 'Toca do Creeper', icone: null, sigla: 'TdC' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
       recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [], ticketsFaltando: process.env.DEMO ? [] : ['Gerenciar canais (tickets)'],
