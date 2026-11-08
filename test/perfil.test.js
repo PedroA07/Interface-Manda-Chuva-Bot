@@ -29,3 +29,19 @@ test('nome do arquivo igual ao que o bot manda', () => {
 test('imagem que passa pelo bot ganha o endereço dele', () => {
   assert.equal(urlImagem('/perfis/123/banner?v=ab', '', 'https://bot.exemplo.com'), 'https://bot.exemplo.com/perfis/123/banner?v=ab');
 });
+
+test('aparência: texto claro no fundo escuro e nome em degradê recortado', async () => {
+  const { textoSobre, estiloDoNome, AP_PADRAO, textoDoAniversario } = await import('../js/perfil.js');
+  assert.equal(textoSobre('#1F2A5C').txt, '#FFFCF4');
+  assert.equal(textoSobre('#FFFCF4').txt, '#1B1F33');
+  assert.match(estiloDoNome(AP_PADRAO, '#1B1F33'), /font-family:'Graduate'.*font-size:24px.*color:#1B1F33/);
+  assert.match(estiloDoNome({ ...AP_PADRAO, nome: '#FF6EC7' }, '#1B1F33'), /color:#FF6EC7/);
+  const deg = estiloDoNome({ ...AP_PADRAO, nomeTipo: 'degrade', grad: 1, fonte: 'Press Start 2P' }, '#1B1F33', 0.72, 'var(--u)');
+  assert.match(deg, /font-size:calc\(11 \* var\(--u\)\)/);
+  assert.match(deg, /linear-gradient\(90deg, #5865F2, #FF6EC7\).*background-clip:text/);
+  const hoje = new Date(2026, 10, 8);
+  assert.equal(textoDoAniversario({ d: '14/05', ano: 2004 }, 'idade', hoje), '14/05 · 22 anos');
+  assert.equal(textoDoAniversario({ d: '14/12', ano: 2004 }, 'idade', hoje), '14/12 · 21 anos');
+  assert.equal(textoDoAniversario({ d: '14/05', ano: 2004 }, 'data', hoje), '14/05');
+  assert.equal(textoDoAniversario({ d: '14/05', ano: 2004 }, 'oculto', hoje), null);
+});

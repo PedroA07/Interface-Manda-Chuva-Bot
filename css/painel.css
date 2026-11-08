@@ -559,7 +559,7 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .cart-comando { display: flex; align-items: center; gap: 6px; padding-left: 54px; font-size: 13px; color: #949ba4; }
 .cart-comando b { font-weight: 600; color: #c9cdfb; }
 .cart-comando span { color: #00a8fc; font-weight: 600; }
-.cart { container-type: inline-size; max-width: 440px; border-radius: 8px; overflow: hidden; background: var(--papel); color: var(--tinta); }
+.cart { container-type: inline-size; max-width: 440px; border-radius: 8px; overflow: hidden; background: var(--ap-fundo, var(--papel)); color: var(--ap-txt, var(--tinta)); }
 .cart-banner { aspect-ratio: 1000 / 300; background: #e4dccb; }
 .cart-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cart-corpo { --u: calc(100cqw / 440); display: grid; gap: calc(8 * var(--u)); padding: 0 calc(14 * var(--u)) calc(12 * var(--u)); border-top: calc(3 * var(--u)) solid var(--tinta); }
@@ -567,19 +567,19 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .cart-foto { position: relative; flex: none; width: calc(62 * var(--u)); height: calc(62 * var(--u)); display: grid; place-items: center; border-radius: 50%; background: #5865f2; border: calc(3 * var(--u)) solid var(--papel); box-shadow: 0 0 0 calc(2 * var(--u)) var(--tinta); font: 800 calc(26 * var(--u)) var(--corpo); color: #fff; overflow: hidden; }
 .cart-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .cart-nome { flex: 1; min-width: 0; display: grid; padding-bottom: calc(1 * var(--u)); }
-.cart-nome b { font: 400 calc(18 * var(--u))/1.05 var(--titulo); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cart-nome span { font: 600 calc(11 * var(--u)) var(--corpo); color: var(--cinza); }
+.cart-nome b { justify-self: start; max-width: 100%; font: 400 calc(18 * var(--u))/1.2 var(--titulo); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart-nome span { font: 600 calc(11 * var(--u)) var(--corpo); color: var(--ap-sub, var(--cinza)); }
 .cart-medalhas { flex: none; display: flex; gap: calc(2 * var(--u)); padding-bottom: calc(2 * var(--u)); }
 .cart-medalhas img { width: calc(28 * var(--u)); height: calc(28 * var(--u)); object-fit: contain; }
 .cart-cargos { display: flex; flex-wrap: wrap; gap: calc(4 * var(--u)); }
-.cart-cargo { display: inline-flex; align-items: center; gap: calc(4 * var(--u)); padding: calc(1 * var(--u)) calc(7 * var(--u)) calc(1 * var(--u)) calc(4 * var(--u)); border: calc(1.5 * var(--u)) solid var(--tinta); border-radius: 99px; font: 800 calc(11 * var(--u)) var(--corpo); }
+.cart-cargo { display: inline-flex; align-items: center; gap: calc(4 * var(--u)); padding: calc(1 * var(--u)) calc(7 * var(--u)) calc(1 * var(--u)) calc(4 * var(--u)); border: calc(1.5 * var(--u)) solid var(--tinta); border-radius: 99px; background: #fff; color: var(--tinta); font: 800 calc(11 * var(--u)) var(--corpo); }
 .cart-cargo i { width: calc(8 * var(--u)); height: calc(8 * var(--u)); border-radius: 50%; background: var(--c); border: calc(1 * var(--u)) solid var(--tinta); }
 .cart-stats { display: grid; grid-template-columns: repeat(3, 1fr); border: calc(2 * var(--u)) solid var(--tinta); border-radius: calc(8 * var(--u)); overflow: hidden; }
-.cart-stats span { display: grid; padding: calc(5 * var(--u)); text-align: center; background: #fff; }
+.cart-stats span { display: grid; padding: calc(5 * var(--u)); text-align: center; background: #fff; color: var(--tinta); }
 .cart-stats span + span { border-left: calc(2 * var(--u)) solid var(--tinta); }
 .cart-stats b { font: 400 calc(14 * var(--u))/1 var(--titulo); }
 .cart-stats small { font: 700 calc(9 * var(--u)) var(--corpo); color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; }
-.cart-rodape { font: 400 calc(9 * var(--u)) var(--titulo); letter-spacing: .14em; color: var(--cinza); }
+.cart-rodape { font: 400 calc(9 * var(--u)) var(--titulo); letter-spacing: .14em; color: var(--ap-sub, var(--cinza)); }
 
 /* Meu perfil */
 .pilula { padding: 7px 14px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 99px; font: 800 14px var(--corpo); cursor: pointer; }
@@ -600,7 +600,7 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .barra-prog span { display: block; height: 100%; background: var(--mostarda); }
 
 /* Cartão do perfil ("como a galera te vê" e a lista da turma) */
-.perfil-cartao { background: var(--papel); border: 3px solid var(--tinta); border-radius: 18px; box-shadow: 6px 6px 0 var(--tinta); overflow: hidden; text-align: left; }
+.perfil-cartao { background: var(--ap-fundo, var(--papel)); color: var(--ap-txt, var(--tinta)); border: 3px solid var(--tinta); border-radius: 18px; box-shadow: 6px 6px 0 var(--tinta); overflow: hidden; text-align: left; }
 .perfil-banner { aspect-ratio: 21 / 9; background: #e4dccb; border-bottom: 3px solid var(--tinta); }
 .perfil-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .perfil-corpo { display: grid; gap: 12px; padding: 0 20px 20px; }
@@ -610,14 +610,14 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .perfil-foto i { position: absolute; right: 2px; bottom: 2px; width: 20px; height: 20px; border-radius: 50%; background: #3ccf7a; border: 3px solid var(--papel); }
 .perfil-fixadas { margin-left: auto; display: flex; gap: 4px; padding-bottom: 4px; }
 .perfil-fixadas img { width: 44px; height: 44px; object-fit: contain; }
-.perfil-nome { font: 400 26px/1.05 var(--titulo); overflow-wrap: anywhere; }
-.perfil-sub { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--cinza); }
+.perfil-nome { justify-self: start; max-width: 100%; font: 400 26px/1.2 var(--titulo); overflow-wrap: anywhere; }
+.perfil-sub { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ap-sub, var(--cinza)); }
 .perfil-cargos { display: flex; flex-wrap: wrap; gap: 6px; }
-.perfil-cargo { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 6px; background: #fff; border: var(--borda); border-radius: 99px; font-size: 13px; font-weight: 800; }
+.perfil-cargo { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 6px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 99px; font-size: 13px; font-weight: 800; }
 .perfil-cargo i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); border: 1.5px solid var(--tinta); }
-.perfil-bio { margin: 0; padding: 10px 12px; background: var(--fundo); border-radius: 10px; font-size: 14px; text-wrap: pretty; overflow-wrap: anywhere; }
+.perfil-bio { margin: 0; padding: 10px 12px; background: var(--fundo); color: var(--tinta); border-radius: 10px; font-size: 14px; text-wrap: pretty; overflow-wrap: anywhere; }
 .perfil-stats { display: grid; grid-template-columns: repeat(3, 1fr); border: var(--borda); border-radius: 12px; overflow: hidden; }
-.perfil-stats div { display: grid; gap: 2px; padding: 10px; text-align: center; background: #fff; }
+.perfil-stats div { display: grid; gap: 2px; padding: 10px; text-align: center; background: #fff; color: var(--tinta); }
 .perfil-stats div + div { border-left: var(--borda); }
 .perfil-stats b { font: 400 20px/1 var(--titulo); }
 .perfil-stats span { font-size: 11px; font-weight: 700; color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; }
@@ -628,7 +628,7 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .perfil-cartao.pequeno .perfil-linha-foto { margin-top: -26px; gap: 10px; }
 .perfil-cartao.pequeno .perfil-foto { width: 56px; height: 56px; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--tinta); font-size: 22px; }
 .perfil-cartao.pequeno .perfil-fixadas img { width: 30px; height: 30px; }
-.perfil-cartao.pequeno .perfil-nome { font: 800 16px/1.2 var(--corpo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.perfil-cartao.pequeno .perfil-nome { font: 800 16px/1.3 var(--corpo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .perfil-cartao.pequeno .perfil-sub { font-size: 12px; }
 .perfil-cartao.pequeno .perfil-cargo { padding: 2px 8px 2px 5px; border-width: 1.5px; font-size: 12px; gap: 5px; }
 .perfil-cartao.pequeno .perfil-cargo i { width: 10px; height: 10px; }
@@ -654,3 +654,19 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .rg-enviada a { color: inherit; }
 /* A prévia das regras é comprida: rola sozinha pra caber inteira na tela (o padding deixa a sombra aparecer) */
 .rg-previa { max-height: calc(100vh - 80px); overflow-y: auto; padding: 0 6px 6px 0; overscroll-behavior: contain; }
+
+/* ===== Meu perfil › Aparência e Aniversário ===== */
+.ap-grupo { display: grid; gap: 8px; }
+.ap-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ap-hex { width: 110px; }
+.amostra.grande.marcada { box-shadow: 3px 3px 0 var(--tinta); outline: 3px solid var(--vermelho); outline-offset: 2px; }
+.ap-degrade { width: 72px; height: 36px; padding: 0; border: var(--borda); border-radius: 10px; cursor: pointer; }
+.ap-degrade.on { box-shadow: 3px 3px 0 var(--tinta); outline: 3px solid var(--vermelho); outline-offset: 2px; }
+.ap-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.ap-fonte { display: grid; gap: 4px; padding: 10px 12px; text-align: left; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 10px; cursor: pointer; min-width: 0; }
+.ap-fonte span { line-height: 1.3; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ap-fonte small { font: 700 11px var(--corpo); letter-spacing: .06em; text-transform: uppercase; color: var(--cinza); }
+.ap-fonte.on { background: var(--aviso); box-shadow: 3px 3px 0 var(--tinta); outline: 3px solid var(--vermelho); outline-offset: 2px; }
+.ap-data { padding: 6px 10px; background: var(--fundo); border: var(--borda); border-radius: 8px; font: 500 15px var(--mono); }
+.perfil-niver { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+.perfil-niver span { padding: 2px 8px; color: #fffcf4; border: var(--borda); border-radius: 6px; font: 800 11px var(--corpo); letter-spacing: .08em; }

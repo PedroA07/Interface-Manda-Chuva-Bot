@@ -159,7 +159,15 @@ let meuPerfil = {
   bOrig: 'galeria', banner: 'banners/perfil/jogos-1.jpg', bLink: '', bLinkGif: false, bAnexo: '', bArqNome: '',
   aOrig: 'discord', aLink: '', aLinkGif: false, aAnexo: '', aArqNome: '',
   bio: 'Main suporte no Valorant, construtor no Minecraft e o primeiro a chegar na call. Calouro, mas já sei onde fica o RU.', fixadas: ['calouro', 'sobrevivente'],
+  ap: { fundo: '#FFFCF4', nome: '', nomeTipo: 'solida', grad: 0, fonte: 'Graduate', destaque: '#C4363C' }, niverVis: 'data',
 };
+// Aparência de exemplo dos colegas na lista da turma (o bot manda a de cada um)
+const APS = [
+  { fundo: '#1F2A5C', nome: '', nomeTipo: 'degrade', grad: 1, fonte: 'Pacifico', destaque: '#F2C14E' },
+  { fundo: '#F5C6D6', nome: '#C4363C', nomeTipo: 'solida', grad: 0, fonte: 'Caveat', destaque: '#C4363C' },
+  { fundo: '#FFFCF4', nome: '', nomeTipo: 'solida', grad: 0, fonte: 'Graduate', destaque: '#C4363C' },
+  { fundo: '#C8E6C0', nome: '#1B1F33', nomeTipo: 'solida', grad: 0, fonte: 'Press Start 2P', destaque: '#2F8F5B' },
+];
 const CATS = ['jogos', 'musica', 'diversos', 'animais', 'desenhos', 'codigo'];
 /** O que o site mostra do perfil. Aqui o Discord não tem banner nem foto: entra a cor de destaque e a inicial. */
 function visual(p = meuPerfil) {
@@ -177,7 +185,7 @@ function eu(papel) {
   return {
     papel, papelTxt: papel === 'staff' ? 'Staff · Moderação' : 'Membro',
     usuario: { id: id(501), nome: 'pedrinho', usuario: 'pedrinho', avatar: null, entrou: Date.now() - 3 * DIA, cargos: [...(papel === 'staff' ? [{ nome: 'Moderação', cor: '#E91E63' }] : []), { nome: 'Azul', cor: '#3498DB' }, { nome: 'Calouro', cor: '#99AAB5' }] },
-    perfil: meuPerfil, visual: visual(), medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
+    perfil: meuPerfil, visual: visual(), niver: { d: '14/05', ano: 2004 }, medalhas: MEDALHAS.map((m) => (m.id === 'moderador' ? { ...m, v: papel === 'staff' ? 1 : 0, ganha: papel === 'staff' } : m)),
     stats: { mensagens: 1284, horas: 32, medalhas: MEDALHAS.filter((m) => m.ganha).length },
   };
 }
@@ -214,7 +222,7 @@ createServer(async (req, res) => {
       const lista = membros.filter((m) => !q || m.nome.toLowerCase().includes(q));
       const por = 9, pg = Math.max(1, Math.min(Math.ceil(lista.length / por) || 1, Number(url.searchParams.get('pagina')) || 1));
       const ids = MEDALHAS.map((m) => m.id);
-      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
+      const itens = lista.slice((pg - 1) * por, pg * por).map((m, i) => ({ id: m.id, nome: m.nome, usuario: m.usuario, avatar: m.avatar, entrou: m.entrou, banner: `banners/perfil/${CATS[(i + m.nome.length) % 6]}-${(i % 8) + 1}.jpg`, bio: '', medalhas: ids.slice(i % 5, (i % 5) + 1 + (m.nome.length % 3)), ap: APS[i % APS.length], niver: ['14/05 · 22 anos', '03/12', null][i % 3], cargos: m.cargos.slice(0, 3).map((c) => ({ nome: Object.keys(NOMES_CARGO).find((k) => id(NOMES_CARGO[k]) === c) ?? 'Cargo', cor: CORES_CARGO[Number(c.slice(-3))] ?? '#99AAB5' })) }));
       return json(res, 200, { itens, pagina: pg, paginas: Math.ceil(lista.length / por) || 1, total: lista.length, completa: true });
     }
     if (papel === 'membro') return json(res, 403, { erro: 'Essa parte é só pra staff.' });

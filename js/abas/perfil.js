@@ -1,12 +1,15 @@
 // Aba Meu perfil: banner e foto (do Discord, galeria, link ou anexo), medalhas (fixar até 3), bio, o cartão "como a galera
 // te vê" e a prévia da carteirinha que o /perfil manda no Discord. Cada mudança vale na hora (não espera o Salvar): vai direto pro bot.
-import { html, useState } from '../../vendor/preact-htm.js';
+import { html, useEffect, useState } from '../../vendor/preact-htm.js';
 import { chamar, ErroSenha } from '../api.js';
 import { useApp } from '../estado.js';
-import { urlImagem } from '../logica.js';
+import { hexEntrada, urlImagem } from '../logica.js';
 import { tempoRelativo } from '../moderacao.js';
-import { CATEGORIAS, COR_SEM_BANNER, erroDoArquivo, erroDoLink, imagemDaMedalha, nomeDaCarteirinha, numeroBonito, partesDoBanner, RARIDADE, TIPOS_DE_IMAGEM } from '../perfil.js';
-import { LogoDiscord, Segmentado } from '../ui/basicos.js';
+import {
+  AP_PADRAO, CATEGORIAS, COR_SEM_BANNER, CORES_NOME, DEGRADES, DESTAQUES, erroDoArquivo, erroDoLink, estiloDoNome, FONTES_NOME, FUNDOS, imagemDaMedalha,
+  nomeDaCarteirinha, numeroBonito, partesDoBanner, RARIDADE, textoDoAniversario, textoSobre, TIPOS_DE_IMAGEM, VISIBILIDADES,
+} from '../perfil.js';
+import { Amostras, LogoDiscord, Segmentado } from '../ui/basicos.js';
 import { lerBase64 } from '../ui/seletor-banner.js';
 
 const MAX_BIO = 120;
@@ -24,12 +27,16 @@ const SOBRE_O_DISCORD = {
 /** Imagem escolhida pela pessoa. Link quebrado ou anexo apagado somem e deixam aparecer o que está atrás. */
 const ImagemDoPerfil = ({ src }) => html`<img key=${src} src=${src} alt="" referrerpolicy="no-referrer" onError=${(e) => (e.target.style.display = 'none')} />`;
 
-/** Cartão do perfil (também usado na lista da turma, em tamanho menor) */
+/** Variáveis de cor do cartão: fundo e texto (claro ou escuro, conforme o fundo) */
+const coresDoCartao = (ap, t) => `--ap-fundo:${ap.fundo};--ap-txt:${t.txt};--ap-sub:${t.sub}`;
+
+/** Cartão do perfil (também usado na lista da turma, em tamanho menor). perfil.niver = texto pronto do aniversário (ou nada). */
 export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true }) {
   const { api } = useApp();
   const ini = (usuario.nome || '?').charAt(0).toUpperCase();
   const banner = urlImagem(perfil.banner, '', api), foto = urlImagem(usuario.avatar, '', api);
-  return html`<div class=${`perfil-cartao${grande ? '' : ' pequeno'}`}>
+  const ap = { ...AP_PADRAO, ...perfil.ap }, t = textoSobre(ap.fundo);
+  return html`<div class=${`perfil-cartao${grande ? '' : ' pequeno'}`} style=${coresDoCartao(ap, t)}>
     <div class="perfil-banner" style=${banner ? '' : `background:${perfil.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>
     <div class="perfil-corpo">
       <div class="perfil-linha-foto">
@@ -37,19 +44,21 @@ export function CartaoPerfil({ usuario, perfil, fixadas, stats, grande = true })
         <div class="perfil-fixadas">${fixadas.map((id) => html`<img src=${imagemDaMedalha(id)} alt="" title=${id} />`)}</div>
       </div>
       <div style="display:grid;gap:2px;min-width:0">
-        <b class="perfil-nome">${usuario.nome}</b>
+        <b class="perfil-nome" style=${estiloDoNome(ap, t.txt, grande ? 1 : 0.72)}>${usuario.nome}</b>
         <span class="perfil-sub">${grande && html`<${LogoDiscord} tam=${14} />`}@${usuario.usuario} · entrou ${usuario.entrou ? tempoRelativo(usuario.entrou) : '?'}</span>
       </div>
       <div class="perfil-cargos">${usuario.cargos.map((c) => html`<span class="perfil-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
       ${grande && html`<p class="perfil-bio">${perfil.bio || 'Ainda sem bio. Escreve alguma coisa aí!'}</p>`}
+      ${grande && perfil.niver && html`<div class="perfil-niver"><span style=${`background:${ap.destaque}`}>ANIVERSÁRIO</span>${perfil.niver}</div>`}
       ${stats && html`<div class="perfil-stats">${stats.map(([v, k]) => html`<div><b>${v}</b><span>${k}</span></div>`)}</div>`}
     </div>
   </div>`;
 }
 
 /** Como a carteirinha chega no Discord quando alguém usa /perfil */
-function PreviaCarteirinha({ usuario, visual, fixadas, stats }) {
+function PreviaCarteirinha({ usuario, visual, fixadas, stats, ap }) {
   const { api, estado } = useApp();
+  const t = textoSobre(ap.fundo);
   const banner = urlImagem(visual.banner, '', api), foto = urlImagem(visual.avatar, '', api);
   const servidor = (estado.servidor?.nome ?? 'Servidor').toUpperCase();
   const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -59,12 +68,12 @@ function PreviaCarteirinha({ usuario, visual, fixadas, stats }) {
       <img class="dc-avatar" src="banners/bot/mascote-64.png" alt="" />
       <div class="dc-corpo" style="display:grid;gap:6px">
         <div class="dc-autor">Manda Chuva<span class="dc-app">APP</span><span class="dc-hora">hoje às ${hora}</span></div>
-        <div class="cart">
+        <div class="cart" style=${coresDoCartao(ap, t)}>
           <div class="cart-banner" style=${banner ? '' : `background:${visual.cor || COR_SEM_BANNER}`}>${banner && html`<${ImagemDoPerfil} src=${banner} />`}</div>
           <div class="cart-corpo">
             <div class="cart-topo">
               <span class="cart-foto">${(usuario.nome || '?').charAt(0).toUpperCase()}${foto && html`<${ImagemDoPerfil} src=${foto} />`}</span>
-              <span class="cart-nome"><b>${usuario.nome}</b><span>entrou ${usuario.entrou ? tempoRelativo(usuario.entrou) : '?'}</span></span>
+              <span class="cart-nome"><b style=${estiloDoNome(ap, t.txt, 0.72, 'var(--u)')}>${usuario.nome}</b><span>entrou ${usuario.entrou ? tempoRelativo(usuario.entrou) : '?'}</span></span>
               <span class="cart-medalhas">${fixadas.map((id) => html`<img src=${imagemDaMedalha(id)} alt="" title=${id} />`)}</span>
             </div>
             <div class="cart-cargos">${usuario.cargos.map((c) => html`<span class="cart-cargo"><i style=${`--c:${c.cor}`}></i>${c.nome}</span>`)}</div>
@@ -77,6 +86,22 @@ function PreviaCarteirinha({ usuario, visual, fixadas, stats }) {
     </div>
   </div>`;
 }
+
+/** Campo #hex ao lado das amostras: salva quando a cor é válida e a pessoa sai do campo (ou aperta Enter) */
+function CampoHex({ valor, onSalvar }) {
+  const [t, setT] = useState(valor);
+  useEffect(() => setT(valor), [valor]);
+  const salvar = () => {
+    const v = hexEntrada(t);
+    if (/^#[0-9A-F]{6}$/.test(v) && v !== valor) onSalvar(v);
+  };
+  return html`<input class="campo mono ap-hex" value=${t} placeholder="#hex" maxlength="7" onInput=${(e) => setT(e.target.value)} onBlur=${salvar} onKeyDown=${(e) => e.key === 'Enter' && salvar()} />`;
+}
+
+const VIS_TXT = {
+  oculto: 'Ninguém vê sua data. O bot ainda te dá parabéns no dia, se a mensagem de aniversário estiver ligada.',
+  data: 'Aparece só o dia e o mês. A idade fica escondida.',
+};
 
 /** De onde vem o banner ou a foto. O erro aparece em vermelho embaixo do campo. galeria = conteúdo da aba Galeria. */
 function OrigemImagem({ k, galeria }) {
@@ -181,6 +206,11 @@ export function AbaPerfil() {
   const lista = eu.medalhas.filter((m) => filtro === 'todas' || (filtro === 'ganhas' ? m.ganha : !m.ganha));
   const stats = [[numeroBonito(eu.stats.mensagens), 'mensagens'], [`${numeroBonito(eu.stats.horas)} h`, 'em call'], [String(eu.stats.medalhas), 'medalhas']];
   const usuario = { ...eu.usuario, avatar: eu.visual.avatar };
+  const ap = { ...AP_PADRAO, ...p.ap };
+  const mudaAp = (patch) => guardar({ ap: { ...ap, ...patch } });
+  const vis = p.niverVis ?? 'data';
+  const niverTxt = textoDoAniversario(eu.niver, vis);
+  const textoVis = vis === 'idade' ? (eu.niver && !eu.niver.ano ? 'Sem o ano no cadastro, a idade não tem como aparecer: fica só o dia e o mês.' : `Aparece ${niverTxt ?? 'a data e a idade'} no perfil.`) : VIS_TXT[vis];
 
   const galeria = html`<div style="display:grid;gap:14px">
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
@@ -216,6 +246,39 @@ export function AbaPerfil() {
       </div>
 
       <div class="cartao">
+        <h2 class="h2">APARÊNCIA</h2>
+        <div class="ap-grupo"><span class="rotulo">Cor do fundo</span>
+          <div class="ap-linha"><${Amostras} cores=${FUNDOS} marcada=${ap.fundo} tamanho="grande" onEscolher=${(v) => mudaAp({ fundo: v })} /><${CampoHex} valor=${ap.fundo} onSalvar=${(v) => mudaAp({ fundo: v })} /></div>
+        </div>
+        <div class="ap-grupo"><span class="rotulo">Cor do nome</span>
+          <${Segmentado} classe="origens" opcoes=${[['solida', 'Cor sólida'], ['degrade', 'Degradê']]} valor=${ap.nomeTipo} onChange=${(v) => mudaAp({ nomeTipo: v })} />
+          ${ap.nomeTipo === 'degrade'
+            ? html`<div class="ap-linha">${DEGRADES.map(([c1, c2], i) => html`<button type="button" class=${`ap-degrade${ap.grad === i ? ' on' : ''}`} style=${`background:linear-gradient(90deg, ${c1}, ${c2})`} title=${`${c1} → ${c2}`} onClick=${() => mudaAp({ grad: i })}></button>`)}</div>`
+            : html`<div class="ap-linha"><${Amostras} cores=${CORES_NOME} marcada=${ap.nome} tamanho="grande" onEscolher=${(v) => mudaAp({ nome: v })} /><${CampoHex} valor=${ap.nome} onSalvar=${(v) => mudaAp({ nome: v })} /></div>`}
+        </div>
+        <div class="ap-grupo"><span class="rotulo">Fonte do nome</span>
+          <div class="ap-fontes">
+            ${FONTES_NOME.map(([f, nome, , tam]) => html`<button type="button" class=${`ap-fonte${ap.fonte === f ? ' on' : ''}`} onClick=${() => mudaAp({ fonte: f })}>
+              <span style=${`font-family:'${f}', sans-serif;font-size:${tam}px`}>${eu.usuario.nome}</span><small>${nome}</small>
+            </button>`)}
+          </div>
+        </div>
+        <div class="ap-grupo"><span class="rotulo">Cor de destaque</span>
+          <div class="ap-linha"><${Amostras} cores=${DESTAQUES} marcada=${ap.destaque} tamanho="grande" onEscolher=${(v) => mudaAp({ destaque: v })} /><${CampoHex} valor=${ap.destaque} onSalvar=${(v) => mudaAp({ destaque: v })} /></div>
+          <span style="font-size:12px;color:var(--cinza)">Usada nas etiquetas e títulos do cartão.</span>
+        </div>
+      </div>
+
+      <div class="cartao">
+        <h2 class="h2">ANIVERSÁRIO</h2>
+        ${eu.niver
+          ? html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><span class="ap-data">${eu.niver.d}${eu.niver.ano ? `/${eu.niver.ano}` : ''}</span><span style="font-size:13px;color:var(--cinza)">cadastrado com /aniversario</span></div>`
+          : html`<p class="dica">Você ainda não cadastrou. No Discord, use <code>/aniversario</code> com o dia e o mês (o ano é opcional).</p>`}
+        <${Segmentado} classe="origens" opcoes=${VISIBILIDADES} valor=${vis} onChange=${(v) => v !== vis && guardar({ niverVis: v }, 'Visibilidade do aniversário salva.', 'segredo guardado')} />
+        <span style="font-size:13px;color:var(--cinza);text-wrap:pretty">${textoVis}</span>
+      </div>
+
+      <div class="cartao">
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h2 class="h2">MEDALHAS</h2><span class="pilula-mostarda">${ganhas.length} de ${eu.medalhas.length}</span><span style="margin-left:auto;font-size:13px;color:var(--cinza)">Clique numa medalha ganha pra fixar no perfil (${fixadas.length}/3)</span></div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">${FILTROS.map(([id, nome]) => html`<button type="button" class=${`pilula${filtro === id ? ' on' : ''}`} onClick=${() => setFiltro(id)}>${nome}</button>`)}</div>
         <div class="grade-medalhas">
@@ -247,9 +310,9 @@ export function AbaPerfil() {
 
     <aside class="col-lado" style="gap:14px">
       <span style="font:400 16px var(--titulo)">COMO A GALERA TE VÊ</span>
-      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio }} fixadas=${fixadas} stats=${stats} />
+      <${CartaoPerfil} usuario=${usuario} perfil=${{ banner: eu.visual.banner, cor: eu.visual.cor, bio: bio.trim() || p.bio, ap, niver: niverTxt }} fixadas=${fixadas} stats=${stats} />
       <span style="font:400 16px var(--titulo)">NO DISCORD · /perfil</span>
-      <${PreviaCarteirinha} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} />
+      <${PreviaCarteirinha} usuario=${usuario} visual=${eu.visual} fixadas=${fixadas} stats=${stats} ap=${ap} />
       <span style="font-size:12px;color:var(--cinza);text-wrap:pretty">O bot desenha a carteirinha e manda como imagem anexada, sem embed. Se o banner ou a foto for GIF, sai em GIF animado; senão, PNG.</span>
     </aside>
   </div>`;
