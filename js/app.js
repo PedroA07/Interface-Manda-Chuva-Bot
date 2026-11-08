@@ -5,6 +5,7 @@ import { AbaCores } from './abas/cores.js';
 import { AbaNoticias } from './abas/noticias.js';
 import { AbaPerfil } from './abas/perfil.js';
 import { AbaPortaria } from './abas/portaria.js';
+import { AbaRegras } from './abas/regras.js';
 import { AbaTemas } from './abas/temas.js';
 import { AbaTickets } from './abas/tickets.js';
 import { AbaTurma } from './abas/turma.js';
@@ -22,6 +23,7 @@ const ABAS_STAFF = [
   NOTICIAS,
   { id: 'cores', nome: 'Cores', cor: '#f5b5a8', Tela: AbaCores },
   { id: 'cargos', nome: 'Cargos', cor: '#d9c2ec', Tela: AbaCargos },
+  { id: 'regras', nome: 'Regras', cor: '#a8d8cf', Tela: AbaRegras },
   { id: 'painel', nome: 'Painel', cor: '#f3d48a', Tela: AbaPainel },
   { id: 'boas', nome: 'Portaria', cor: '#b9dcb0', Tela: AbaPortaria },
   { id: 'temas', nome: 'Temas', cor: '#f2b880', Tela: AbaTemas },

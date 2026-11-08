@@ -28,6 +28,7 @@ const COMANDOS = [
   ['/ticket painel | config', 'Envia o menu de tickets e mostra o link da configuração.', 'admin'],
   ['/medalha @membro medalha', 'Dá (ou tira) uma medalha de evento.', 'staff'],
   ['/tema simular <festa>', 'Prévia de uma festa antes da data.', 'staff'],
+  ['/regras', 'Mostra as regras do servidor, só pra você.', 'todos'],
   ['/privacidade ver | apagar', 'Mostra ou apaga os seus dados guardados.', 'todos'],
   ['/painel', 'Link do painel do site.', 'todos'],
 ];

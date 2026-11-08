@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
+import { MODELOS_REGRAS } from '../js/regras.js';
 
 const RAIZ = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.gif': 'image/gif', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.json': 'application/json' };
@@ -90,6 +91,12 @@ const NOTICIAS = [
   { versao: '2.0.0', data: '01/10/2026', tag: 'NOVIDADE', titulo: 'Painel na web', texto: 'Cores, textos, botões e respostas pelo navegador.', grande: true, adesivo: 'confia' },
 ];
 let paineis = [{ servidorId: id(1), canalId: id(11), mensagemId: id(900), v2: true }];
+// Regras: config padrão do bot e onde a mensagem ficou (null = nunca enviada)
+config.regras = {
+  canalId: null, cor: '#C4363C', titulo: 'REGIMENTO INTERNO DO CAMPUS', intro: 'Leia antes de cair na resenha. Quebrou regra, a staff sobe a escada de punições.', banner: '',
+  regras: MODELOS_REGRAS[0][1].map(([t, d]) => ({ t, d })), escada: true, botao: true, botaoTxt: 'Li e aceito', cargoId: null, fixar: true, cmd: true,
+};
+let regrasMsg = null;
 const anexos = new Map();
 
 const canais = [['escolha-sua-cor', 'CAMPUS'], ['geral', 'CAMPUS'], ['cantina', 'CAMPUS'], ['portaria', 'ENTRADA'], ['registros-mod', 'STAFF'], ['abrir-ticket', 'SUPORTE'], ['registros-tickets', 'STAFF']].map(([nome, categoria], i) => ({ id: id(11 + i), nome, categoria, podeEnviar: i !== 4 }));
@@ -129,7 +136,7 @@ function estado() {
     servidores: [{ id: id(1), nome: 'Servidor de Teste', icone: '/banners/bot/mascote-64.png', sigla: 'SdT' }, { id: id(2), nome: 'Toca do Creeper', icone: null, sigla: 'TdC' }],
     servidor: {
       id: id(1), nome: 'Servidor de Teste', canais, cargos: cargos(), emojis: [],
-      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [], ticketsFaltando: process.env.DEMO ? [] : ['Gerenciar canais (tickets)'],
+      recursos: { degrade: false }, permissoesFaltando: ['Ver o registro de auditoria'], podeMencionarTodos: false, membros: 128, moderacaoFaltando: [], ticketsFaltando: process.env.DEMO ? [] : ['Gerenciar canais (tickets)'], regrasFaltando: process.env.DEMO ? [] : ['Fixar mensagens (regras)'],
       categorias: [{ id: id(90), nome: '🎫 Tickets' }, { id: id(91), nome: 'Geral' }, { id: id(92), nome: 'Staff' }],
       hierarquia: { cargoDoBot: 'Manda Chuva', temPermissao: true, acimaDoBot: [], coloridosAcima: ['VIP'], semCargo: config.cores.filter((c) => !c.cargoId).length, lista: hierarquia, permsDoBot: ['cargos', 'mensagens'] },
     },
@@ -137,6 +144,7 @@ function estado() {
     aniversarios,
     ocorrencias,
     tickets,
+    regrasMsg,
     paineis: paineis.map((p) => ({ ...p, canalNome: canais.find((c) => c.id === p.canalId)?.nome ?? 'canal apagado', link: 'https://discord.com/channels/1/2/3' })),
   };
 }
@@ -223,12 +231,21 @@ createServer(async (req, res) => {
     delete corpo.hierarquia;
     config = corpo;
     config.cores.forEach((c, i) => (c.cargoId ??= id(200 + i)));
+    if (config.regras?.canalId === 'novo') (config.regras.canalId = id(13)), rel.push('(API falsa) "Criar #regras" virou #cantina.');
+    if (config.regras?.cargoId === 'novo') (config.regras.cargoId = id(60)), rel.push('(API falsa) "Criar @Verificado" virou @Calouro.');
     return json(res, 200, { config, relatorio: rel });
   }
   if (rota === 'POST /api/enviar') {
     const { canalId } = await ler(req);
     paineis.push({ servidorId: id(1), canalId, mensagemId: id(901 + paineis.length), v2: true });
     return json(res, 200, { link: 'https://discord.com/channels/1/2/3', relatorio: [] });
+  }
+  if (rota === 'POST /api/regras/enviar') {
+    const r = config.regras;
+    const nome = canais.find((c) => c.id === r.canalId)?.nome ?? 'canal';
+    const nova = !regrasMsg;
+    regrasMsg = { quando: Date.now(), fixada: r.fixar, canalNome: nome, link: 'https://discord.com/channels/1/2/3' };
+    return json(res, 200, { link: regrasMsg.link, relatorio: [nova ? `Regras enviadas em #${nome}.` : `Mensagem das regras atualizada em #${nome}.`], regrasMsg });
   }
   if (rota === 'POST /api/apagar') {
     const { mensagemId } = await ler(req);

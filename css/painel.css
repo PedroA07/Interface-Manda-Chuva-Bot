@@ -635,3 +635,22 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .grade-turma { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; align-items: start; }
 .turma-item { padding: 0; background: none; border: none; font: inherit; color: inherit; cursor: pointer; text-align: left; }
 .vazio-tracejado { padding: 28px; text-align: center; color: var(--cinza); background: #fff; border: 2px dashed var(--tinta); border-radius: 14px; }
+
+/* ===== Regras ===== */
+.amostra.grande { width: 36px; height: 36px; border-radius: 10px; }
+.btn.grande { padding: 12px 20px; font-size: 16px; border-radius: 12px; }
+.rg-conta { font: 500 13px var(--mono); color: var(--cinza); }
+.rg-modelo { padding: 7px 14px; background: #fff; color: var(--tinta); border: var(--borda); border-radius: 99px; font: 800 14px var(--corpo); cursor: pointer; }
+.rg-modelo.on { background: var(--navy); color: var(--mostarda); box-shadow: var(--sombra); }
+.rg-regra { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px; background: var(--papel); border: var(--borda); border-radius: 12px; }
+.rg-num { display: grid; place-items: center; width: 36px; height: 36px; background: var(--navy); color: var(--mostarda); border: var(--borda); border-radius: 50%; font: 400 16px var(--titulo); }
+.rg-titulo { font-weight: 800; }
+.rg-acoes { display: grid; gap: 4px; }
+.rg-mover { width: 32px; height: 32px; padding: 0; background: #fff; border: var(--borda); border-radius: 8px; font: 800 14px sans-serif; color: var(--tinta); cursor: pointer; }
+.rg-mover:disabled { opacity: .3; cursor: default; }
+.rg-apagar { color: var(--vermelho); font-size: 15px; }
+.rg-apagar:hover { background: var(--vermelho); color: #fff; }
+.rg-enviada { font-size: 13px; font-weight: 800; color: var(--verde); }
+.rg-enviada a { color: inherit; }
+/* A prévia das regras é comprida: rola sozinha pra caber inteira na tela (o padding deixa a sombra aparecer) */
+.rg-previa { max-height: calc(100vh - 80px); overflow-y: auto; padding: 0 6px 6px 0; overscroll-behavior: contain; }
