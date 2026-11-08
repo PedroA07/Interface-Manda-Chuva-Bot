@@ -6,20 +6,30 @@ export const conexao = {
   api: localStorage.getItem('mc_api') || (NESTE_PC ? 'http://localhost:3000' : window.MANDA_CHUVA?.api) || 'http://localhost:3000',
   sessao: localStorage.getItem('mc_sessao') ?? '',
   senha: localStorage.getItem('mc_senha') ?? sessionStorage.getItem('mc_senha') ?? '',
+  // Servidor que o painel está mexendo (cada servidor tem a própria config e os próprios dados)
+  servidor: localStorage.getItem('mc_servidor') ?? '',
 };
+
+/** Troca o servidor da vez: vai em toda chamada como X-Servidor e fica lembrado neste navegador */
+export function usarServidor(id) {
+  conexao.servidor = id || '';
+  if (id) localStorage.setItem('mc_servidor', id);
+  else localStorage.removeItem('mc_servidor');
+}
 
 /** Bot rodando neste PC: lá ele pode não ter senha, então dá pra tentar entrar direto */
 export const apiNestePc = () => /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(conexao.api);
 
 export class ErroSenha extends Error {}
 
-export async function chamar(caminho, corpo) {
+/** Pede ao bot. semServidor: não manda o X-Servidor (a lista de servidores da pessoa não depende dele) */
+export async function chamar(caminho, corpo, { semServidor = false } = {}) {
   let r;
   const auth = conexao.sessao ? `Sessao ${conexao.sessao}` : conexao.senha ? `Bearer ${conexao.senha}` : null;
   try {
     r = await fetch(conexao.api + caminho, {
       method: corpo ? 'POST' : 'GET',
-      headers: { 'X-Painel': '1', 'Content-Type': 'application/json', ...(auth && { Authorization: auth }) },
+      headers: { 'X-Painel': '1', 'Content-Type': 'application/json', ...(auth && { Authorization: auth }), ...(conexao.servidor && !semServidor && { 'X-Servidor': conexao.servidor }) },
       body: corpo ? JSON.stringify(corpo) : undefined,
     });
   } catch {
@@ -50,7 +60,7 @@ export function entrarComDiscord() {
 const ERROS_LOGIN = {
   'login-desligado': 'O login com Discord ainda não foi ligado no bot (falta o DISCORD_CLIENT_SECRET). Por enquanto, entre com a senha do painel.',
   cancelado: 'Login cancelado. Quando quiser, é só clicar de novo.',
-  'fora-do-servidor': 'Sua conta não está no servidor do bot. Entre no servidor e tente de novo.',
+  'fora-do-servidor': 'Sua conta não está em nenhum servidor do bot. Entre num deles e tente de novo.',
   discord: 'O Discord não respondeu direito. Tente de novo daqui a pouco.',
 };
 

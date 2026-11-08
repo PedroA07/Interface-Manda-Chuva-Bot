@@ -5,6 +5,7 @@ import { chamar } from '../api.js';
 import { useApp } from '../estado.js';
 import { CARGOS_SRV, CATS_SRV, DECO, FONTES_U, MODELOS_SRV, formatarNome, planoDoModelo } from '../servidor.js';
 import { Segmentado, Toggle } from '../ui/basicos.js';
+import { ListaSuspensa } from '../ui/lista-suspensa.js';
 
 const OPCOES = [
   ['fontes', 'Usar as fontes da aba Fontes e nomes', 'Os nomes já saem estilizados.'],
@@ -29,6 +30,41 @@ function Andamento({ obra }) {
     </div>
     ${obra.status === 'andando' && html`<span class="barra-prog sv-barra"><span style=${`width:${pct}%`}></span></span><span style="font-size:13px;color:var(--cinza)">${obra.passo || '…'}</span>`}
     ${obra.rel?.length > 0 && html`<ul class="sv-rel">${obra.rel.map((l) => html`<li>${l}</li>`)}</ul>`}
+  </div>`;
+}
+
+/** Copiar a configuração de outro servidor que a pessoa também gerencia: entra como alteração e só vale no Salvar */
+function CopiarDeOutro() {
+  const { servidores, servidor, colarConfig, aviso, tratar, eu, sujo } = useApp();
+  const outros = servidores.filter((s) => s.id !== servidor && s.papel === 'admin');
+  const [de, setDe] = useState(outros[0]?.id ?? '');
+  const [ocupado, setOcupado] = useState(false);
+  const [rel, setRel] = useState([]);
+  async function copiar() {
+    if (sujo && !confirm('Tem alterações não salvas aqui. Copiar por cima delas?')) return;
+    setOcupado(true);
+    try {
+      const r = await chamar('/api/servidor/copiar', { de });
+      colarConfig(r.config);
+      setRel(r.relatorio);
+      aviso(r.relatorio[0], 'ctrl+c, ctrl+v');
+    } catch (e) {
+      tratar(e);
+    } finally {
+      setOcupado(false);
+    }
+  }
+  return html`<div class="cartao">
+    <h2 class="h2">COPIAR DE OUTRO SERVIDOR</h2>
+    <p style="margin:0;font-size:14px;max-width:70ch;text-wrap:pretty">Cada servidor tem a própria configuração. Aqui você traz a de outro servidor que você gerencia: cores, boas-vindas, regras, tickets, temas e o resto. Canais e cargos viram os de mesmo nome neste servidor; o que não existir fica vazio pra escolher. Nada muda no Discord até você clicar em <b>Salvar</b>.</p>
+    <p style="margin:0;font-size:13px;color:var(--cinza);text-wrap:pretty">Dica: monte este servidor com o mesmo modelo antes de copiar. Assim os canais têm os mesmos nomes e quase tudo se acha sozinho.</p>
+    ${outros.length
+      ? html`<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+          <${ListaSuspensa} valor=${de} opcoes=${outros.map((s) => ({ v: s.id, t: s.nome, img: s.icone, sigla: s.sigla || s.nome.charAt(0) }))} onChange=${setDe} estilo="min-width:240px;width:auto" />
+          <button type="button" class="btn navy sombra" disabled=${ocupado || !de || eu.papel !== 'admin'} onClick=${copiar}>${ocupado ? 'Copiando…' : 'Copiar configuração'}</button>
+        </div>`
+      : html`<p class="sub" style="margin:0">Você não gerencia nenhum outro servidor com o bot.</p>`}
+    ${rel.length > 1 && html`<ul style="margin:0;padding-left:18px;font-size:14px;display:grid;gap:4px">${rel.slice(1).map((l) => html`<li>${l}</li>`)}</ul>`}
   </div>`;
 }
 
@@ -100,7 +136,7 @@ export function AbaServidor() {
         <div class="cabeca-linha"><h1 class="h1">SERVIDOR</h1><span class="rabisco">obra pronta em 1 clique</span></div>
         <p class="sub">Monte o servidor com categorias, canais e cargos prontos e escolha a fonte dos nomes. O bot cria tudo sozinho.</p>
       </div></div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px">${[['montar', 'Montar servidor'], ['fontes', 'Fontes e nomes']].map(([id, nome]) => html`<button type="button" class=${`rg-modelo sv-view${view === id ? ' on' : ''}`} onClick=${() => setView(id)}>${nome}</button>`)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">${[['montar', 'Montar servidor'], ['fontes', 'Fontes e nomes'], ['copiar', 'Copiar de outro servidor']].map(([id, nome]) => html`<button type="button" class=${`rg-modelo sv-view${view === id ? ' on' : ''}`} onClick=${() => setView(id)}>${nome}</button>`)}</div>
       <${Andamento} obra=${obra} />
 
       ${view === 'montar' && html`
@@ -147,6 +183,8 @@ export function AbaServidor() {
           ${motivo && html`<span style="flex-basis:100%;font-size:13px;color:var(--cinza)">${motivo}</span>`}
           ${montado && html`<span style="flex-basis:100%;font-size:13px;color:var(--verde);font-weight:800">Último servidor montado em ${dataHora(montado)}.</span>`}
         </div>`}
+
+      ${view === 'copiar' && html`<${CopiarDeOutro} />`}
 
       ${view === 'fontes' && html`
         <div class="cartao" style="background:var(--aviso);gap:6px;padding:14px 18px">

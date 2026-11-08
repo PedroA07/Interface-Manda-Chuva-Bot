@@ -11,9 +11,9 @@ import { AbaTemas } from './abas/temas.js';
 import { AbaTickets } from './abas/tickets.js';
 import { AbaTurma } from './abas/turma.js';
 import { AbaPainel } from './abas/painel.js';
-import { apiNestePc, chamar, conexao, entrarComDiscord, ErroSenha, esquecerAcesso, guardarAcesso, lerVoltaDoLogin, saude } from './api.js';
+import { apiNestePc, chamar, conexao, entrarComDiscord, ErroSenha, esquecerAcesso, guardarAcesso, lerVoltaDoLogin, saude, usarServidor } from './api.js';
 import { Ctx } from './estado.js';
-import { hexOk, naoLidas } from './logica.js';
+import { hexOk, naoLidas, usarServidorNasPlacas } from './logica.js';
 import { temaDaPrevia } from './temas.js';
 import { Adesivo, LogoDiscord, Toggle } from './ui/basicos.js';
 import { ListaSuspensa } from './ui/lista-suspensa.js';
@@ -127,7 +127,10 @@ function QuemSou({ eu }) {
   </div>`;
 }
 
-function Topo({ estado, cfg, eu, trocarServidor, sair }) {
+// Papel em cada servidor, do lado do nome na lista
+const NOTA_PAPEL = { admin: 'gerencia', staff: 'staff', membro: '' };
+
+function Topo({ estado, eu, servidores, trocarServidor, sair }) {
   const b = estado.bot;
   return html`
     <header class="topo">
@@ -139,13 +142,13 @@ function Topo({ estado, cfg, eu, trocarServidor, sair }) {
           ${b.soPainel && html`<span class="selo-so-painel">SÓ PAINEL</span>`}
         </span>
         <div class="topo-direita">
-          ${cfg && html`<${ListaSuspensa}
+          ${servidores.length > 0 &&
+          html`<${ListaSuspensa}
             variante="destaque"
             estilo="min-width:220px;width:auto"
-            valor=${cfg.servidorId ?? ''}
-            opcoes=${estado.servidores.map((s) => ({ v: s.id, t: s.nome, img: s.icone, sigla: s.sigla || s.nome.split(/\s+/).map((p) => p[0]).join('') }))}
-            placeholder=${estado.servidores.length ? 'Escolha o servidor' : 'O bot não está em nenhum servidor'}
-            desabilitada=${!estado.servidores.length || eu.papel !== 'admin'}
+            valor=${conexao.servidor}
+            opcoes=${servidores.map((s) => ({ v: s.id, t: s.nome, img: s.icone, sigla: s.sigla || s.nome.split(/\s+/).map((p) => p[0]).join(''), nota: NOTA_PAPEL[s.papel] ?? '' }))}
+            desabilitada=${servidores.length < 2}
             onChange=${trocarServidor}
           />`}
           ${eu.papel === 'admin' && b.convite && html`<a href=${b.convite} target="_blank" rel="noopener">Adicionar a um servidor ↗</a>`}
@@ -166,6 +169,9 @@ export function App() {
   const [sujo, setSujo] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [toast, setToast] = useState(null);
+  // Servidores em que a pessoa está (cada um com a própria config e o papel dela lá) e o da vez
+  const [servidores, setServidores] = useState([]);
+  const [srv, setSrv] = useState(conexao.servidor);
   const [ui, setUiBruto] = useState({ aba: localStorage.getItem('mc_aba') || 'news', selCor: 0, emojiCat: 'Cores', lido: localStorage.getItem('mc_lido') || '' });
   const atual = useRef({});
   atual.current = { sujo, cfg, salvando, fase, estado, eu };
@@ -179,7 +185,7 @@ export function App() {
   }, []);
 
   // Staff carrega o estado completo (com a config); membro, só o público (bot, servidor e jornal)
-  const carregar = useCallback(async (servidorId, { trocarConfig = false, quem } = {}) => {
+  const carregar = useCallback(async ({ trocarConfig = false, quem } = {}) => {
     const e2 = quem ?? atual.current.eu;
     if (!ehStaff(e2)) {
       const p = await chamar('/api/publico');
@@ -188,15 +194,25 @@ export function App() {
       setCfg(null);
       return p;
     }
-    const e = await chamar(`/api/estado${servidorId ? `?servidor=${encodeURIComponent(servidorId)}` : ''}`);
+    const e = await chamar('/api/estado');
     ultimaCarga.current = Date.now();
     setEstado(e);
     if (trocarConfig || !atual.current.sujo) setCfg(structuredClone(e.config));
     return e;
   }, []);
 
-  /** Quem sou (papel e perfil) e depois o estado do meu papel */
+  /** Em que servidores estou, quem sou no da vez (papel e perfil) e depois o estado do meu papel */
   const iniciar = useCallback(async () => {
+    // Bot de antes dos vários servidores não tem a lista: segue no servidor dele
+    const lista = await chamar('/api/servidores', null, { semServidor: true }).catch((e) => {
+      if (e.status === 404) return null;
+      throw e;
+    });
+    if (lista && !lista.length) throw Object.assign(new Error('Sua conta não está em nenhum servidor do bot. Entre num servidor com ele e tente de novo.'), { status: 403 });
+    if (lista && !lista.some((s) => s.id === conexao.servidor)) usarServidor(lista[0].id);
+    usarServidorNasPlacas(conexao.servidor);
+    setServidores(lista ?? []);
+    setSrv(conexao.servidor);
     // Bot de antes do login com Discord não tem /api/eu: quem entrou pela senha é admin
     const quem = await chamar('/api/eu').catch((e) => {
       if (e.status === 404) return { papel: 'admin', papelTxt: 'Senha do painel', usuario: null };
@@ -204,7 +220,7 @@ export function App() {
     });
     setEu(quem);
     atual.current.eu = quem;
-    await carregar(null, { trocarConfig: true, quem });
+    await carregar({ trocarConfig: true, quem });
     return quem;
   }, [carregar]);
 
@@ -265,7 +281,7 @@ export function App() {
       setSujo(false);
       setCfg(structuredClone(r.config));
       aviso(['Salvo!', ...r.relatorio].join('\n'), 'já acabou, Jéssica?');
-      await carregar(r.config.servidorId, { trocarConfig: true });
+      await carregar({ trocarConfig: true });
       return true;
     } catch (e2) {
       tratar(e2);
@@ -285,7 +301,7 @@ export function App() {
     };
     const fechar = (e) => atual.current.sujo && e.preventDefault();
     const foco = () => {
-      if (atual.current.fase === 'pronto' && Date.now() - ultimaCarga.current > 3000) carregar(atual.current.cfg?.servidorId).catch(() => {});
+      if (atual.current.fase === 'pronto' && Date.now() - ultimaCarga.current > 3000) carregar().catch(() => {});
     };
     addEventListener('keydown', tecla);
     addEventListener('beforeunload', fechar);
@@ -312,9 +328,15 @@ export function App() {
     setUiBruto((u) => ({ ...u, ...patch }));
   }, []);
 
+  // Config que veio de fora (copiar de outro servidor): entra como alteração, só vale no Salvar
+  const colarConfig = useCallback((c) => {
+    setCfg(structuredClone(c));
+    setSujo(true);
+  }, []);
+
   const valor = useMemo(
-    () => ({ cfg, estado, ui, sujo, eu, setEu, mudar, setUi, aviso, salvar, tratar, recarregar: () => carregar(cfg?.servidorId), api: conexao.api }),
-    [cfg, estado, ui, sujo, eu, mudar, setUi, aviso, salvar, tratar, carregar],
+    () => ({ cfg, estado, ui, sujo, eu, setEu, mudar, setUi, aviso, salvar, tratar, recarregar: () => carregar(), api: conexao.api, servidores, servidor: srv, colarConfig }),
+    [cfg, estado, ui, sujo, eu, mudar, setUi, aviso, salvar, tratar, carregar, servidores, srv, colarConfig],
   );
 
   if (fase === 'entrada') return html`<${TelaLogin} erro=${erroEntrada} aoEntrar=${entrarComSenha} />`;
@@ -322,12 +344,25 @@ export function App() {
     return html`<div class="pagina"><div class="caderno"></div><div class="carregando"><img class="selo-mc" style="margin:0 auto" src="banners/bot/mascote-256.png" alt="" /><b>CHAMANDO O BOT…</b><p class="sub">Na hospedagem grátis ele pode levar até 1 minuto pra acordar.</p></div></div>`;
   }
 
-  const trocarServidor = (id) => {
-    mudar((c) => {
-      c.servidorId = id || null;
-      delete c.hierarquia; // o rascunho da hierarquia é do servidor anterior
-    });
-    carregar(id).catch(tratar);
+  // Cada servidor tem a própria config, perfis e tickets: trocar recarrega tudo (e o papel pode ser outro lá)
+  const trocarServidor = async (id) => {
+    if (!id || id === conexao.servidor) return;
+    if (sujo && !confirm('Tem alterações não salvas neste servidor. Trocar mesmo assim? Elas se perdem.')) return;
+    const anterior = conexao.servidor;
+    const nome = servidores.find((s) => s.id === id)?.nome ?? 'o outro servidor';
+    usarServidor(id);
+    aviso(`Indo pra ${nome}…`, 'pera aí');
+    try {
+      atual.current.sujo = false;
+      setSujo(false);
+      await iniciar();
+      aviso(`Agora você está mexendo em ${nome}.`, 'cada um no seu quadrado');
+    } catch (e) {
+      usarServidor(anterior);
+      usarServidorNasPlacas(anterior);
+      setSrv(anterior);
+      tratar(e);
+    }
   };
   const sair = () => {
     if (sujo && !confirm('Tem alterações não salvas. Sair mesmo assim?')) return;
@@ -342,7 +377,7 @@ export function App() {
     <${Ctx.Provider} value=${valor}>
       <div class=${`pagina${staff ? '' : ' sem-barra'}`}>
         <div class="caderno"></div>
-        <${Topo} estado=${estado} cfg=${cfg} eu=${eu} trocarServidor=${trocarServidor} sair=${sair} />
+        <${Topo} estado=${estado} eu=${eu} servidores=${servidores} trocarServidor=${trocarServidor} sair=${sair} />
         <div class="miolo">
           <nav class="abas">
             ${abas.map((a) => {
@@ -350,7 +385,7 @@ export function App() {
               return html`<button type="button" class=${`aba${a === aba ? ' ativa' : ''}`} style=${`--cor-aba:${a.cor}`} onClick=${() => setUi({ aba: a.id })}>${a.nome}${badge > 0 && html`<span class="aba-badge">${badge}</span>`}</button>`;
             })}
           </nav>
-          <section class="secao">
+          <section class="secao" key=${srv}>
             ${staff &&
             (() => {
               const t = temaDaPrevia(cfg, estado, ui);

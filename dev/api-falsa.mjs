@@ -203,9 +203,15 @@ function visual(p = meuPerfil) {
   const gif = [banner, avatar].some((x) => /\.gif/i.test(x ?? '') || anexos.get(String(x).slice(6))?.tipo === 'image/gif');
   return { banner, cor: banner ? null : '#7a4fd0', avatar, gif };
 }
+// Dois servidores de exemplo: na Toca do Creeper, quem é staff no outro é só membro (o papel vale por servidor)
+const SERVIDORES = [{ id: id(1), nome: 'Servidor de Teste', icone: '/banners/bot/mascote-64.png', sigla: 'SdT' }, { id: id(2), nome: 'Toca do Creeper', icone: null, sigla: 'TdC' }];
+function papelNoServidor(papel, servidor) {
+  return servidor === id(2) && papel === 'staff' ? 'membro' : papel;
+}
 function quem(req) {
   const t = /^Sessao (.+)$/.exec(req.headers.authorization ?? '')?.[1];
-  return t === 'membro' || t === 'staff' ? t : t ? null : 'admin';
+  const papel = t === 'membro' || t === 'staff' ? t : t ? null : 'admin';
+  return papel && papelNoServidor(papel, req.headers['x-servidor']);
 }
 function eu(papel) {
   if (papel === 'admin') return { papel, papelTxt: 'Senha do painel', usuario: null };
@@ -226,8 +232,21 @@ createServer(async (req, res) => {
   if (url.pathname.startsWith('/api/')) {
     const papel = quem(req);
     if (!papel) return json(res, 401, { erro: 'Sua sessão acabou. Entre com o Discord de novo.' });
+    if (rota === 'GET /api/servidores') {
+      const base = /^Sessao (.+)$/.exec(req.headers.authorization ?? '')?.[1] ?? 'admin';
+      return json(res, 200, SERVIDORES.map((s) => ({ ...s, papel: papelNoServidor(base, s.id) })));
+    }
     if (rota === 'GET /api/eu') return json(res, 200, eu(papel));
-    if (rota === 'GET /api/publico') return json(res, 200, { bot: { online: true, nome: 'Manda Chuva', avatar: null, versao: '3.11.0' }, servidor: { id: id(1), nome: 'Servidor de Teste', membros: 128 }, noticias: NOTICIAS });
+    if (rota === 'GET /api/publico') {
+      const s = SERVIDORES.find((x) => x.id === req.headers['x-servidor']) ?? SERVIDORES[0];
+      return json(res, 200, { bot: { online: true, nome: 'Manda Chuva', avatar: null, versao: '3.11.0' }, servidor: { id: s.id, nome: s.nome, membros: 128 }, noticias: NOTICIAS });
+    }
+    if (rota === 'POST /api/servidor/copiar') {
+      const { de } = await ler(req);
+      const origem = SERVIDORES.find((x) => x.id === de);
+      if (!origem) return json(res, 400, { erro: 'Escolha outro servidor pra copiar.' });
+      return json(res, 200, { config, relatorio: [`Configuração de ${origem.nome} copiada. Confira as abas e clique em Salvar pra valer aqui.`, '7 canal(is) e cargo(s) achado(s) pelo nome.', 'Não tem aqui (ficou vazio pra escolher): #regras, @Verificado.'] });
+    }
     if (rota === 'POST /api/eu/perfil') {
       const c = await ler(req);
       if (c.fixadas?.some((x) => !MEDALHAS.find((m) => m.id === x)?.ganha)) return json(res, 400, { erro: 'Só dá pra fixar medalha que você já ganhou.' });
@@ -309,7 +328,11 @@ createServer(async (req, res) => {
     }
     if (papel === 'membro') return json(res, 403, { erro: 'Essa parte é só pra staff.' });
   }
-  if (rota === 'GET /api/estado') return json(res, 200, estado());
+  if (rota === 'GET /api/estado') {
+    const e = estado();
+    const s = SERVIDORES.find((x) => x.id === req.headers['x-servidor']) ?? SERVIDORES[0];
+    return json(res, 200, { ...e, servidor: { ...e.servidor, id: s.id, nome: s.nome } });
+  }
   if (rota === 'POST /api/salvar') {
     const corpo = await ler(req);
     const rel = ['(API falsa) nada foi pro Discord.'];

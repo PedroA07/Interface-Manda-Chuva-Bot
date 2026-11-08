@@ -46,6 +46,9 @@ export const fundoDaCor = (c) => (c.tipo === 'degrade' ? `linear-gradient(120deg
 
 // Banners "Eventos" que o bot desenha com o nome do servidor na placa
 const PLACA = /^banners\/eventos\/(painel|entrada|saida|expulsao|ban|silencio|news|aniversario)\.jpg$/;
+// De qual servidor é a placa (?s=): o painel troca quando troca de servidor
+let servidorDasPlacas = '';
+export const usarServidorNasPlacas = (id) => (servidorDasPlacas = id || '');
 
 /** Endereço pra mostrar a imagem no painel, ou null quando é "sem imagem" */
 export function urlImagem(ref, padrao, api) {
@@ -54,7 +57,7 @@ export function urlImagem(ref, padrao, api) {
   if (r.startsWith('anexo:')) return `${api}/anexos/${r.slice(6)}`;
   if (r.startsWith('/')) return api + r; // imagem que passa pelo bot (perfil com link de fora)
   const placa = PLACA.exec(r);
-  if (placa) return `${api}/placas/${placa[1]}.jpg`;
+  if (placa) return `${api}/placas/${placa[1]}.jpg${servidorDasPlacas ? `?s=${servidorDasPlacas}` : ''}`;
   return r;
 }
 
