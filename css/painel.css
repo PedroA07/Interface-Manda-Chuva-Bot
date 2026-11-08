@@ -777,6 +777,8 @@ body:has(.fundo-ficha) .barra-salvar { z-index: 0; }
 .rede-acoes.cresce { flex: 1 1 220px; gap: 6px; }
 .rede-acoes.cresce .campo { flex: 1; min-width: 0; }
 .rede-secao { display: grid; gap: 8px; }
+/* O cartão é um link: o a:hover vermelho do painel não pode pintar o texto dele */
+.rede-cartao:hover { color: var(--fg); }
 .rede-secao > span { font: 800 11px var(--corpo); letter-spacing: .1em; }
 .rede-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .rede-cartao { display: grid; gap: 9px; align-content: start; padding: 11px; background: var(--bg); color: var(--fg); border: var(--borda); border-radius: 12px; box-shadow: 3px 3px 0 var(--tinta); font: 500 12px/1.35 var(--corpo); min-width: 0; text-decoration: none; }

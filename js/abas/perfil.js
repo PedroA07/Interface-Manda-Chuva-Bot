@@ -46,6 +46,9 @@ function useCartoesDe(id, ligado, versao) {
 }
 
 /** Um cartão por rede, nas cores dela: números, pôsteres (Letterboxd) ou capas dos jogos (Steam). Abre o perfil na rede. */
+// Imagem que não abriu: some (fica a caixinha vazia), em vez do ícone de imagem quebrada
+const sumir = (e) => (e.target.style.visibility = 'hidden');
+
 function CartoesRedes({ cartoes, cor, links = true }) {
   const Caixa = links ? 'a' : 'div';
   return html`<div class="rede-secao">
@@ -64,10 +67,10 @@ function CartoesRedes({ cartoes, cor, links = true }) {
         ${c.rede === 'instagram' && !c.aviso && html`<span class="rede-aviso">instagram.com/${String(c.user).replace(/^@/, '')}</span>`}
         ${c.itens?.length > 0 && html`<span class="rede-rotulo">${c.rotulo ?? (c.rede === 'letterboxd' ? 'VISTOS POR ÚLTIMO' : 'MAIS JOGADOS')}</span>`}
         ${c.itens?.length > 0 && c.rede === 'letterboxd' && html`<div class="rede-posters">${c.itens.map((it) => html`<div title=${it.t}>
-          <span class="rede-poster">${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><small>${it.s}</small>
+          <span class="rede-poster">${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" onError=${sumir} />`}</span><small>${it.s}</small>
         </div>`)}</div>`}
         ${c.itens?.length > 0 && c.rede !== 'letterboxd' && c.itens.map((it) => html`<div class="rede-jogo">
-          <span class=${`rede-capsula${c.rede === 'spotify' ? ' quadrada' : ''}`}>${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" />`}</span><span class="rede-jogo-nome">${it.t}</span><span>${it.s}</span>
+          <span class=${`rede-capsula${c.rede === 'spotify' ? ' quadrada' : ''}`}>${it.src && html`<img src=${it.src} alt="" loading="lazy" referrerpolicy="no-referrer" onError=${sumir} />`}</span><span class="rede-jogo-nome">${it.t}</span><span>${it.s}</span>
         </div>`)}
       </${Caixa}>`;
     })}</div>
